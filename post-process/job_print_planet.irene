@@ -1,0 +1,12 @@
+#!/bin/bash
+#MSUB -r pPlanet # Request name
+#MSUB -n 1 # Number of tasks to use
+#MSUB -c 1    # Number of threads per task to use
+#MSUB -T 3600 # Elapsed time limit in seconds
+#MSUB -o RUN_PR-6.out # Standard output. %I is the job id
+#MSUB -e RUN_PR-6.err # Error output. %I is the job id
+#MSUB -q xlarge ###hybrid ####xlarge ###skylake     ### standard nodes
+#MSUB -m scratch,work
+#MSUB -Q normal  ### test  ### queue
+#MSUB -A gen12428
+python -u print_planet_main.py
