@@ -61,7 +61,7 @@ def main(args):
         start = time.time()
 
         if(fig_min<=1 and fig_max>=1):
-            # open the vectors files (only once/cycle!)
+            # open the currents files (only once/cycle!)
             print('Open Vectors [Ji,Je] for cycle=%d/%d'%(Ncycle,Nend))
             Ji_vtk = open_vtk_vect(data_path+'Dipole3D_Ji_'+str(Ncycle)+'.vtk')
             Je_vtk = open_vtk_vect(data_path+'Dipole3D_Je_'+str(Ncycle)+'.vtk')
@@ -70,7 +70,7 @@ def main(args):
             Je = Figure1_Je(Je_vtk,Ncycle)
 
         if(fig_min<=2 and fig_max>=2):
-            # open the scalars files (only once/cycle!)
+            # open the densities files (only once/cycle!)
             print('Open Scalars [rhoi,rhoe] for cycle=%d/%d'%(Ncycle,Nend))
             rhoi_vtk = open_vtk_scal(data_path+'Dipole3D_rhoi1_'+str(Ncycle)+'.vtk')
             rhoe_vtk = open_vtk_scal(data_path+'Dipole3D_rhoe0_'+str(Ncycle)+'.vtk')
@@ -78,6 +78,7 @@ def main(args):
             n  = Figure2(rhoi_vtk,rhoe_vtk,Ncycle)
 
         if(fig_min<=3 and fig_max>=3):
+            # open pressure files
             print('Open Scalars [rhoi,rhoe] for cycle=%d/%d'%(Ncycle,Nend))
             Pixx_vtk = open_vtk_scal(data_path+'Dipole3D_PXXi1_'+str(Ncycle)+'.vtk')
             Piyy_vtk = open_vtk_scal(data_path+'Dipole3D_PYYi1_'+str(Ncycle)+'.vtk')
@@ -95,27 +96,32 @@ def main(args):
             T  = Figure3(Pixx_vtk,Piyy_vtk,Pizz_vtk,Pixy_vtk,Pixz_vtk,Piyz_vtk,Pexx_vtk,Peyy_vtk,Pezz_vtk,Pexy_vtk,Pexz_vtk,Peyz_vtk,Ji[0],Ji[1],Ji[2],Ji[3],Ji[4],Ji[5],Je[0],Je[1],Je[2],Je[3],Je[4],Je[5],n[0],n[1],n[2],n[3],Ncycle)
 
         if(fig_min<=4 and fig_max>=4):
+            # open electric field file
             print('Open Vectors [E] for cycle=%d/%d'%(Ncycle,Nend))
             E_vtk  = open_vtk_vect(data_path+'Dipole3D_E_'+str(Ncycle)+'.vtk')
             print('Save Figure4 for cycle=%d/%d'%(Ncycle,Nend))
             E = Figure4(E_vtk,Ncycle)
 
         if(fig_min<=5 and fig_max>=5):
+            # open magnetic field file
             print('Open Vectors [B] for cycle=%d/%d'%(Ncycle,Nend))
             B_vtk  = open_vtk_vect(data_path+'Dipole3D_B_'+str(Ncycle)+'.vtk')
             print('Save Figure5 for cycle=%d/%d'%(Ncycle,Nend))
             B = Figure5(B_vtk,Ncycle)
         
         if(fig_min<=6 and fig_max>=6):
+            # compute velocity from current and density
             print('Save Figure6 for cycle=%d/%d'%(Ncycle,Nend))
             Figure6_Ui(Ji,n,Ncycle)
             Figure6_Ue(Je,n,Ncycle)
 
         if(fig_min<=7 and fig_max>=7):
+            # compute length scales di, rhoi, debye length
             print('Save Figure7 for cycle=%d/%d'%(Ncycle,Nend))
             Figure7(n[0],n[1],n[2],n[3],B[0],B[1],T[0],T[1],T[4],T[5],Ncycle)
 
         if(fig_min<=8 and fig_max>=8):
+            # compute temperature anisotropy
             print('Save Figure8 for cycle=%d/%d'%(Ncycle,Nend))
             Figure8(T[2],T[3],T[6],T[7],B[2],B[3],Ncycle)
 
@@ -206,8 +212,14 @@ def unpack(data_file,iy,iz,string):
         return scal[::fact,::fact,iz]
 
 
-# add plot to figure figure, with labels, colorbar, text and planet disk
-def add_plot(fig,position,field,x,y,yplanet,xlabel,ylabel,text,ccmap,cmin,cmax,xlab=False,ylab=False,cmap=False,log=False,add_profiles=True,Mariner=True):
+# add plot to figure, with (1) labels axis (bool option)
+#                          (2) text
+#                          (3) colorbar with specified colormap and limits (bool option)
+#                          (4) planet disk (yplanet arg, radius=1)
+#                          (5) logaritmic colorscale (bool option)
+#                          (6) BShock and MPause profiles (bool option)
+#                          (7) flyby trajectory (bool option) 
+def add_plot(fig,position,field,x,y,yplanet,xlabel,ylabel,text,ccmap,cmin,cmax,xlab=False,ylab=False,cmap=False,log=False,add_profiles=True,flyby_file=None):
     fig.add_subplot(position)
     a = field#[102:358,104:312 this only for bigbox-cut]
     a = np.transpose(a)
@@ -215,7 +227,7 @@ def add_plot(fig,position,field,x,y,yplanet,xlabel,ylabel,text,ccmap,cmin,cmax,x
     if(log==False):
         im = plt.imshow(a, cmap=ccmap, origin='lower', extent=(min(x),max(x),min(y),max(y)), aspect=1)
     else:
-       im = plt.imshow(a, cmap=ccmap, origin='lower', norm=colors.LogNorm(vmin=cmin, vmax=cmax), extent=(min(x),max(x),min(y),max(y)), aspect=1) #4/5
+       im = plt.imshow(a, cmap=ccmap, origin='lower', norm=colors.LogNorm(vmin=cmin, vmax=cmax), extent=(min(x),max(x),min(y),max(y)), aspect=1)
     planet = plt.Circle((4./5.*max(x)/2., yplanet), 1., color='grey', fill=True, linewidth=2.)
     ax = fig.gca()
     ax.add_patch(planet)
@@ -237,19 +249,20 @@ def add_plot(fig,position,field,x,y,yplanet,xlabel,ylabel,text,ccmap,cmin,cmax,x
         plt.plot(xx,zz,linestyle='--',color='grey',marker='',linewidth=2)
         plt.ylim(0,np.max(y))
         plt.xlim(0,np.max(x))
-    if(Mariner==True):
-        tt,xx,yy,zz = np.loadtxt('Mariner-flyby-1st.txt',unpack=True)
-        tt = tt-tt[12467]
+    if(flyby_file!=None):
+        tt,xx,yy,zz = np.loadtxt(flyby_file,unpack=True)
+        ica = np.argmin(xx**2+yy**2+zz**2)
+        tt = tt-tt[ica]
         xx=-xx
         xx+=4
         yy+=4
         zz+=4
         for it in range(-6,6):
-            tgood=tt[12476+it*30]
+            tgood=tt[ica+it*30]
             if(ylabel=='y[Rm]'):
-                plt.plot(xx[12467+it*30],yy[12467+it*30],marker='o',label='time=%.1f m'%(tgood/60.))
+                plt.plot(xx[ica+it*30],yy[12467+it*30],marker='o',label='time=%.1f m'%(tgood/60.))
             if(ylabel=='z[Rm]'):
-                plt.plot(xx[12467+it*30],zz[12467+it*30],marker='o',label='time=%.1f m'%(tgood/60.))
+                plt.plot(xx[ica+it*30],zz[12467+it*30],marker='o',label='time=%.1f m'%(tgood/60.))
         if(ylabel=='y[Rm]'):    
             plt.plot(xx,yy)
         if(ylabel=='z[Rm]'):   
