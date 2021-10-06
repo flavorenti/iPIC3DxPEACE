@@ -24,23 +24,32 @@ def main(args):
     fig_max    = args[7]
 
     # define pars simulation as global variables
-    global x,y,z,dt,ypl,zpl,qome,iyc,izc
+    global x,y,z,dt,xpl,ypl,zpl,qome,iyc,izc
 
     # pass also fact and PR_number in global
     global PR_number, fact
     PR_number = str(args[0])
     fact = args[1]
 
-    # path to the simulation data
-    data_path = '/ccc/scratch/cont005/gen12622/lavorenf/Mercury_SaeInit/PR'+PR_number+'/run'+str(run_number)+'/data/'
+    # path to simulation data, s/c trajectory file, where to save plot
+    global data_path, bepi_path, save_path
+    data_path = '/home/flavorenti/Bureau/data_simu_iPIC3D/Mercury_SaeInit/PR'+PR_number+'/run'+str(run_number)+'/data/'
+    bepi_path = './Bepi-flyby-1st_MSO-trajectory1.txt'
+    save_path = '/home/flavorenti/Bureau/my_scripts_only/images/'
 
     # box parameters, code units di,wci,c
     x   = np.linspace(0,10.,256*fact)
     y   = np.linspace(0,8.,208*fact)
     z   = np.linspace(0,8.,208*fact)
+    # bigbox has double size
+    if(PR_number=='0-bigbox'):
+        x=x*2.
+        y=y*2.
+        z=z*2.
     # timestep wci-1
     dt = 0.5
     # position planet center
+    xpl = 0.5*max(x)*4./5.
     ypl = 0.5*max(y)
     zpl = 0.5*max(z)-0.2
     # q/m electrons
@@ -48,11 +57,6 @@ def main(args):
     # cut indexes
     iyc = len(y)/2 # *2 for bigbox-cut
     izc = len(z)/2 # *2 for bigbox-cut
-
-    if(PR_number=='PR0-bigbox'):
-        x=x*2.
-        y=y*2.
-        z=z*2.
 
     # loop over the cycles
     for Ncycle in range(Nstart,Nend,step):
@@ -215,11 +219,11 @@ def unpack(data_file,iy,iz,string):
 # add plot to figure, with (1) labels axis (bool option)
 #                          (2) text
 #                          (3) colorbar with specified colormap and limits (bool option)
-#                          (4) planet disk (yplanet arg, radius=1)
+#                          (4) planet disk (offset, radius=1)
 #                          (5) logaritmic colorscale (bool option)
 #                          (6) BShock and MPause profiles (bool option)
 #                          (7) flyby trajectory (bool option) 
-def add_plot(fig,position,field,x,y,yplanet,xlabel,ylabel,text,ccmap,cmin,cmax,xlab=False,ylab=False,cmap=False,log=False,add_profiles=True,flyby_file=None):
+def add_plot(fig,position,field,x,y,xlabel,ylabel,text,ccmap,cmin,cmax,offset=0.,xlab=False,ylab=False,cmap=False,log=False,add_profiles=True,flyby_file=None):
     fig.add_subplot(position)
     a = field#[102:358,104:312 this only for bigbox-cut]
     a = np.transpose(a)
@@ -228,7 +232,7 @@ def add_plot(fig,position,field,x,y,yplanet,xlabel,ylabel,text,ccmap,cmin,cmax,x
         im = plt.imshow(a, cmap=ccmap, origin='lower', extent=(min(x),max(x),min(y),max(y)), aspect=1)
     else:
        im = plt.imshow(a, cmap=ccmap, origin='lower', norm=colors.LogNorm(vmin=cmin, vmax=cmax), extent=(min(x),max(x),min(y),max(y)), aspect=1)
-    planet = plt.Circle((4./5.*max(x)/2., yplanet), 1., color='grey', fill=True, linewidth=2.)
+    planet = plt.Circle((xpl, ypl-offset), 1., color='grey', fill=True, linewidth=2.)
     ax = fig.gca()
     ax.add_patch(planet)
     plt.text(0.1*max(x),0.75*max(y),text,fontsize=16)
@@ -241,11 +245,11 @@ def add_plot(fig,position,field,x,y,yplanet,xlabel,ylabel,text,ccmap,cmin,cmax,x
         theta = np.linspace(-3.,3.,1000)
         Rmp     = 1.45*(2./(1.+np.cos(theta)))**(0.5)
         Rbs     = 2.75*1.04/(1+1.04*np.cos(theta))
-        xx     =  4.-Rmp*np.cos(theta)
-        zz     =  4.+Rmp*np.sin(theta)
+        xx     =  xpl-Rmp*np.cos(theta)
+        zz     =  ypl+Rmp*np.sin(theta)
         plt.plot(xx,zz,linestyle='--',color='black',marker='',linewidth=2)
-        xx     =  3.5-Rbs*np.cos(theta)
-        zz     =  4.+Rbs*np.sin(theta)
+        xx     =  xpl-0.5-Rbs*np.cos(theta)
+        zz     =  ypl+Rbs*np.sin(theta)
         plt.plot(xx,zz,linestyle='--',color='grey',marker='',linewidth=2)
         plt.ylim(0,np.max(y))
         plt.xlim(0,np.max(x))
@@ -254,19 +258,19 @@ def add_plot(fig,position,field,x,y,yplanet,xlabel,ylabel,text,ccmap,cmin,cmax,x
         ica = np.argmin(xx**2+yy**2+zz**2)
         tt = tt-tt[ica]
         xx=-xx
-        xx+=4
-        yy+=4
-        zz+=4
-        for it in range(-6,6):
-            tgood=tt[ica+it*30]
+        xx+=xpl
+        yy+=ypl
+        zz+=zpl
+        for it in range(-4,5):
+            tgood=tt[ica+it*300]
             if(ylabel=='y[Rm]'):
-                plt.plot(xx[ica+it*30],yy[12467+it*30],marker='o',label='time=%.1f m'%(tgood/60.))
+                plt.plot(xx[ica+it*300],yy[ica+it*300],marker='o',label='time=%.1f m'%(tgood/60.))
             if(ylabel=='z[Rm]'):
-                plt.plot(xx[ica+it*30],zz[12467+it*30],marker='o',label='time=%.1f m'%(tgood/60.))
+                plt.plot(xx[ica+it*300],zz[ica+it*300],marker='o',label='time=%.1f m'%(tgood/60.))
         if(ylabel=='y[Rm]'):    
-            plt.plot(xx,yy)
+            plt.plot(xx,yy,color='yellow')
         if(ylabel=='z[Rm]'):   
-            plt.plot(xx,zz)
+            plt.plot(xx,zz,color='yellow')
         plt.ylim(0,np.max(y))
         plt.xlim(0,np.max(x))
         if(cmap==True):
@@ -296,13 +300,13 @@ def Figure1_Ji(Ji_vtk,Ncycle):
         Jxi_xy = 4.*np.pi*unpack(Ji_vtk,None,izc,'Jxi')
         Jyi_xy = 4.*np.pi*unpack(Ji_vtk,None,izc,'Jyi')
         Jzi_xy = 4.*np.pi*unpack(Ji_vtk,None,izc,'Jzi')
-        add_plot(fig1,231,Jxi_xz,x,z,zpl,'x[Rm]','z[Rm]','Jxi','jet',-0.04,0.04,ylab=True)
-        add_plot(fig1,232,Jyi_xz,x,z,zpl,'x[Rm]','z[Rm]','Jyi','jet',-0.04,0.04,cmap=True)
-        add_plot(fig1,233,Jzi_xz,x,z,zpl,'x[Rm]','z[Rm]','Jzi','jet',-0.04,0.04)
+        add_plot(fig1,231,Jxi_xz,x,z,'x[Rm]','z[Rm]','Jxi','jet',-0.04,0.04,offset=0.2,ylab=True)
+        add_plot(fig1,232,Jyi_xz,x,z,'x[Rm]','z[Rm]','Jyi','jet',-0.04,0.04,offset=0.2,cmap=True)
+        add_plot(fig1,233,Jzi_xz,x,z,'x[Rm]','z[Rm]','Jzi','jet',-0.04,0.04,offset=0.2)
         add_plot(fig1,234,Jxi_xy,x,y,ypl,'x[Rm]','y[Rm]','Jxi','jet',-0.04,0.04,xlab=True,ylab=True)
         add_plot(fig1,235,Jyi_xy,x,y,ypl,'x[Rm]','y[Rm]','Jyi','jet',-0.04,0.04,xlab=True)
         add_plot(fig1,236,Jzi_xy,x,y,ypl,'x[Rm]','y[Rm]','Jzi','jet',-0.04,0.04,xlab=True)
-        plt.savefig('images/Mercury_SaeInit_Fig1-1_PR'+str(PR_number)+'_'+str(Ncycle*dt)+'.png',format='png')
+        plt.savefig(save_path+'Mercury_SaeInit_Fig1-1_PR'+str(PR_number)+'_'+str(Ncycle*dt)+'.png',format='png')
         plt.close()
         return np.array([Jxi_xz,Jxi_xy,Jyi_xz,Jyi_xy,Jzi_xz,Jzi_xy])
 
@@ -318,13 +322,13 @@ def Figure1_Je(Je_vtk,Ncycle):
         Jxe_xy = 4.*np.pi*unpack(Je_vtk,None,izc,'Jxe')
         Jye_xy = 4.*np.pi*unpack(Je_vtk,None,izc,'Jye')
         Jze_xy = 4.*np.pi*unpack(Je_vtk,None,izc,'Jze')
-        add_plot(fig1,231,Jxe_xz,x,z,zpl,'x[Rm]','z[Rm]','Jxe','jet_r',-0.04,0.04,ylab=True)
-        add_plot(fig1,232,Jye_xz,x,z,zpl,'x[Rm]','z[Rm]','Jye','jet_r',-0.04,0.04,cmap=True)
-        add_plot(fig1,233,Jze_xz,x,z,zpl,'x[Rm]','z[Rm]','Jze','jet_r',-0.04,0.04)
-        add_plot(fig1,234,Jxe_xy,x,y,ypl,'x[Rm]','y[Rm]','Jxe','jet_r',-0.04,0.04,xlab=True,ylab=True)
-        add_plot(fig1,235,Jye_xy,x,y,ypl,'x[Rm]','y[Rm]','Jye','jet_r',-0.04,0.04,xlab=True)
-        add_plot(fig1,236,Jze_xy,x,y,ypl,'x[Rm]','y[Rm]','Jze','jet_r',-0.04,0.04,xlab=True)
-        plt.savefig('images/Mercury_SaeInit_Fig1-2_PR'+str(PR_number)+'_'+str(Ncycle*dt)+'.png',format='png')
+        add_plot(fig1,231,Jxe_xz,x,z,'x[Rm]','z[Rm]','Jxe','jet_r',-0.04,0.04,offset=0.2,ylab=True)
+        add_plot(fig1,232,Jye_xz,x,z,'x[Rm]','z[Rm]','Jye','jet_r',-0.04,0.04,offset=0.2,cmap=True)
+        add_plot(fig1,233,Jze_xz,x,z,'x[Rm]','z[Rm]','Jze','jet_r',-0.04,0.04,offset=0.2)
+        add_plot(fig1,234,Jxe_xy,x,y,'x[Rm]','y[Rm]','Jxe','jet_r',-0.04,0.04,xlab=True,ylab=True)
+        add_plot(fig1,235,Jye_xy,x,y,'x[Rm]','y[Rm]','Jye','jet_r',-0.04,0.04,xlab=True)
+        add_plot(fig1,236,Jze_xy,x,y,'x[Rm]','y[Rm]','Jze','jet_r',-0.04,0.04,xlab=True)
+        plt.savefig(sav_path+'Mercury_SaeInit_Fig1-2_PR'+str(PR_number)+'_'+str(Ncycle*dt)+'.png',format='png')
         plt.close()
         return np.array([Jxe_xz,Jxe_xy,Jye_xz,Jye_xy,Jze_xz,Jze_xy])
 
@@ -339,13 +343,13 @@ def Figure2(rhoi_vtk,rhoe_vtk,Ncycle):
         ne_xz = -unpack(rhoe_vtk,iyc,None,'ne')
         ni_xy =  unpack(rhoi_vtk,None,izc,'ni')
         ne_xy = -unpack(rhoe_vtk,None,izc,'ne')
-        add_plot(fig2,231,30.*ni_xz,x,z,zpl,'x[Rm]','z[Rm]','ni[cm-3]','jet',1.,120.,ylab=True,log=True,Mariner=True)
-        add_plot(fig2,232,30.*ne_xz,x,z,zpl,'x[Rm]','z[Rm]','ne[cm-3]','jet',1.,120.,cmap=True,log=True,Mariner=True)
-        add_plot(fig2,234,30.*ni_xy,x,y,ypl,'x[Rm]','y[Rm]','ni','jet',1.,120.,xlab=True,ylab=True,log=True,Mariner=True)
-        add_plot(fig2,235,30.*ne_xy,x,y,ypl,'x[Rm]','y[Rm]','ne','jet',1.,120.,xlab=True,log=True,Mariner=True)
-        add_plot(fig2,233,gf((ni_xz-ne_xz),fact)/gf(ni_xz,fact),x,z,zpl,'x[Rm]','z[Rm]',r'$\Delta$n/n','BrBG',-1e-1,1e-1,cmap=5)
-        add_plot(fig2,236,gf((ni_xy-ne_xy),fact)/gf(ni_xy,fact),x,y,ypl,'x[Rm]','y[Rm]',r'$\Delta$n/n','BrBG',-1e-1,1e-1,xlab=True)
-        plt.savefig('images/Mercury_SaeInit_Fig2_PR'+str(PR_number)+'_'+str(Ncycle*dt)+'.png',format='png')
+        add_plot(fig2,231,30.*ni_xz,x,z,'x[Rm]','z[Rm]','ni[cm-3]','jet',1.,120.,offset=0.2,ylab=True,log=True,flyby_file=bepi_path)
+        add_plot(fig2,232,30.*ne_xz,x,z,'x[Rm]','z[Rm]','ne[cm-3]','jet',1.,120.,offset=0.2,cmap=True,log=True,flyby_file=bepi_path)
+        add_plot(fig2,234,30.*ni_xy,x,y,'x[Rm]','y[Rm]','ni','jet',1.,120.,xlab=True,ylab=True,log=True,flyby_file=bepi_path)
+        add_plot(fig2,235,30.*ne_xy,x,y,'x[Rm]','y[Rm]','ne','jet',1.,120.,xlab=True,log=True,flyby_file=bepi_path)
+        add_plot(fig2,233,gf((ni_xz-ne_xz),fact)/gf(ni_xz,fact),x,z,'x[Rm]','z[Rm]',r'$\Delta$n/n','BrBG',-1e-1,1e-1,offset=0.2,cmap=5)
+        add_plot(fig2,236,gf((ni_xy-ne_xy),fact)/gf(ni_xy,fact),x,y,'x[Rm]','y[Rm]',r'$\Delta$n/n','BrBG',-1e-1,1e-1,xlab=True)
+        plt.savefig(save_path+'Mercury_SaeInit_Fig2_PR'+str(PR_number)+'_'+str(Ncycle*dt)+'.png',format='png')
         plt.close()
         ni_xz[np.where(ni_xz==0)]=1e-6
         ni_xy[np.where(ni_xy==0)]=1e-6

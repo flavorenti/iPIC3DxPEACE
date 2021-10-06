@@ -64,9 +64,9 @@ for irun in range(14,28):
     start+=250
     end+=250
 '''
-inow=40
-main(args[inow])
+#inow=40
+#main(args[inow])
 
 # for PR0-bigbox
-#main('0-bigbox',2,0,100,5100,100)
+main(['0-bigbox',2,'1',9500,9600,100,2,2])
 #main('0-bigbox',2,1,5100,10000,100)
