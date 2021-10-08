@@ -143,7 +143,7 @@ int c_Solver::Init(int argc, char **argv) {
   else if (col->getCase()=="BATSRUS")   		EMf->initBATSRUS();
 #endif
   else if (col->getCase()=="Dipole")    		EMf->initDipole();
-  else if (col->getCase()=="Dipole2D")  		EMf->initDipole2D();
+  else if (col->getCase()=="Dipole2D")  		EMf->initDipole(); //changed F.Lavorenti !!!
   else if (col->getCase()=="NullPoints")             	EMf->initNullPoints();
   else if (col->getCase()=="TaylorGreen")               EMf->initTaylorGreen();
   else if (col->getCase()=="RandomCase") {

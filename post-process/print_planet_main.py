@@ -13,9 +13,9 @@ args=[]
 
 # PR0 run0
 start = 0
-end   = 5000#3700
+end   = 6000#3700
 for i in range(start,end,100): 
-    args.append(['0',1,'_new',i,i+100,100,1,7])
+    args.append(['0',1,'1',i,i+100,100,1,7])
 
 '''
 # PR0 run1
@@ -64,9 +64,11 @@ for irun in range(14,28):
     start+=250
     end+=250
 '''
-#inow=40
-#main(args[inow])
+inow=55
+main(args[inow])
 
 # for PR0-bigbox
-main(['0-bigbox',2,'1',9500,9600,100,2,2])
-#main('0-bigbox',2,1,5100,10000,100)
+main(['0-bigbox',2,'1',9500,9600,100,1,7])
+main(['1',2,'1',7500,7600,100,1,7])
+
+
