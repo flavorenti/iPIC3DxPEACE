@@ -188,6 +188,7 @@ void Collective::ReadInput(string inputfile) {
     TestParticlesOutputCycle = config.read < int >("TestPartOutputCycle",0);
     testPartFlushCycle = config.read < int >("TestParticlesOutputCycle",10);
     RestartOutputCycle = config.read < int >("RestartOutputCycle",5000);
+    RemoveParticlesOutputCycle = config.read < int >("RemoveParticlesOutputCycle",100);
     DiagnosticsOutputCycle = config.read < int >("DiagnosticsOutputCycle", FieldOutputCycle);
     CallFinalize = config.read < bool >("CallFinalize", true);
   }

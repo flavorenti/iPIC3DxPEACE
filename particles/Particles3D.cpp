@@ -2542,15 +2542,21 @@ void Particles3D::RotatePlaneXY(double theta) {
 }
 
 /*! Delete the particles inside the sphere with radius R and center x_center y_center and return the total charge removed */
-double Particles3D::deleteParticlesInsideSphere(double R, double x_center, double y_center, double z_center)
+double Particles3D::deleteParticlesInsideSphere(int cycle, double R, double x_center, double y_center, double z_center)
 {
   //cout << "Delete Particles species"<< ns  <<" inside sphere" << endl;
 
   int pidx = 0;
   double Q_removed=0.;
+  int OutputCycle = col->getRemoveParticlesOutputCycle();
   double DipoleOffset;
  
   DipoleOffset = col->getDipoleOffset();
+
+  ofstream my_file ("data/RemovedParticles.txt", ios::app);
+  if((cycle==0) and (vct->getCartesian_rank()==0)){
+          my_file << "Cycle" << "\t" << "Xpcl" << "\t" << "Ypcl" << "\t" << "Zpcl" << "\t" << "Upcl" << "\t" << "Vpcl" << "\t" << "Wpcl" << "\t" << "Qpcl" << endl;
+  }
 
   while (pidx < _pcls.size())
   {
@@ -2561,11 +2567,17 @@ double Particles3D::deleteParticlesInsideSphere(double R, double x_center, doubl
 
     if ( (xd*xd+yd*yd+zd*zd) < R*R ){
       Q_removed += pcl.get_q();
+      if(cycle>0 and ((cycle%OutputCycle)==0)){
+          my_file << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
+      }
       delete_particle(pidx);
     } else {
       pidx++;
     }
   }
+
+  my_file.close();
+
   return(Q_removed);
 }
 
@@ -2573,9 +2585,9 @@ double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(int cycle, double R, do
 {
   int pidx = 0;
   double Q_removed=0.;
- 
-  ofstream my_file ("data/RemovedParticles.txt", ios::app);
+  int OutputCycle = col->getRemoveParticlesOutputCycle(); 
 
+  ofstream my_file ("data/RemovedParticles.txt", ios::app);
   if((cycle==0) and (vct->getCartesian_rank()==0)){
 	  my_file << "Cycle" << "\t" << "Xpcl" << "\t" << "Ypcl" << "\t" << "Zpcl" << "\t" << "Upcl" << "\t" << "Vpcl" << "\t" << "Wpcl" << "\t" << "Qpcl" << endl;
   }
@@ -2587,8 +2599,8 @@ double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(int cycle, double R, do
     double zd = pcl.get_z() - z_center;
 
     if ( (xd*xd+zd*zd) < R*R ){
-      Q_removed += 1;//pcl.get_q();
-      if(cycle>0){
+      Q_removed += pcl.get_q();
+      if(cycle>0 and ((cycle%OutputCycle)==0)){
           my_file << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
       }
       delete_particle(pidx);

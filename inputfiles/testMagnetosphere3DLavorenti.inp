@@ -165,3 +165,5 @@ n_layers_sal = 10;
    ParticlesOutputTag = position+velocity+q 
 # restart cycle
    RestartOutputCycle = 250000
+# remove pcl print
+   RemoveParticlesOutputCycle = 2

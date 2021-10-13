@@ -191,6 +191,7 @@ class Collective
     int getParticlesOutputCycle()const{ return (ParticlesOutputCycle); }
     int getTestParticlesOutputCycle()const{ return (TestParticlesOutputCycle); }
     int getRestartOutputCycle()const{ return (RestartOutputCycle); }
+    int getRemoveParticlesOutputCycle()const{ return (RemoveParticlesOutputCycle); }
     int getDiagnosticsOutputCycle()const{ return (DiagnosticsOutputCycle); }
     bool getCallFinalize()const{ return (CallFinalize); }
     bool particle_output_is_off()const;
@@ -419,6 +420,8 @@ class Collective
     int testPartFlushCycle;
     /*! restart cycle */
     int RestartOutputCycle;
+    /*! print particle removed in planet cycle */
+    int RemoveParticlesOutputCycle;
     /*! Output for diagnostics */
     int DiagnosticsOutputCycle;
     /*! Call Finalize() at end of program execution (true by default) */
