@@ -27,6 +27,8 @@ developers: Stefano Markidis, Giovanni Lapenta
 
 #include <mpi.h>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <math.h>
 #include <limits.h>
 #include "asserts.h"
@@ -2567,10 +2569,17 @@ double Particles3D::deleteParticlesInsideSphere(double R, double x_center, doubl
   return(Q_removed);
 }
 
-double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(double R, double x_center, double z_center)
+double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(int cycle, double R, double x_center, double z_center)
 {
   int pidx = 0;
   double Q_removed=0.;
+ 
+  ofstream my_file ("data/RemovedParticles.txt", ios::app);
+
+  if((cycle==0) and (vct->getCartesian_rank()==0)){
+	  my_file << "Cycle" << "\t" << "Xpcl" << "\t" << "Ypcl" << "\t" << "Zpcl" << "\t" << "Upcl" << "\t" << "Vpcl" << "\t" << "Wpcl" << "\t" << "Qpcl" << endl;
+  }
+
   while (pidx < _pcls.size())
   {
     SpeciesParticle& pcl = _pcls[pidx];
@@ -2578,11 +2587,17 @@ double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(double R, double x_cent
     double zd = pcl.get_z() - z_center;
 
     if ( (xd*xd+zd*zd) < R*R ){
-      Q_removed += pcl.get_q();
+      Q_removed += 1;//pcl.get_q();
+      if(cycle>0){
+          my_file << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
+      }
       delete_particle(pidx);
     } else {
       pidx++;
     }
   }
+
+  my_file.close();
+
   return(Q_removed);
 }

@@ -328,7 +328,7 @@ void c_Solver::CalculateB() {
 /*  -------------- */
 /*!  Particle mover */
 /*  -------------- */
-bool c_Solver::ParticlesMover()
+bool c_Solver::ParticlesMover(int cycle)
 {
   // move all species of particles
   {
@@ -386,7 +386,8 @@ bool c_Solver::ParticlesMover()
       Qremoved[i] = part[i].deleteParticlesInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
   }else if (col->getCase()=="Dipole2D") {
 	for (int i=0; i < ns; i++)
-	  Qremoved[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(col->getL_square(),col->getx_center(),col->getz_center());
+	  Qremoved[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(cycle,col->getL_square(),col->getx_center(),col->getz_center());
+  dprintf("For proc %d the ele/ion removed are = %f/%f",myrank,Qremoved[0],Qremoved[1]);
   }
 
   /* --------------------------------------- */
