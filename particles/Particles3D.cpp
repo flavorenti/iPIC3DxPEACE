@@ -2581,18 +2581,22 @@ double Particles3D::deleteParticlesInsideSphere(int cycle, double R, double x_ce
   return(Q_removed);
 }
 
-double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(int cycle, double R, double x_center, double z_center)
+double Particles3D::deleteAndCopyParticlesInsideSphere2DPlaneXZ(int cycle, double R, double x_center, double z_center)
 {
   int pidx = 0;
   double Q_removed=0.;
   int OutputCycle = col->getRemoveParticlesOutputCycle(); 
+  double u,v,w;
+  int Npcl=_pcls.size();
 
-  ofstream my_file ("data/RemovedParticles.txt", ios::app);
+  // open output file to write removed particles
+  ofstream my_file_app ("data/RemovedParticles_app.txt", ios::app);
+
   if((cycle==0) and (vct->getCartesian_rank()==0)){
-	  my_file << "Cycle" << "\t" << "Xpcl" << "\t" << "Ypcl" << "\t" << "Zpcl" << "\t" << "Upcl" << "\t" << "Vpcl" << "\t" << "Wpcl" << "\t" << "Qpcl" << endl;
+	  my_file_app << "Cycle" << "\t" << "Xpcl" << "\t" << "Ypcl" << "\t" << "Zpcl" << "\t" << "Upcl" << "\t" << "Vpcl" << "\t" << "Wpcl" << "\t" << "Qpcl" << endl;
   }
 
-  while (pidx < _pcls.size())
+  while (pidx < Npcl)
   {
     SpeciesParticle& pcl = _pcls[pidx];
     double xd = pcl.get_x() - x_center;
@@ -2600,16 +2604,50 @@ double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(int cycle, double R, do
 
     if ( (xd*xd+zd*zd) < R*R ){
       Q_removed += pcl.get_q();
+      // write removed particles every OutputCycle
       if(cycle>0 and ((cycle%OutputCycle)==0)){
-          my_file << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
+          my_file_app << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
       }
+      // create copy pf particle tb removed with random velocity
+      do{
+        sample_maxwellian(u,v,w,uth,vth,wth,u0,v0,w0);
+        //cout << u << "\t" << w << "\t" << (xd*u+zd*w) << endl;
+      }while((xd*u+zd*w)<0);
+      create_new_particle(u,v,w,pcl.get_q(),pcl.get_x(),pcl.get_y(),pcl.get_z());
+      // delete particle
       delete_particle(pidx);
+    }
+
+    pidx++;
+  }
+
+  my_file_app.close();
+
+  return(Q_removed);
+}
+
+
+double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(double Qrm, double R, double x_center, double z_center)
+{
+  int pidx = 0;
+  int prm = 0;
+  double Q_removed=0.;
+  double  FourPI =16*atan(1.0);
+  const double q_per_particle = (Ninj/FourPI/npcel)*(1.0/grid->getInvVOL());
+  int Nrm = Qrm/q_per_particle;
+  while (pidx < _pcls.size() and prm < Nrm)
+  {
+    SpeciesParticle& pcl = _pcls[pidx];
+    double xd = pcl.get_x() - x_center;
+    double zd = pcl.get_z() - z_center;
+    if ( (xd*xd+zd*zd) < R*R ){
+      Q_removed += pcl.get_q();
+      delete_particle(pidx);
+      prm++;
     } else {
       pidx++;
     }
   }
-
-  my_file.close();
-
   return(Q_removed);
 }
+

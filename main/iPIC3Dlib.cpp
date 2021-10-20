@@ -380,15 +380,28 @@ bool c_Solver::ParticlesMover(int cycle)
 
   /* --------------------------------------- */
   /* Remove particles from depopulation area */
+  /* and copy them with shuffle speed (F.L.) */
   /* --------------------------------------- */
   if (col->getCase()=="Dipole") {
     for (int i=0; i < ns; i++)
       Qremoved[i] = part[i].deleteParticlesInsideSphere(cycle,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
   }else if (col->getCase()=="Dipole2D") {
 	for (int i=0; i < ns; i++)
-	  Qremoved[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(cycle,col->getL_square(),col->getx_center(),col->getz_center());
-  //dprintf("For proc %d the ele/ion removed are = %f/%f",myrank,Qremoved[0],Qremoved[1]);
+	  Qremoved[i] = part[i].deleteAndCopyParticlesInsideSphere2DPlaneXZ(cycle,col->getL_square(),col->getx_center(),col->getz_center());
+  //dprintf("DeleteAndCopy->For proc %d the ele/ion removed are = %f/%f",myrank,Qremoved[0],Qremoved[1]);
   }
+
+  /* --------------------------------------- */
+  /* Remove particles from depopulation area */
+  /* imposing that net charge zero (ni=ne)   */
+  /* --------------------------------------- */
+  double Qrm = std::min(Qremoved[1],-Qremoved[0]);
+  if (col->getCase()=="Dipole2D") {
+	    for (int i=0; i < ns; i++)
+	    Qremoved[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(Qrm,col->getL_square(),col->getx_center(),col->getz_center());
+  //dprintf("delete->For proc %d the ele/ion removed are = %f/%f",myrank,Qremoved[0],Qremoved[1]);
+  }
+
 
   /* --------------------------------------- */
   /* Test Particles mover 					 */
