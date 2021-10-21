@@ -2541,22 +2541,20 @@ void Particles3D::RotatePlaneXY(double theta) {
   }
 }
 
-/*! Delete the particles inside the sphere with radius R and center x_center y_center and return the total charge removed */
-double Particles3D::deleteParticlesInsideSphere(int cycle, double R, double x_center, double y_center, double z_center)
-{
-  //cout << "Delete Particles species"<< ns  <<" inside sphere" << endl;
 
+/*! change velocity of particels inside sphere (planet) with random radial speed, and count them */
+double Particles3D::rotateAndCountParticlesInsideSphere(int cycle, double R, double x_center, double y_center, double z_center)
+{
   int pidx = 0;
   double Q_removed=0.;
   int OutputCycle = col->getRemoveParticlesOutputCycle();
+  double u,v,w;
   double DipoleOffset;
- 
+
   DipoleOffset = col->getDipoleOffset();
 
-  ofstream my_file ("data/RemovedParticles.txt", ios::app);
-  if((cycle==0) and (vct->getCartesian_rank()==0)){
-          my_file << "Cycle" << "\t" << "Xpcl" << "\t" << "Ypcl" << "\t" << "Zpcl" << "\t" << "Upcl" << "\t" << "Vpcl" << "\t" << "Wpcl" << "\t" << "Qpcl" << endl;
-  }
+  ofstream my_file_ct ("data/CountedParticles.txt", ios::app);
+  ofstream my_file_rt ("data/RoatatedParticles.txt", ios::app);
 
   while (pidx < _pcls.size())
   {
@@ -2564,90 +2562,126 @@ double Particles3D::deleteParticlesInsideSphere(int cycle, double R, double x_ce
     double xd = pcl.get_x() - x_center;
     double yd = pcl.get_y() - y_center;
     double zd = pcl.get_z() - z_center - DipoleOffset;
-
     if ( (xd*xd+yd*yd+zd*zd) < R*R ){
       Q_removed += pcl.get_q();
-      if(cycle>0 and ((cycle%OutputCycle)==0)){
-          my_file << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
-      }
-      delete_particle(pidx);
-    } else {
-      pidx++;
-    }
-  }
-
-  my_file.close();
-
-  return(Q_removed);
-}
-
-double Particles3D::deleteAndCopyParticlesInsideSphere2DPlaneXZ(int cycle, double R, double x_center, double z_center)
-{
-  int pidx = 0;
-  double Q_removed=0.;
-  int OutputCycle = col->getRemoveParticlesOutputCycle(); 
-  double u,v,w;
-  int Npcl=_pcls.size();
-
-  // open output file to write removed particles
-  ofstream my_file_app ("data/RemovedParticles_app.txt", ios::app);
-
-  if((cycle==0) and (vct->getCartesian_rank()==0)){
-	  my_file_app << "Cycle" << "\t" << "Xpcl" << "\t" << "Ypcl" << "\t" << "Zpcl" << "\t" << "Upcl" << "\t" << "Vpcl" << "\t" << "Wpcl" << "\t" << "Qpcl" << endl;
-  }
-
-  while (pidx < Npcl)
-  {
-    SpeciesParticle& pcl = _pcls[pidx];
-    double xd = pcl.get_x() - x_center;
-    double zd = pcl.get_z() - z_center;
-
-    if ( (xd*xd+zd*zd) < R*R ){
-      Q_removed += pcl.get_q();
-      // write removed particles every OutputCycle
-      if(cycle>0 and ((cycle%OutputCycle)==0)){
-          my_file_app << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
-      }
-      // create copy pf particle tb removed with random velocity
+      if(cycle>0 and ((cycle%OutputCycle)==0)) my_file_ct << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
       do{
-        sample_maxwellian(u,v,w,uth,vth,wth,u0,v0,w0);
-        //cout << u << "\t" << w << "\t" << (xd*u+zd*w) << endl;
-      }while((xd*u+zd*w)<0);
-      create_new_particle(u,v,w,pcl.get_q(),pcl.get_x(),pcl.get_y(),pcl.get_z());
-      // delete particle
-      delete_particle(pidx);
+        sample_maxwellian(u,v,w,uth,vth,wth,0.,0.,0.);
+      }while((xd*u+yd*v+zd*w)<0);
+      pcl.set_u(u);
+      pcl.set_v(v);
+      pcl.set_w(w);
+      if(cycle>0 and ((cycle%OutputCycle)==0)) my_file_rt << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
     }
-
     pidx++;
   }
-
-  my_file_app.close();
-
+  my_file_ct.close();
+  my_file_rt.close();
   return(Q_removed);
 }
 
 
-double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(double Qrm, double R, double x_center, double z_center)
+
+/*! Delete the particles inside the sphere with radius R and center x_center y_center and return the total charge removed */
+double Particles3D::deleteParticlesInsideSphere(int cycle, double Qrm, double R, double x_center, double y_center, double z_center)
 {
-  int pidx = 0;
-  int prm = 0;
+  int pidx=0, prm=0;
   double Q_removed=0.;
+  int OutputCycle = col->getRemoveParticlesOutputCycle();
   double  FourPI =16*atan(1.0);
   const double q_per_particle = (Ninj/FourPI/npcel)*(1.0/grid->getInvVOL());
   int Nrm = Qrm/q_per_particle;
-  while (pidx < _pcls.size() and prm < Nrm)
+  double DipoleOffset;
+ 
+  DipoleOffset = col->getDipoleOffset();
+
+  ofstream my_file ("data/RemovedParticles.txt", ios::app);
+
+  while (pidx < _pcls.size())
+  {
+    SpeciesParticle& pcl = _pcls[pidx];
+    double xd = pcl.get_x() - x_center;
+    double yd = pcl.get_y() - y_center;
+    double zd = pcl.get_z() - z_center - DipoleOffset;
+    if ( (xd*xd+yd*yd+zd*zd) < R*R ){
+      Q_removed += pcl.get_q();
+      if(cycle>0 and ((cycle%OutputCycle)==0)) my_file << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
+      delete_particle(pidx);
+      prm++;
+    }
+    else {
+      pidx++;
+    }
+    if(prm==Nrm) break;
+  }
+  my_file.close();
+  return(Q_removed);
+}
+
+
+
+double Particles3D::rotateAndCountParticlesInsideSphere2DPlaneXZ(int cycle, double R, double x_center, double z_center)
+{
+  int pidx = 0;
+  double Q_removed=0.;
+  int OutputCycle = col->getRemoveParticlesOutputCycle();
+  double u,v,w;
+
+  ofstream my_file_ct ("data/CountedParticles.txt", ios::app);
+  ofstream my_file_rt ("data/RoatatedParticles.txt", ios::app);
+
+  while (pidx < _pcls.size())
+  { 
+    SpeciesParticle& pcl = _pcls[pidx];
+    double xd = pcl.get_x() - x_center;
+    double zd = pcl.get_z() - z_center;
+    if ( (xd*xd+zd*zd) < R*R ){
+      Q_removed += pcl.get_q();
+      if(cycle>0 and ((cycle%OutputCycle)==0)) my_file_ct << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
+      do{
+        sample_maxwellian(u,v,w,uth,vth,wth,0.,0.,0.);
+      }while((xd*u+zd*w)<0);
+      pcl.set_u(u);
+      pcl.set_v(v);  
+      pcl.set_w(w);  
+      if(cycle>0 and ((cycle%OutputCycle)==0)) my_file_rt << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
+    }
+    pidx++;
+  }
+  my_file_ct.close();
+  my_file_rt.close();
+  return(Q_removed);
+}
+
+
+double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(int cycle, double Qrm, double R, double x_center, double z_center)
+{
+  int pidx=0, prm=0;
+  double Q_removed=0.;
+  int OutputCycle = col->getRemoveParticlesOutputCycle();
+  double  FourPI =16*atan(1.0);
+  const double q_per_particle = (Ninj/FourPI/npcel)*(1.0/grid->getInvVOL());
+  int Nrm = Qrm/q_per_particle;
+
+  ofstream my_file ("data/RemovedParticles.txt", ios::app);
+
+  while (pidx < _pcls.size())
   {
     SpeciesParticle& pcl = _pcls[pidx];
     double xd = pcl.get_x() - x_center;
     double zd = pcl.get_z() - z_center;
     if ( (xd*xd+zd*zd) < R*R ){
       Q_removed += pcl.get_q();
+      if(cycle>0 and ((cycle%OutputCycle)==0)) my_file << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
       delete_particle(pidx);
       prm++;
-    } else {
+    }
+    else{
       pidx++;
     }
+    if(prm==Nrm) break;
   }
+  my_file.close();
   return(Q_removed);
 }
 
