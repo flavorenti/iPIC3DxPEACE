@@ -234,6 +234,8 @@ int c_Solver::Init(int argc, char **argv) {
   
 
   Qremoved = new double[ns];
+  Qremoved_global = new double[ns];
+  Elim = new double[ns];
 
   my_clock = new Timing(myrank);
 
@@ -300,7 +302,7 @@ void c_Solver::CalculateMoments() {
   if (col->getCase()=="Dipole") {
     EMf->ConstantChargePlanet(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
   }else if(col->getCase()=="Dipole2D") {
-	EMf->ConstantChargePlanet2DPlaneXZ(col->getL_square(),col->getx_center(),col->getz_center());
+    EMf->ConstantChargePlanet2DPlaneXZ(col->getL_square(),col->getx_center(),col->getz_center());
   }
   // Set a constant charge in the OpenBC boundaries
   //EMf->ConstantChargeOpenBC();
@@ -363,12 +365,12 @@ bool c_Solver::ParticlesMover(int cycle)
         default:
           unsupported_value_error(Parameters::get_MOVER_TYPE());
       }
-	//Should integrate BC into separate_and_send_particles
-	//part[i].openbc_particles_outflow(); //here only touches Xright
+      //Should integrate BC into separate_and_send_particles
+      //part[i].openbc_particles_outflow(); //here only touches Xright
       //part[i].openbc_particles_inflow();
       part[i].repopulate_particles(EMf);  // this is for boundary Xleft with standard maxwellian, and also Zleft and Zright with modified maxw
       //part[i].openbc_delete_testparticles(); // to be sure that there are no particle out of the box (or problem with proc communication) 
-	  part[i].separate_and_send_particles();
+      part[i].separate_and_send_particles();
     }
 
     for (int i = 0; i < ns; i++)  // communicate each species
@@ -383,36 +385,26 @@ bool c_Solver::ParticlesMover(int cycle)
   /* change the velocity in random radial out */
   /* ---------------------------------------- */
   if (col->getCase()=="Dipole") {
-    for (int i=0; i < ns; i++){
-      if (cycle>0) Qremoved[i] = part[i].rotateAndCountParticlesInsideSphere(cycle, col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+
+    if(cycle<=110){
+      for (int i=0; i < ns; i++)
+        Qremoved[i] = part[i].deleteParticlesInsideSphere(cycle,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+      dprintf("Inside Sphere Qe/Qi deleted = %f/%f",Qremoved[0],Qremoved[1]);
+    }
+
+    else{
+      for (int i=0; i < ns; i++)
+        Qremoved_global[i] = part[i].getRhoInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+      double Qrm= std::min(-Qremoved_global[0],Qremoved_global[1]);
+      if (myrank==0) printf("Inside Sphere global Qe/Qi counted = %f/%f \n",Qremoved_global[0],Qremoved_global[1]);
+      for (int i=0; i < ns; i++){
+        Elim[i] = part[i].getLimEnergyInsideSphere(Qrm,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());  
+	Qremoved[i] = part[i].deleteParticlesInsideSphereNew(cycle,Elim[i],col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+        part[i].rotateParticlesInsideSphere(cycle,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+      }
+      dprintf("Inside Sphere local Qe/Qi deleted = %f/%f",Qremoved[0],Qremoved[1]);
     }
   }
-  else if (col->getCase()=="Dipole2D") {
-    for (int i=0; i < ns; i++){
-      if (cycle>0) Qremoved[i] = part[i].rotateAndCountParticlesInsideSphere2DPlaneXZ(cycle, col->getL_square(),col->getx_center(),col->getz_center());
-    }
-  }
-  if ((Qremoved[0]*Qremoved[1])!=0.) dprintf("RotateAndCount->For proc %d the Qe/Qi counted is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
-  
-
-  /* --------------------------------------- */
-  /* Remove particles from depopulation area */
-  /* imposing that net charge zero (ni=ne)   */
-  /* --------------------------------------- */
-  double Qrm;
-  if (cycle>0)  Qrm= std::min(Qremoved[1],-Qremoved[0]);
-  else          Qrm= INT_MAX;
-
-  if (col->getCase()=="Dipole") {
-    for (int i=0; i < ns; i++)
-      Qremoved[i] = part[i].deleteParticlesInsideSphere(cycle, Qrm,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
-  }
-  else if (col->getCase()=="Dipole2D") {
-    for (int i=0; i < ns; i++)
-      Qremoved[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(cycle, Qrm,col->getL_square(),col->getx_center(),col->getz_center());
-  }	    
-  if ((Qremoved[0]*Qremoved[1])!=0.) dprintf("Delete->For proc %d the Qe/Qi removed is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
-  
 
 
   /* --------------------------------------- */

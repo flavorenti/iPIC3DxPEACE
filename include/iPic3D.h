@@ -57,6 +57,8 @@ namespace iPic3D {
       BulkEnergy(0),
       momentum(0),
       Qremoved(0),
+      Qremoved_global(0),
+      Elim(0),
       my_clock(0)
     {}
     int Init(int argc, char **argv);
@@ -100,6 +102,8 @@ namespace iPic3D {
     double        *BulkEnergy;
     double        *momentum;
     double        *Qremoved;
+    double        *Qremoved_global;
+    double        *Elim;
     Timing        *my_clock;
 
 #ifndef NO_HDF5

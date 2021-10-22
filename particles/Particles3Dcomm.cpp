@@ -1611,6 +1611,78 @@ double Particles3Dcomm::getRho() {
   return (totalrho);
 }
 
+/** return the total charge inside sphere */
+double Particles3Dcomm::getRhoInsideSphere(double R, double x_center, double y_center, double z_center) {
+  double localrho = 0.0;
+  double totalrho = 0.0;
+  double xd, yd, zd;
+  double DipoleOffset;
+
+  DipoleOffset = col->getDipoleOffset();
+
+  for (register int i = 0; i < _pcls.size(); i++){
+    SpeciesParticle& pcl = _pcls[i];
+    xd = pcl.get_x() - x_center;
+    yd = pcl.get_y() - y_center;
+    zd = pcl.get_z() - z_center - DipoleOffset;
+    if ( (xd*xd+yd*yd+zd*zd) < R*R ){
+      localrho += pcl.get_q();
+    }
+  }
+  MPI_Allreduce(&localrho, &totalrho, 1, MPI_DOUBLE, MPI_SUM, mpi_comm);
+  return (totalrho);
+}
+
+double Particles3Dcomm::getRhoInsideSphere2DPlaneXZ(double R, double x_center, double z_center) {
+  double localrho = 0.0;
+  double totalrho = 0.0;
+  double xd, zd;
+
+  for (register int i = 0; i < _pcls.size(); i++){
+    SpeciesParticle& pcl = _pcls[i];
+    xd = pcl.get_x() - x_center;
+    zd = pcl.get_z() - z_center;
+    if ( (xd*xd+zd*zd) < R*R ){
+      localrho += pcl.get_q();
+    }
+  }
+  MPI_Allreduce(&localrho, &totalrho, 1, MPI_DOUBLE, MPI_SUM, mpi_comm);
+  return (totalrho);
+}
+
+/** return energy of particle corresponding to thresold of sum charge = Qrm  */
+double Particles3Dcomm::getLimEnergyInsideSphere(double Qrm, double R, double x_center, double y_center, double z_center) {
+  double prm, prm_global;
+  double xd,yd,zd,en;
+  double dE=5e-2*pow((uth+vth+wth)/3.,2);
+  double Elim=-dE;
+  double  FourPI =16*atan(1.0);
+  const double q_per_particle = (Ninj/FourPI/npcel)*(1.0/grid->getInvVOL());
+  const double Nrm = Qrm/q_per_particle;
+  double DipoleOffset;
+
+  DipoleOffset = col->getDipoleOffset();
+
+  do{
+    prm=0;
+    prm_global=0;
+    Elim+=dE;
+    for (register int i = 0; i < _pcls.size(); i++){
+      SpeciesParticle& pcl = _pcls[i];
+      xd = pcl.get_x() - x_center;
+      yd = pcl.get_y() - y_center;
+      zd = pcl.get_z() - z_center - DipoleOffset;
+      en = pow(pcl.get_u(),2) + pow(pcl.get_v(),2) + pow(pcl.get_w(),2);
+      if (((xd*xd+yd*yd+zd*zd)<R*R) and (en>Elim))  prm++;
+    }
+    MPI_Allreduce(&prm, &prm_global, 1, MPI_DOUBLE, MPI_SUM, mpi_comm);
+    if(Elim>4) eprintf("ERROR Elim>2Te\n")
+  }while( pow(prm_global-Nrm,2) > 1 );
+
+  dprintf("Elim=%.7f FOUND Nrm=%.1f, prm=%.1f, prm_glob=%.1f \n",Elim,Nrm,prm,prm_global);
+
+  return(Elim);
+}
 
 
 /** return the Kinetic energy */

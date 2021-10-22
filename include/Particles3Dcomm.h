@@ -225,6 +225,10 @@ public:
   //
   /** return the total charge density */
   double getRho();
+  /** return the total charge density inside sphere */
+  double getRhoInsideSphere(double R, double x_center, double y_center, double z_center);
+  double getRhoInsideSphere2DPlaneXZ(double R, double x_center, double z_center);
+  double getLimEnergyInsideSphere(double Qrm, double R, double x_center, double y_center, double z_center);
   /** return the Kinetic energy */
   double getKe();
   /** return the maximum kinetic energy */
