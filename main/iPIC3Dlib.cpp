@@ -370,42 +370,52 @@ bool c_Solver::ParticlesMover(int cycle)
       //part[i].openbc_particles_inflow();
       part[i].repopulate_particles(EMf);  // this is for boundary Xleft with standard maxwellian, and also Zleft and Zright with modified maxw
       //part[i].openbc_delete_testparticles(); // to be sure that there are no particle out of the box (or problem with proc communication) 
-      part[i].separate_and_send_particles();
     }
 
-    for (int i = 0; i < ns; i++)  // communicate each species
-    {
-      //part[i].communicate_particles();
-      part[i].recommunicate_particles_until_done(1);
-    }
-  }
 
   /* ---------------------------------------- */
   /* Count pcls inside the planet (ni,ne) and */
   /* change the velocity in random radial out */
   /* ---------------------------------------- */
   if (col->getCase()=="Dipole") {
-
-    if(cycle<=110){
-      for (int i=0; i < ns; i++)
-        Qremoved[i] = part[i].deleteParticlesInsideSphere(cycle,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
-      dprintf("Inside Sphere Qe/Qi deleted = %f/%f",Qremoved[0],Qremoved[1]);
-    }
-
-    else{
-      for (int i=0; i < ns; i++)
-        Qremoved_global[i] = part[i].getRhoInsideSphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
-      double Qrm= std::min(-Qremoved_global[0],Qremoved_global[1]);
-      if (myrank==0) printf("Inside Sphere global Qe/Qi counted = %f/%f \n",Qremoved_global[0],Qremoved_global[1]);
-      for (int i=0; i < ns; i++){
-        Elim[i] = part[i].getLimEnergyInsideSphere(Qrm,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());  
-	Qremoved[i] = part[i].deleteParticlesInsideSphereNew(cycle,Elim[i],col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
-        part[i].rotateParticlesInsideSphere(cycle,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
-      }
-      dprintf("Inside Sphere local Qe/Qi deleted = %f/%f",Qremoved[0],Qremoved[1]);
+    for (int i=0; i < ns; i++){
+      Qremoved[i] = part[i].rotateAndCountParticlesInsideSphere(cycle, col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
     }
   }
+  else if (col->getCase()=="Dipole2D") {
+    for (int i=0; i < ns; i++){
+      Qremoved[i] = part[i].rotateAndCountParticlesInsideSphere2DPlaneXZ(cycle, col->getL_square(),col->getx_center(),col->getz_center());
+    }
+  }
+  if ((Qremoved[0]*Qremoved[1])!=0.) dprintf("RotateAndCount->For proc %d the Qe/Qi counted is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
+  
 
+  /* --------------------------------------- */
+  /* Remove particles from depopulation area */
+  /* imposing that net charge zero (ni=ne)   */
+  /* --------------------------------------- */
+  double Qrm;
+  Qrm= std::min(Qremoved[1],-Qremoved[0]);
+  
+  if (col->getCase()=="Dipole") {
+    for (int i=0; i < ns; i++)
+      Qremoved[i] = part[i].deleteParticlesInsideSphere(cycle, Qrm,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+  }
+  else if (col->getCase()=="Dipole2D") {
+    for (int i=0; i < ns; i++)
+      Qremoved[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(cycle, Qrm,col->getL_square(),col->getx_center(),col->getz_center());
+  }	    
+  if ((Qremoved[0]*Qremoved[1])!=0.) dprintf("Delete->For proc %d the Qe/Qi removed is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
+
+
+    /* ---------------------------------- */
+    /* communicate pcls between procs     */
+    /* ---------------------------------  */
+    for (int i = 0; i < ns; i++){
+      part[i].separate_and_send_particles();
+      //part[i].communicate_particles();
+      part[i].recommunicate_particles_until_done(1);
+    }
 
   /* --------------------------------------- */
   /* Test Particles mover 					 */
@@ -443,6 +453,7 @@ bool c_Solver::ParticlesMover(int cycle)
   }
 
   return (false);
+}
 }
 
 void c_Solver::WriteOutput(int cycle) {

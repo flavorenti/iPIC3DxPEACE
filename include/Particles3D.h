@@ -112,11 +112,10 @@ class Particles3D:public Particles3Dcomm {
     /** repopulate particles in boundary layer */
     void repopulate_particles(Field * EMf);
     /*! Delete the particles inside the sphere with radius R and center x_center y_center and return the total charge removed */
-    void rotateParticlesInsideSphere(int cycle, double R, double x_center, double y_center, double z_center);
-    double deleteParticlesInsideSphere(int cycle, double R, double x_center, double y_center, double z_center);
-    double deleteParticlesInsideSphereNew(int cycle, double Elim, double R, double x_center, double y_center, double z_center);
-    //double rotateParticlesInsideSphere2DPlaneXZ(int cycle, double R, double x_center, double z_center);
-    //double deleteParticlesInsideSphere2DPlaneXZ(int cycle, double Qrm, double R, double x_center, double z_center);
+    double rotateAndCountParticlesInsideSphere(int cycle, double R, double x_center, double y_center, double z_center);
+    double deleteParticlesInsideSphere(int cycle, double Qrm, double R, double x_center, double y_center, double z_center);
+    double rotateAndCountParticlesInsideSphere2DPlaneXZ(int cycle, double R, double x_center, double z_center);
+    double deleteParticlesInsideSphere2DPlaneXZ(int cycle, double Qrm, double R, double x_center, double z_center);
     /**Particles Open Boundary */
     void openbc_particles_outflow();
     void openbc_delete_testparticles();
