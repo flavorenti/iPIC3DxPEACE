@@ -28,9 +28,6 @@
 #ifndef Collective_H
 #define Collective_H
 
-#ifdef BATSRUS
-#include "InterfaceFluid.h"
-#endif
 #include <string>
 #include "VCtopology3D.h"
 #include "Grid3DCU.h"
@@ -40,9 +37,6 @@ class ConfigFile;
 using namespace std;
 
 class Collective
-#ifdef BATSRUS
-: public InterfaceFluid
-#endif
 {
   private:
     enum Enum{
@@ -168,8 +162,8 @@ class Collective
     double getB1y()const{ return (B1y); }
     double getB1z()const{ return (B1z); }
     double getDipoleOffset()const{ return (DipoleOffset); }
-    //bool getVerbose()const{ return (verbose); }
-    //bool getTrackParticleID(int nspecies)const{ return (TrackParticleID[nspecies]); }
+    bool getVerbose()const{ return (verbose); }
+    bool getTrackParticleID(int nspecies)const{ return (TrackParticleID[nspecies]); }
     int getRestart_status()const{ return (restart_status); }
     string getSaveDirName()const{ return (SaveDirName); }
     string getRestartDirName()const{ return (RestartDirName); }
@@ -327,7 +321,7 @@ class Collective
     string PoissonCorrection;
     int PoissonCorrectionCycle;
     /*! TrackParticleID */
-    //bool *TrackParticleID;
+    bool *TrackParticleID;
     /*! SaveDirName */
     string SaveDirName;
     /*! RestartDirName */
@@ -393,7 +387,7 @@ class Collective
     double DipoleOffset;
 
     /*! boolean value for verbose results */
-    //bool verbose;
+    bool verbose;
     /*! RESTART */
     bool RESTART1;
 

@@ -240,7 +240,7 @@ public:
   /** Print particles info: positions, velocities */
   void Print() const;
   /** Print the number of particles of this subdomain */
-  void PrintNp() const;
+  int PrintNp() const;
 
 public:
   // accessors

@@ -44,6 +44,9 @@ class EMfields3D                // :public Field
     /*! destructor */
     ~EMfields3D();
 
+    /* set temporal damping profile inside planet*/
+    void SetLambda(Grid *grid);
+    double*** GetLambda();
     /*! initialize the electromagnetic fields with constant values */
     void init();
     /*! init beam */
@@ -462,6 +465,7 @@ class EMfields3D                // :public Field
     array3_double vectY;
     array3_double vectZ;
     array3_double divC;
+    array3_double Lambda;
     //array3_double arr;
     /* temporary arrays for summing moments */
     int sizeMomentsArray;

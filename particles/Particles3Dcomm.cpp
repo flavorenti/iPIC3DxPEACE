@@ -1402,9 +1402,6 @@ void Particles3Dcomm::apply_Zrght_BC(vector_SpeciesParticle& pcls, int start)
 int Particles3Dcomm::separate_and_send_particles()
 {
 
-  // print number of particles
-  PrintNp();
-
   // why does it happen that multiple particles have an ID of 0?
   const int num_ids = 1;
   longid id_list[num_ids] = {0};
@@ -1604,15 +1601,14 @@ double Particles3Dcomm::getRho() {
   for (register int i = 0; i < _pcls.size(); i++)
   {
     SpeciesParticle& pcl = _pcls[i];
-    const double q = pcl.get_q();
-    localrho += q;
+    localrho += pcl.get_q();
   }
   MPI_Allreduce(&localrho, &totalrho, 1, MPI_DOUBLE, MPI_SUM, mpi_comm);
   return (totalrho);
 }
 
 /** return the total charge inside sphere */
-double Particles3Dcomm::getRhoInsideSphere(double R, double x_center, double y_center, double z_center) {
+/*double Particles3Dcomm::getRhoInsideSphere(double R, double x_center, double y_center, double z_center) {
   double localrho = 0.0;
   double totalrho = 0.0;
   double xd, yd, zd;
@@ -1649,9 +1645,10 @@ double Particles3Dcomm::getRhoInsideSphere2DPlaneXZ(double R, double x_center, d
   MPI_Allreduce(&localrho, &totalrho, 1, MPI_DOUBLE, MPI_SUM, mpi_comm);
   return (totalrho);
 }
+*/
 
 /** return energy of particle corresponding to thresold of sum charge = Qrm  */
-double Particles3Dcomm::getLimEnergyInsideSphere(double Qrm, double R, double x_center, double y_center, double z_center) {
+/*double Particles3Dcomm::getLimEnergyInsideSphere(double Qrm, double R, double x_center, double y_center, double z_center) {
   double prm, prm_global;
   double xd,yd,zd,en;
   double dE=5e-2*pow((uth+vth+wth)/3.,2);
@@ -1683,7 +1680,7 @@ double Particles3Dcomm::getLimEnergyInsideSphere(double Qrm, double R, double x_
 
   return(Elim);
 }
-
+*/
 
 /** return the Kinetic energy */
 double Particles3Dcomm::getKe() {
@@ -1793,21 +1790,23 @@ void Particles3Dcomm::Print() const
   }
   cout << endl;
 }
+
 /** print just the number of particles */
-void Particles3Dcomm::PrintNp() const
+int Particles3Dcomm::PrintNp() const
 {
   double Nppc=npcelx*npcely*npcelz;
   double Np0=Nppc*Lx/dx*Ly/dy*Lz/dz;
   double localNp=getNOP(), totalNp;
   MPI_Allreduce(&localNp, &totalNp, 1, MPI_DOUBLE, MPI_SUM, mpi_comm);
   if (vct->getCartesian_rank() == 0) {
-  cout << "** Delta NPart of species " << get_species_num() << ": " << (totalNp-Np0) << endl;
-  //cout << "Number of pcl t=0 = " << Np0 << endl;
-  //cout << "Number of pcl t=t = " << totalNp << endl;
-  //cout << Lx/dx << endl << Ly/dy << endl << Lz/dz << endl << Lx << endl << Ly <<endl << Lz << endl;
-  //cout << "Subgrid (" << vct->getCoordinates(0) << "," << vct->getCoordinates(1) << "," << vct->getCoordinates(2) << ")" << endl;
-  //cout << endl;
+    cout << "** Delta NPart of species " << get_species_num() << ": " << (totalNp-Np0) << endl;
+    //cout << "Number of pcl t=0 = " << Np0 << endl;
+    //cout << "Number of pcl t=t = " << totalNp << endl;
+    //cout << Lx/dx << endl << Ly/dy << endl << Lz/dz << endl << Lx << endl << Ly <<endl << Lz << endl;
+    //cout << "Subgrid (" << vct->getCoordinates(0) << "," << vct->getCoordinates(1) << "," << vct->getCoordinates(2) << ")" << endl;
+    //cout << endl;
   }
+  return (int) (totalNp-Np0); 
 }
 
 /***** particle sorting routines *****/

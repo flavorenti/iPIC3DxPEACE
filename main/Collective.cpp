@@ -85,14 +85,6 @@ void Collective::ReadInput(string inputfile) {
   // the following variables are ALWAYS taken from inputfile, even if restarting 
   {
 
-#ifdef BATSRUS
-    if(RESTART1)
-    {
-      cout<<" The fluid interface can not handle RESTART yet, aborting!\n"<<flush;
-      abort();
-    }
-#endif
-
     dt = config.read < double >("dt");
     ncycles = config.read < int >("ncycles");
     th = config.read < double >("th",1.0);
@@ -188,7 +180,7 @@ void Collective::ReadInput(string inputfile) {
     TestParticlesOutputCycle = config.read < int >("TestPartOutputCycle",0);
     testPartFlushCycle = config.read < int >("TestParticlesOutputCycle",10);
     RestartOutputCycle = config.read < int >("RestartOutputCycle",5000);
-    RemoveParticlesOutputCycle = config.read < int >("RemoveParticlesOutputCycle",100);
+    RemoveParticlesOutputCycle = config.read < int >("RemoveParticlesOutputCycle",INT_MAX);
     DiagnosticsOutputCycle = config.read < int >("DiagnosticsOutputCycle", FieldOutputCycle);
     CallFinalize = config.read < bool >("CallFinalize", true);
   }
@@ -199,22 +191,12 @@ void Collective::ReadInput(string inputfile) {
   last_cycle = -1;
   c = config.read < double >("c",1.0);
 
-#ifdef BATSRUS
-  // set grid size and resolution based on the initial file from fluid code
-  Lx =  getFluidLx();
-  Ly =  getFluidLy();
-  Lz =  getFluidLz();
-  nxc = getFluidNxc();
-  nyc = getFluidNyc();
-  nzc = getFluidNzc();
-#else
   Lx = config.read < double >("Lx",10.0);
   Ly = config.read < double >("Ly",10.0);
   Lz = config.read < double >("Lz",10.0);
   nxc = config.read < int >("nxc",64);
   nyc = config.read < int >("nyc",64);
   nzc = config.read < int >("nzc",64);
-#endif
   XLEN = config.read < int >("XLEN",1);
   YLEN = config.read < int >("YLEN",1);
   ZLEN = config.read < int >("ZLEN",1);
@@ -415,9 +397,7 @@ void Collective::ReadInput(string inputfile) {
     qom[11] 	 = qom0.l;
   }
 
-
-
-  //verbose = config.read < bool > ("verbose",false);
+  verbose = config.read < bool > ("verbose",false);
 
   // PHI Electrostatic Potential
   bcPHIfaceXright = config.read < int >("bcPHIfaceXright",1);
@@ -491,7 +471,7 @@ void Collective::ReadInput(string inputfile) {
   }
 #endif
 
-  /*
+  
   TrackParticleID = new bool[ns];
   array_bool TrackParticleID0 = config.read < array_bool > ("TrackParticleID");
   TrackParticleID[0] = TrackParticleID0.a;
@@ -505,7 +485,7 @@ void Collective::ReadInput(string inputfile) {
     TrackParticleID[4] = TrackParticleID0.e;
   if (ns > 5)
     TrackParticleID[5] = TrackParticleID0.f;
-    */
+    
 }
 
 bool Collective::field_output_is_off()const
@@ -1176,9 +1156,9 @@ void Collective::init_derived_parameters()
     if(nxc % XLEN) xerror=true;
     if(nyc % YLEN) yerror=true;
     if(nzc % ZLEN) zerror=true;
-    if(xerror) warning_printf("XLEN=%d does not divide nxc=%d\n", XLEN,nxc);
-    if(yerror) warning_printf("YLEN=%d does not divide nyc=%d\n", YLEN,nyc);
-    if(zerror) warning_printf("ZLEN=%d does not divide nzc=%d\n", ZLEN,nzc);
+    if(xerror) eprintf("XLEN=%d does not divide nxc=%d\n", XLEN,nxc);
+    if(yerror) eprintf("YLEN=%d does not divide nyc=%d\n", YLEN,nyc);
+    if(zerror) eprintf("ZLEN=%d does not divide nzc=%d\n", ZLEN,nzc);
     fflush(stdout);
     bool error = (xerror||yerror||zerror);
     // Comment out this check if your postprocessing code does not

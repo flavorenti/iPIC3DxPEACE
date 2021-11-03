@@ -54,11 +54,10 @@ namespace iPic3D {
       outputWrapperFPP(0),
 #endif
       Ke(0),
+      rho(0),
       BulkEnergy(0),
       momentum(0),
       Qremoved(0),
-      Qremoved_global(0),
-      Elim(0),
       my_clock(0)
     {}
     int Init(int argc, char **argv);
@@ -99,11 +98,10 @@ namespace iPic3D {
     Particles3D   *part;
     Particles3D   *testpart;
     double        *Ke;
+    double        *rho;
     double        *BulkEnergy;
     double        *momentum;
     double        *Qremoved;
-    double        *Qremoved_global;
-    double        *Elim;
     Timing        *my_clock;
 
 #ifndef NO_HDF5

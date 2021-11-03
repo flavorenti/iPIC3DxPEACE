@@ -32,6 +32,7 @@
 #include "Grid3DCU.h"
 #include "EMfields3D.h"
 #include "Particles3D.h"
+#include "Particles3Dcomm.h"
 #include "Timing.h"
 #include "ParallelIO.h"
 //
@@ -71,6 +72,7 @@ c_Solver::~c_Solver()
   }
 
   delete [] Ke;
+  delete [] rho;
   delete [] momentum;
   delete [] Qremoved;
   delete my_clock;
@@ -103,13 +105,9 @@ int c_Solver::Init(int argc, char **argv) {
   // initialize the virtual cartesian topology
   vct = new VCtopology3D(*col);
   // Check if we can map the processes into a matrix ordering defined in Collective.cpp
-  if (nprocs != vct->getNprocs()) {
-    if (myrank == 0) {
-      cerr << "Error: " << nprocs << " processes cant be mapped into " << vct->getXLEN() << "x" << vct->getYLEN() << "x" << vct->getZLEN() << " matrix: Change XLEN,YLEN, ZLEN in method VCtopology3D.init()" << endl;
-      MPIdata::instance().finalize_mpi();
-      return (1);
-    }
-  }
+  if (nprocs != vct->getNprocs() and myrank==0)
+    eprintf("Error: %i processes cant be mapped into %ix%ix%i matrix: Change XLEN,YLEN, ZLEN in method VCtopology3D.init()", nprocs, vct->getXLEN(), vct->getYLEN(), vct->getZLEN())
+
   // We create a new communicator with a 3D virtual Cartesian topology
     vct->setup_vctopology(MPIdata::get_PicGlobalComm());
   {
@@ -118,11 +116,6 @@ int c_Solver::Init(int argc, char **argv) {
     num_proc_str = num_proc_ss.str();
   }
   // initialize the central cell index
-
-#ifdef BATSRUS
-  // set index offset for each processor
-  col->setGlobalStartIndex(vct);
-#endif
 
   // Print the initial settings to stdout and a file
   if (myrank == 0) {
@@ -139,20 +132,10 @@ int c_Solver::Init(int argc, char **argv) {
   else if (col->getCase()=="ForceFree") 		EMf->initForceFree();
   else if (col->getCase()=="GEM")       		EMf->initGEM();
   else if (col->getCase()=="GEMDoubleHarris")  	        EMf->initGEMDoubleHarris();
-#ifdef BATSRUS
-  else if (col->getCase()=="BATSRUS")   		EMf->initBATSRUS();
-#endif
   else if (col->getCase()=="Dipole")    		EMf->initDipole();
-  else if (col->getCase()=="Dipole2D")  		EMf->initDipole(); //changed F.Lavorenti !!!
+  else if (col->getCase()=="Dipole2D")  		EMf->initDipole2D();
   else if (col->getCase()=="NullPoints")             	EMf->initNullPoints();
   else if (col->getCase()=="TaylorGreen")               EMf->initTaylorGreen();
-  else if (col->getCase()=="RandomCase") {
-    EMf->initRandomField();
-    if (myrank==0) {
-      cout << "Case is " << col->getCase() <<"\n";
-      cout <<"total # of particle per cell is " << col->getNpcel(0) << "\n";
-    }
-  }
   else {
     if (myrank==0) {
       cout << " =========================================================== " << endl;
@@ -175,9 +158,6 @@ int c_Solver::Init(int argc, char **argv) {
     for (int i = 0; i < ns; i++)
     {
       if      (col->getCase()=="ForceFree") 		part[i].force_free(EMf);
-#ifdef BATSRUS
-      else if (col->getCase()=="BATSRUS")   		part[i].MaxwellianFromFluid(EMf,col,i);
-#endif
       else if (col->getCase()=="NullPoints")    	part[i].maxwellianNullPoints(EMf);
       else if (col->getCase()=="TaylorGreen")           part[i].maxwellianNullPoints(EMf); // Flow is initiated from the current prescribed on the grid.
       else if (col->getCase()=="GEMDoubleHarris")  	part[i].maxwellianDoubleHarris(EMf);
@@ -223,6 +203,7 @@ int c_Solver::Init(int argc, char **argv) {
 		  }
 	  }
   }
+  rho = new double[ns];
   Ke = new double[ns];
   BulkEnergy = new double[ns];
   momentum = new double[ns];
@@ -232,11 +213,7 @@ int c_Solver::Init(int argc, char **argv) {
     my_file.close();
   }
   
-
   Qremoved = new double[ns];
-  Qremoved_global = new double[ns];
-  Elim = new double[ns];
-
   my_clock = new Timing(myrank);
 
   return 0;
@@ -365,10 +342,11 @@ bool c_Solver::ParticlesMover(int cycle)
         default:
           unsupported_value_error(Parameters::get_MOVER_TYPE());
       }
+
+
       //Should integrate BC into separate_and_send_particles
-      //part[i].openbc_particles_outflow(); //here only touches Xright
       //part[i].openbc_particles_inflow();
-      part[i].repopulate_particles(EMf);  // this is for boundary Xleft with standard maxwellian, and also Zleft and Zright with modified maxw
+      part[i].repopulate_particles(EMf);  // external boundary conditions for pcls
       //part[i].openbc_delete_testparticles(); // to be sure that there are no particle out of the box (or problem with proc communication) 
     }
 
@@ -379,23 +357,22 @@ bool c_Solver::ParticlesMover(int cycle)
   /* ---------------------------------------- */
   if (col->getCase()=="Dipole") {
     for (int i=0; i < ns; i++){
-      Qremoved[i] = part[i].rotateAndCountParticlesInsideSphere(cycle, col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+      if(cycle>0) Qremoved[i] = part[i].rotateAndCountParticlesInsideSphere(cycle, col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
     }
   }
   else if (col->getCase()=="Dipole2D") {
     for (int i=0; i < ns; i++){
-      Qremoved[i] = part[i].rotateAndCountParticlesInsideSphere2DPlaneXZ(cycle, col->getL_square(),col->getx_center(),col->getz_center());
+      if(cycle>0) Qremoved[i] = part[i].rotateAndCountParticlesInsideSphere2DPlaneXZ(cycle, col->getL_square(),col->getx_center(),col->getz_center());
     }
   }
-  if ((Qremoved[0]*Qremoved[1])!=0.) dprintf("RotateAndCount->For proc %d the Qe/Qi counted is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
+  if ((Qremoved[0]!=0) and (Qremoved[1]!=0) and (cycle>0)) dprintf("RotateAndCount->For proc %d the Qe/Qi counted is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
   
 
   /* --------------------------------------- */
   /* Remove particles from depopulation area */
   /* imposing that net charge zero (ni=ne)   */
   /* --------------------------------------- */
-  double Qrm;
-  Qrm= std::min(Qremoved[1],-Qremoved[0]);
+  double Qrm = std::min(Qremoved[1],-Qremoved[0]);
   
   if (col->getCase()=="Dipole") {
     for (int i=0; i < ns; i++)
@@ -405,20 +382,21 @@ bool c_Solver::ParticlesMover(int cycle)
     for (int i=0; i < ns; i++)
       Qremoved[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(cycle, Qrm,col->getL_square(),col->getx_center(),col->getz_center());
   }	    
-  if ((Qremoved[0]*Qremoved[1])!=0.) dprintf("Delete->For proc %d the Qe/Qi removed is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
+  if ((Qremoved[0]!=0) and (Qremoved[1]!=0.)) dprintf("Delete->For proc %d the Qe/Qi removed is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
 
 
-    /* ---------------------------------- */
-    /* communicate pcls between procs     */
-    /* ---------------------------------  */
-    for (int i = 0; i < ns; i++){
-      part[i].separate_and_send_particles();
-      //part[i].communicate_particles();
-      part[i].recommunicate_particles_until_done(1);
-    }
+  /* ---------------------------------- */
+  /* communicate pcls between procs     */
+  /* ---------------------------------  */
+  for (int i = 0; i < ns; i++){
+    part[i].separate_and_send_particles();
+    //part[i].communicate_particles();
+    part[i].recommunicate_particles_until_done(1);
+  }
+
 
   /* --------------------------------------- */
-  /* Test Particles mover 					 */
+  /* Test Particles mover 	             */
   /* --------------------------------------- */
   for (int i = 0; i < nstestpart; i++)  // move each species
   {
@@ -583,15 +561,13 @@ void c_Solver::WriteRestart(int cycle)
 
 // write the conserved quantities
 void c_Solver::WriteConserved(int cycle) {
-  if(col->getDiagnosticsOutputCycle() > 0 && cycle % col->getDiagnosticsOutputCycle() == 0)
-  {
+  if(col->getDiagnosticsOutputCycle() > 0 && cycle % col->getDiagnosticsOutputCycle() == 0) {
     Eenergy = EMf->getEenergy();
     Benergy = EMf->getBenergy();
     TOTenergy = 0.0;
     TOTmomentum = 0.0;
-    double rho=0.0;
     for (int is = 0; is < ns; is++) {
-      rho += part[is].getRho();
+      rho[is]= part[is].getRho();
       Ke[is] = part[is].getKe();
       BulkEnergy[is] = EMf->getBulkEnergy(is);
       TOTenergy += Ke[is];
@@ -600,16 +576,18 @@ void c_Solver::WriteConserved(int cycle) {
     }
     if (myrank == (nprocs-1)) {
       ofstream my_file(cq.c_str(), fstream::app);
-      if(cycle == 0)my_file << "\t" << "\t" << "\t" << "Total_Energy" << "\t" << "Momentum" << "\t" << "Eenergy" << "\t" << "Benergy" << "\t" << "Kenergy" << "\t" << "Kenergy(species)" << "\t" << "BulkEnergy(species)" << "\t" << "Total Charge" << endl;
-      my_file << cycle << "\t" << "\t" << (Eenergy + Benergy + TOTenergy) << "\t" << TOTmomentum << "\t" << Eenergy << "\t" << Benergy << "\t" << TOTenergy;
+      if(cycle==0) my_file << "cycle" << "\t" << "Total_Energy" << "\t" << "Momentum" << "\t" << "Eenergy" << "\t" << "Benergy" << "\t" << "Kenergy" << "\t" << "Kenergy(0)" << "\t" << "Kenergy(1)" << "\t" << "BulkEnergy(0)" << "\t" << "BulkEnergy(1)" << "\t" << "Rho(0)" << "\t" << "Rho(1)" << endl;
+      my_file << cycle << "\t" << (Eenergy + Benergy + TOTenergy) << "\t" << TOTmomentum << "\t" << Eenergy << "\t" << Benergy << "\t" << TOTenergy;
       for (int is = 0; is < ns; is++) my_file << "\t" << Ke[is];
       for (int is = 0; is < ns; is++) my_file << "\t" << BulkEnergy[is];
-      my_file << "\t" << rho;
+      for (int is = 0; is < ns; is++) my_file << "\t" << rho[is];
       my_file << endl;
       my_file.close();
     }
   }
 }
+
+
 /* write the conserved quantities
 void c_Solver::WriteConserved(int cycle) {
   if(col->getDiagnosticsOutputCycle() > 0 && cycle % col->getDiagnosticsOutputCycle() == 0)

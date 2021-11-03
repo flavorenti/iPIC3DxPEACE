@@ -119,6 +119,8 @@ void addscale(double alfa, double beta, double *vect1, const double *vect2, int 
 void addscale(double alfa, double beta, arr3_double vect1, const arr3_double vect2, int nx, int ny, int nz);
 /** method to calculate vector1 = beta*vector1 + alfa*vector2 */
 void addscale(double alfa, double beta, arr3_double vect1, const arr3_double vect2, int nx, int ny);
+/** method to calculate v1 = v1 + alpha * v2 * v3 */
+void sumscalprod(double ***vect1, double alfa, double ***vect2, double ***vect3, int nx, int ny, int nz);
 /** method to calculate vector1 = alfa*vector2 + beta*vector3 */
 void scaleandsum(arr3_double vect1, double alfa, double beta, const arr3_double vect2, const arr3_double vect3, int nx, int ny, int nz);
 /** method to calculate vector1 = alfa*vector2 + beta*vector3 with vector2 depending on species*/

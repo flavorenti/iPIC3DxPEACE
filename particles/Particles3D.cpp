@@ -2558,7 +2558,7 @@ double Particles3D::rotateAndCountParticlesInsideSphere(int cycle, double R, dou
   DipoleOffset = col->getDipoleOffset();
 
   ofstream my_file_ct ("data/CountedParticles.txt", ios::app);
-  ofstream my_file_rt ("data/RoatatedParticles.txt", ios::app);
+  ofstream my_file_rt ("data/RotatedParticles.txt", ios::app);
 
   while (pidx < _pcls.size())
   {
@@ -2603,8 +2603,11 @@ double Particles3D::deleteParticlesInsideSphere(int cycle, double Qrm, double R,
   double xd,yd,zd,xnw,ynw,znw,Rnw;
   double  FourPI =16*atan(1.0);
   const double q_per_particle = (Ninj/FourPI/npcel)*(1.0/grid->getInvVOL());
-  int Nrm = Qrm/q_per_particle;
+  int Nrm;
   double DipoleOffset;
+
+  if (cycle==0) Nrm = INT_MAX;
+  else          Nrm = Qrm/q_per_particle;
  
   DipoleOffset = col->getDipoleOffset();
 
@@ -2655,7 +2658,7 @@ double Particles3D::rotateAndCountParticlesInsideSphere2DPlaneXZ(int cycle, doub
   srand(vct->getCartesian_rank()+2);
 
   ofstream my_file_ct ("data/CountedParticles.txt", ios::app);
-  ofstream my_file_rt ("data/RoatatedParticles.txt", ios::app);
+  ofstream my_file_rt ("data/RotatedParticles.txt", ios::app);
 
   while (pidx < _pcls.size())
   { 
@@ -2696,7 +2699,10 @@ double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(int cycle, double Qrm, 
   double xd,zd,xnw,znw,Rnw;
   double  FourPI =16*atan(1.0);
   const double q_per_particle = (Ninj/FourPI/npcel)*(1.0/grid->getInvVOL());
-  int Nrm = Qrm/q_per_particle;
+  int Nrm;
+
+  if (cycle==0) Nrm = INT_MAX;
+  else          Nrm = Qrm/q_per_particle;
 
   ofstream my_file ("data/RemovedParticles.txt", ios::app);
 

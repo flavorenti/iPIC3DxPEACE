@@ -287,6 +287,13 @@ void addscale(double alfa, double beta, arr3_double vect1, const arr3_double vec
 
 }
 
+/** method to calculate v1 = v1 + alpha * v2 * v3 */
+void sumscalprod(double ***vect1, double alfa, double ***vect2, double ***vect3, int nx, int ny, int nz) {
+  for (register int i = 0; i < nx; i++)
+    for (register int j = 0; j < ny; j++)
+      for (register int k = 0; k < nz; k++)
+        vect1[i][j][k] += alfa * vect2[i][j][k] * vect3[i][j][k];
+}
 
 /** method to calculate vector1 = alfa*vector2 + beta*vector3 */
 void scaleandsum(arr3_double vect1, double alfa, double beta, const arr3_double vect2, const arr3_double vect3, int nx, int ny, int nz) {

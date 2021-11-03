@@ -164,6 +164,7 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid, VirtualTopology3D *vct) :
   vectY (nxn, nyn, nzn),
   vectZ (nxn, nyn, nzn),
   divC  (nxc, nyc, nzc),
+  Lambda (nxn, nyn, nzn),
   //arr (nxc-2,nyc-2,nzc-2),
   // B_ext and J_ext should not be allocated unless used.
   Bx_ext(nxn,nyn,nzn),
@@ -2380,6 +2381,11 @@ void EMfields3D::MaxwellImage(double *im, double* vector)
   sum(imageY, vectY, nxn, nyn, nzn);
   sum(imageZ, vectZ, nxn, nyn, nzn);
 
+  // Temporal damping
+  sumscalprod(imageX, delt, vectX, Lambda, nxn, nyn, nzn);
+  sumscalprod(imageY, delt, vectY, Lambda, nxn, nyn, nzn);
+  sumscalprod(imageZ, delt, vectZ, Lambda, nxn, nyn, nzn);
+
   // boundary condition: Xleft
   if (vct->getXleft_neighbor() == MPI_PROC_NULL && bcEMfaceXleft == 0)  // perfect conductor
     perfectConductorLeft(imageX, imageY, imageZ, vectX, vectY, vectZ, 0);
@@ -2969,21 +2975,10 @@ void EMfields3D::ConstantChargePlanet(double R,
         yd = grid->getYN(i,j,k) - y_center;
         zd = grid->getZN(i,j,k) - z_center - DipoleOffset;
 
-        
-        if ((xd*xd+yd*yd+zd*zd) <= R*R) {
-          //#Bxn[i][j][k] = 0.0;
-          //Byn[i][j][k] = 0.0;
-          //Bzn[i][j][k] = 0.0;
-          Ex[i][j][k] = 0.0;
-          Ey[i][j][k] = 0.0;
-          Ez[i][j][k] = 0.0;
-        }
-
         for (int is = 0; is < ns; is++) {
-
           ff = qom[is]/fabs(qom[is]);
           if ((xd*xd+yd*yd+zd*zd) <= R*R)
-            rhons[is][i][j][k] = 0.;
+            rhons[is][i][j][k] = ff * rhoINIT[is] / FourPI;
         }
       } 
 }
@@ -2997,23 +2992,22 @@ void EMfields3D::ConstantChargePlanet2DPlaneXZ(double R,  double x_center,double
   assert_eq(nyn,4);
   double xd;
   double zd;
+  double ff;
 
-  for (int is = 0; is < ns; is++) {
-    const double sign_q = qom[is]/(fabs(qom[is]));
-    for (int i = 1; i < nxn; i++)
-        for (int k = 1; k < nzn; k++) {
+  for (int i = 1; i < nxn; i++)
+    for (int k = 1; k < nzn; k++) {
 
-          xd = grid->getXN(i,1,k) - x_center;
-          zd = grid->getZN(i,1,k) - z_center;
-
-          if ((xd*xd+zd*zd) <= R*R) {
-            rhons[is][i][1][k] = sign_q * rhoINIT[is] / FourPI;
-            rhons[is][i][2][k] = sign_q * rhoINIT[is] / FourPI;
-          }
-
-	}
-  }
-
+      xd = grid->getXN(i,1,k) - x_center;
+      zd = grid->getZN(i,1,k) - z_center;
+  
+      for (int is = 0; is < ns; is++) {
+        ff = qom[is]/fabs(qom[is]);
+        if ((xd*xd+zd*zd) <= R*R) {
+            rhons[is][i][1][k] = ff * rhoINIT[is] / FourPI;
+            rhons[is][i][2][k] = ff * rhoINIT[is] / FourPI;
+        }
+      }
+    }
 }
 
 /*! Populate the field data used to push particles */
@@ -3478,6 +3472,39 @@ void EMfields3D::sumOverSpeciesJ() {
         }
 }
 
+/* SET lambda damping factor inside planet*/
+void EMfields3D::SetLambda(Grid *grid){
+
+  double a=L_square;
+
+  double xc=x_center;
+  double yc=y_center;
+  double zc=z_center;
+
+  double dr = sqrt(pow(dx,2)+pow(dy,2)+pow(dz,2));
+
+  for (int i=0; i < nxn; i++){
+    for (int j=0; j < nyn; j++){
+      for (int k=0; k < nzn; k++){
+
+        double x = grid->getXN(i,j,k);
+        double y = grid->getYN(i,j,k);
+        double z = grid->getZN(i,j,k);
+
+        double r2_planet = ((x-xc)*(x-xc)) + ((y-yc)*(y-yc)) + ((z-zc-DipoleOffset)*(z-zc-DipoleOffset));
+
+        if (r2_planet>a*a) Lambda[i][j][k] = 0.0;
+        else               Lambda[i][j][k] = (a-sqrt(r2_planet))*10.0/dr;
+
+      }
+    }
+  }
+}
+
+/* get lambda damping factor inside planet*/
+double*** EMfields3D::GetLambda(){
+  return(Lambda);
+}
 
 
 /*! initialize Magnetic and Electric Field with initial configuration */
@@ -4556,7 +4583,7 @@ void EMfields3D::initDipole()
         Bzn[i][j][k] = B0z;
 
         // dipolar field B_ext
-        if ( r2_dipole > (4.*dx*dx) ) {
+        if ( r2_dipole >  a*a ) {
          x_displ = x - xc;
          y_displ = y - yc;
          z_displ = z - zc;
