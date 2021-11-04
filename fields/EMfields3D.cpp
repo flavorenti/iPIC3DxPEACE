@@ -2593,11 +2593,6 @@ void EMfields3D::smoothE()
   delArr3(temp, nxn, nyn);
 }
 
-/* SPECIES: Interpolation smoothing TO MAKE SMOOTH value as to be different from 1.0 type = 0 --> center based vector type = 1 --> node based vector */
-void EMfields3D::smooth(double value, arr4_double vector, int is, int type)
-{
-  eprintf("Smoothing for Species not implemented in 3D");
-}
 
 /*! fix the B boundary when running gem , This assume non-periodic condition on Y dimension*/
 void EMfields3D::fixBcGEM()

@@ -292,7 +292,6 @@ void c_Solver::CalculateMoments() {
 //! MAXWELL SOLVER for Efield
 void c_Solver::CalculateField(int cycle) {
   timeTasks_set_main_task(TimeTasks::FIELDS);
-
   // calculate the E field
   EMf->calculateE(cycle);
 }
@@ -331,8 +330,8 @@ bool c_Solver::ParticlesMover(int cycle)
           part[i].mover_PC_AoS(EMf);
           break;
         case Parameters::AoS_Relativistic:
-        	part[i].mover_PC_AoS_Relativistic(EMf);
-        	break;
+          part[i].mover_PC_AoS_Relativistic(EMf);
+          break;
         case Parameters::AoSintr:
           part[i].mover_PC_AoS_vec_intr(EMf);
           break;
@@ -351,88 +350,85 @@ bool c_Solver::ParticlesMover(int cycle)
     }
 
 
-  /* ---------------------------------------- */
-  /* Count pcls inside the planet (ni,ne) and */
-  /* change the velocity in random radial out */
-  /* ---------------------------------------- */
-  if (col->getCase()=="Dipole") {
-    for (int i=0; i < ns; i++){
-      if(cycle>0) Qremoved[i] = part[i].rotateAndCountParticlesInsideSphere(cycle, col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+    /* ---------------------------------------- */
+    /* Count pcls inside the planet (ni,ne) and */
+    /* change the velocity in random radial out */
+    /* ---------------------------------------- */
+    if (col->getCase()=="Dipole") {
+      for (int i=0; i < ns; i++){
+        if(cycle>0) Qremoved[i] = part[i].rotateAndCountParticlesInsideSphere(cycle, col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+      }
     }
-  }
-  else if (col->getCase()=="Dipole2D") {
-    for (int i=0; i < ns; i++){
-      if(cycle>0) Qremoved[i] = part[i].rotateAndCountParticlesInsideSphere2DPlaneXZ(cycle, col->getL_square(),col->getx_center(),col->getz_center());
+    else if (col->getCase()=="Dipole2D") {
+      for (int i=0; i < ns; i++){
+        if(cycle>0) Qremoved[i] = part[i].rotateAndCountParticlesInsideSphere2DPlaneXZ(cycle, col->getL_square(),col->getx_center(),col->getz_center());
+      }
     }
-  }
-  if ((Qremoved[0]!=0) and (Qremoved[1]!=0) and (cycle>0)) dprintf("RotateAndCount->For proc %d the Qe/Qi counted is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
+    if ((Qremoved[0]!=0) and (Qremoved[1]!=0) and (cycle>0)) dprintf("RotateAndCount->For proc %d the Qe/Qi counted is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
   
 
-  /* --------------------------------------- */
-  /* Remove particles from depopulation area */
-  /* imposing that net charge zero (ni=ne)   */
-  /* --------------------------------------- */
-  double Qrm = std::min(Qremoved[1],-Qremoved[0]);
+    /* --------------------------------------- */
+    /* Remove particles from depopulation area */
+    /* imposing that net charge zero (ni=ne)   */
+    /* --------------------------------------- */
+    double Qrm = std::min(Qremoved[1],-Qremoved[0]);
   
-  if (col->getCase()=="Dipole") {
-    for (int i=0; i < ns; i++)
-      Qremoved[i] = part[i].deleteParticlesInsideSphere(cycle, Qrm,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
-  }
-  else if (col->getCase()=="Dipole2D") {
-    for (int i=0; i < ns; i++)
-      Qremoved[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(cycle, Qrm,col->getL_square(),col->getx_center(),col->getz_center());
-  }	    
-  if ((Qremoved[0]!=0) and (Qremoved[1]!=0.)) dprintf("Delete->For proc %d the Qe/Qi removed is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
+    if (col->getCase()=="Dipole") {
+      for (int i=0; i < ns; i++)
+        Qremoved[i] = part[i].deleteParticlesInsideSphere(cycle, Qrm,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+    }
+    else if (col->getCase()=="Dipole2D") {
+      for (int i=0; i < ns; i++)
+        Qremoved[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(cycle, Qrm,col->getL_square(),col->getx_center(),col->getz_center());
+    }	    
+    if ((Qremoved[0]!=0) and (Qremoved[1]!=0.)) dprintf("Delete->For proc %d the Qe/Qi removed is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
 
 
-  /* ---------------------------------- */
-  /* communicate pcls between procs     */
-  /* ---------------------------------  */
-  for (int i = 0; i < ns; i++){
-    part[i].separate_and_send_particles();
-    //part[i].communicate_particles();
-    part[i].recommunicate_particles_until_done(1);
-  }
+    /* ---------------------------------- */
+    /* communicate pcls between procs     */
+    /* ---------------------------------  */
+    for (int i = 0; i < ns; i++){
+      part[i].separate_and_send_particles();
+      //part[i].communicate_particles();
+      part[i].recommunicate_particles_until_done(1);
+    }
 
 
-  /* --------------------------------------- */
-  /* Test Particles mover 	             */
-  /* --------------------------------------- */
-  for (int i = 0; i < nstestpart; i++)  // move each species
-  {
-	switch(Parameters::get_MOVER_TYPE())
-	{
-	  case Parameters::SoA:
-		  testpart[i].mover_PC(EMf);
-		break;
-	  case Parameters::AoS:
-		  testpart[i].mover_PC_AoS(EMf);
-		break;
-	  case Parameters::AoS_Relativistic:
-		  testpart[i].mover_PC_AoS_Relativistic(EMf);
-		break;
-	  case Parameters::AoSintr:
-		  testpart[i].mover_PC_AoS_vec_intr(EMf);
-		break;
-	  case Parameters::AoSvec:
-		  testpart[i].mover_PC_AoS_vec(EMf);
-		break;
-	  default:
-		unsupported_value_error(Parameters::get_MOVER_TYPE());
+    /* --------------------------------------- */
+    /* Test Particles mover 	             */
+    /* --------------------------------------- */
+    for (int i = 0; i < nstestpart; i++)  // move each species
+    {
+      switch(Parameters::get_MOVER_TYPE())
+      {
+        case Parameters::SoA:
+          testpart[i].mover_PC(EMf);
+          break;
+	case Parameters::AoS:
+	  testpart[i].mover_PC_AoS(EMf);
+	  break;
+	case Parameters::AoS_Relativistic:
+	  testpart[i].mover_PC_AoS_Relativistic(EMf);
+	  break;
+	case Parameters::AoSintr:
+	  testpart[i].mover_PC_AoS_vec_intr(EMf);
+	  break;
+	case Parameters::AoSvec:
+	  testpart[i].mover_PC_AoS_vec(EMf);
+	  break;
+	default:
+	  unsupported_value_error(Parameters::get_MOVER_TYPE());
 	}
 
 	testpart[i].openbc_delete_testparticles();
 	testpart[i].separate_and_send_particles();
-  }
+	testpart[i].recommunicate_particles_until_done(1);
+    }
 
-  for (int i = 0; i < nstestpart; i++)
-  {
-	  testpart[i].recommunicate_particles_until_done(1);
+    return (false);
   }
+}
 
-  return (false);
-}
-}
 
 void c_Solver::WriteOutput(int cycle) {
 
@@ -587,42 +583,6 @@ void c_Solver::WriteConserved(int cycle) {
   }
 }
 
-
-/* write the conserved quantities
-void c_Solver::WriteConserved(int cycle) {
-  if(col->getDiagnosticsOutputCycle() > 0 && cycle % col->getDiagnosticsOutputCycle() == 0)
-  {
-	if(cycle==0)buf_counter=0;
-    Eenergy[buf_counter] = EMf->getEenergy();
-    Benergy[buf_counter] = EMf->getBenergy();
-    Kenergy[buf_counter] = 0.0;
-    TOTmomentum[buf_counter] = 0.0;
-    for (int is = 0; is < ns; is++) {
-      Ke[is] = part[is].getKe();
-      Kenergy[buf_counter] += Ke[is];
-      momentum[is] = part[is].getP();
-      TOTmomentum[buf_counter] += momentum[is];
-    }
-    outputcycle[buf_counter] = cycle;
-    buf_counter ++;
-
-    //Flush out result if this is the last cycle or the buffer is full
-    if(buf_counter==OUTPUT_BUFSIZE || cycle==(LastCycle()-1)){
-    	if (myrank == (nprocs-1)) {
-    		ofstream my_file(cq.c_str(), fstream::app);
-    		stringstream ss;
-      //if(cycle/OUTPUT_BUFSIZE == 0)
-      //my_file  << "Cycle" << "\t" << "Total_Energy" 				 << "\t" << "Momentum" << "\t" << "Eenergy" <<"\t" << "Benergy" << "\t" << "Kenergy" << endl;
-    		for(int bufid=0;bufid<OUTPUT_BUFSIZE;bufid++)
-    			ss << outputcycle[bufid] << "\t" << (Eenergy[bufid]+Benergy[bufid]+Kenergy[bufid])<< "\t" << TOTmomentum[bufid] << "\t" << Eenergy[bufid] << "\t" << Benergy[bufid] << "\t" << Kenergy[bufid] << endl;
-
-    		my_file << ss;
-    		my_file.close();
-    	}
-    	buf_counter = 0;
-    }
-  }
-}*/
 
 void c_Solver::WriteVelocityDistribution(int cycle)
 {

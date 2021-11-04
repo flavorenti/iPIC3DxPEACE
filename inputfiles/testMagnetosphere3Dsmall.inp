@@ -80,6 +80,9 @@ ns = 2
 rhoINIT =  1.0	1.0  
 # Injection density (make sure you are neutral)
 rhoINJECT =  1.0   1.0 
+# TrackParticleID[species] = 1=true, 0=false --> Assign ID to particles
+TrackParticleID = 0     0
+
 # npcelx = number of particles per cell - Direction X 
 npcelx =    3	 3
 # npcely = number of particles per cell - Direction Y 
