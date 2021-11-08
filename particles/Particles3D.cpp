@@ -140,61 +140,6 @@ void Particles3D::alt_maxwellian(Field * EMf) {
   eprintf("unimplemented");
 }
 
-#ifdef BATSRUS
-/** Maxellian random velocity and uniform spatial distribution */
-void Particles3D::MaxwellianFromFluid(Field* EMf,Collective *col, int is){
-
-  /*
-   * Constuctiong the distrebution function from a Fluid model
-   */
-
-  // loop over grid cells and set position, velociy and charge of all particles indexed by counter
-  // there are multiple (27 or so) particles per grid cell.
-  int i,j,k,counter=0;
-  for (i=1; i< grid->getNXC()-1;i++)
-    for (j=1; j< grid->getNYC()-1;j++)
-      for (k=1; k< grid->getNZC()-1;k++)
-        MaxwellianFromFluidCell(col,is, i,j,k,counter,x,y,z,q,u,v,w,ParticleID);
-}
-
-void Particles3D::MaxwellianFromFluidCell(Collective *col, int is, int i, int j, int k, int &ip, double *x, double *y, double *z, double *q, double *vx, double *vy, double *vz, longid* ParticleID)
-{
-  /*
-   * grid           : local grid object (in)
-   * col            : collective (global) object (in)
-   * is             : species index (in)
-   * i,j,k          : grid cell index on proc (in)
-   * ip             : particle number counter (inout)
-   * x,y,z          : particle position (out)
-   * q              : particle charge (out)
-   * vx,vy,vz       : particle velocity (out)
-   * ParticleID     : particle tracking ID (out)
-   */
-
-  // loop over particles inside grid cell i,j,k
-  for (int ii=0; ii < npcelx; ii++)
-    for (int jj=0; jj < npcely; jj++)
-      for (int kk=0; kk < npcelz; kk++){
-        // Assign particle positions: uniformly spaced. x_cellnode + dx_particle*(0.5+index_particle)
-        fetchX(ip) = (ii + .5)*(dx/npcelx) + grid->getXN(i,j,k);
-        fetchY(ip) = (jj + .5)*(dy/npcely) + grid->getYN(i,j,k);
-        fetchZ(ip) = (kk + .5)*(dz/npcelz) + grid->getZN(i,j,k);
-        // q = charge
-        fetchQ(ip) =  (qom/fabs(qom))*(col->getFluidRhoCenter(i,j,k,is)/npcel)*(1.0/grid->getInvVOL());
-        // u = X velocity
-        sample_maxwellian(
-          fetchU(ip),fetchV(ip),fetchW(ip),
-          col->getFluidUthx(i,j,k,is),
-          col->getFluidVthx(i,j,k,is),
-          col->getFluidWthx(i,j,k,is),
-          col->getFluidUx(i,j,k,is),
-          col->getFluidVx(i,j,k,is),
-          col->getFluidWx(i,j,k,is));
-        ip++ ;
-      }
-}
-#endif
-
 /** Maxellian random velocity and uniform spatial distribution */
 void Particles3D::maxwellian(Field * EMf)
 {

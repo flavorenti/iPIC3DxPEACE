@@ -60,10 +60,6 @@ class EMfields3D                // :public Field
     void initGEMDipoleLikeTailNoPert();
     /*! initialize GEM challenge with no Perturbation */
     void initGEMnoPert();
-#ifdef BATSRUS
-    /*! initialize from BATSRUS */
-    void initBATSRUS();
-#endif
     /*! Random initial field */
     void initRandomField();
     /*! Init Force Free (JxB=0) */

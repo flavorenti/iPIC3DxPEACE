@@ -2096,7 +2096,6 @@ void EMfields3D::calculateE(int cycle)
   double *bkrylov = new double[3 * (nxn - 2) * (nyn - 2) * (nzn - 2)];  // 3 components
   // set to zero all the stuff 
   eqValue(0.0, xkrylov, 3 * (nxn - 2) * (nyn - 2) * (nzn - 2));
-
   eqValue(0.0, bkrylov, 3 * (nxn - 2) * (nyn - 2) * (nzn - 2));
   eqValue(0.0, divE, nxc, nyc, nzc);
   eqValue(0.0, tempC, nxc, nyc, nzc);
@@ -2104,6 +2103,7 @@ void EMfields3D::calculateE(int cycle)
   eqValue(0.0, gradPHIY, nxn, nyn, nzn);
   eqValue(0.0, gradPHIZ, nxn, nyn, nzn);
   // Adjust E calculating laplacian(PHI) = div(E) -4*PI*rho DIVERGENCE CLEANING
+  /*
   if (PoissonCorrection &&  cycle%PoissonCorrectionCycle == 0) {
 		double *xkrylovPoisson = new double[(nxc - 2) * (nyc - 2) * (nzc - 2)];
 		double *bkrylovPoisson = new double[(nxc - 2) * (nyc - 2) * (nzc - 2)];
@@ -2135,7 +2135,7 @@ void EMfields3D::calculateE(int cycle)
 		delete[]xkrylovPoisson;
 		delete[]bkrylovPoisson;
   }                             // end of divergence cleaning
-
+  */
   if (vct->getCartesian_rank() == 0)
     cout << "*** MAXWELL SOLVER ***" << endl;
   // prepare the source 
@@ -2239,6 +2239,7 @@ void EMfields3D::MaxwellSource(double *bkrylov)
   sum(tempY, temp2Y, nxn, nyn, nzn);
   sum(tempZ, temp2Z, nxn, nyn, nzn);
 
+  /*
   // Boundary condition in the known term
   // boundary condition: Xleft
   if (vct->getXleft_neighbor() == MPI_PROC_NULL && bcEMfaceXleft == 0)  // perfect conductor
@@ -2258,6 +2259,7 @@ void EMfields3D::MaxwellSource(double *bkrylov)
   // boundary condition: Zright
   if (vct->getZright_neighbor() == MPI_PROC_NULL && bcEMfaceZright == 0)  // perfect conductor
     perfectConductorRightS(tempX, tempY, tempZ, 2);
+  */
 
   // physical space -> Krylov space
   phys2solver(bkrylov, tempX, tempY, tempZ, nxn, nyn, nzn);
@@ -3585,45 +3587,6 @@ void EMfields3D::init()
   #endif // NO_HDF5
   }
 }
-
-#ifdef BATSRUS
-/*! initiliaze EM for GEM challange */
-void EMfields3D::initBATSRUS()
-{
-  const Collective *col = &get_col();
-  const Grid *grid = &get_grid();
-  cout << "------------------------------------------" << endl;
-  cout << "         Initialize from BATSRUS          " << endl;
-  cout << "------------------------------------------" << endl;
-
-  // loop over species and cell centers: fill in charge density
-  for (int is=0; is < ns; is++)
-    for (int i=0; i < nxc; i++)
-      for (int j=0; j < nyc; j++)
-        for (int k=0; k < nzc; k++)
-        {
-          // WARNING getFluidRhoCenter contains "case" statment
-          rhocs[is][i][j][k] = col->getFluidRhoCenter(i,j,k,is);
-        }
-
-  // loop over cell centers and fill in magnetic and electric fields
-  for (int i=0; i < nxc; i++)
-    for (int j=0; j < nyc; j++)
-      for (int k=0; k < nzc; k++)
-      {
-        // WARNING getFluidRhoCenter contains "case" statment
-        col->setFluidFieldsCenter(&Ex[i][j][k],&Ey[i][j][k],&Ez[i][j][k],
-            &Bxc[i][j][k],&Byc[i][j][k],&Bzc[i][j][k],i,j,k);
-      }
-
-  // interpolate from cell centers to nodes (corners of cells)
-  for (int is=0 ; is<ns; is++)
-    grid->interpC2N(rhons[is],rhocs[is]);
-  grid->interpC2N(Bxn,Bxc);
-  grid->interpC2N(Byn,Byc);
-  grid->interpC2N(Bzn,Bzc);
-}
-#endif
 
 /*! initiliaze EM for GEM challange */
 void EMfields3D::initGEM()

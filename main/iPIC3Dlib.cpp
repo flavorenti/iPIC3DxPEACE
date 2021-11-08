@@ -372,7 +372,7 @@ bool c_Solver::ParticlesMover(int cycle)
     /* Remove particles from depopulation area */
     /* imposing that net charge zero (ni=ne)   */
     /* --------------------------------------- */
-    double Qrm = FLT_MAX;// std::min(Qremoved[1],-Qremoved[0]);
+    double Qrm = INT_MAX;// std::min(Qremoved[1],-Qremoved[0]);
   
     if (col->getCase()=="Dipole") {
       for (int i=0; i < ns; i++)

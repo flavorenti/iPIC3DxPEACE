@@ -64,6 +64,8 @@ class Particles3D:public Particles3Dcomm {
     void maxwellianNullPoints(Field * EMf);
     /** Maxellian velocity from currents and uniform spatial distribution */
     void maxwellianDoubleHarris(Field * EMf);
+    /** Maxellian velocity uniform and uniform spatial distribution, no pcls inside planet */
+    void maxwellianDipole(Field * EMF, double R, double x_center, double y_center, double z_center);
     /** pitch_angle_energy initialization (Assume B on z only) for test particles */
     void pitch_angle_energy(Field * EMf);
     /** Force Free initialization (JxB=0) for particles */
@@ -120,14 +122,6 @@ class Particles3D:public Particles3Dcomm {
     void openbc_particles_outflow();
     void openbc_delete_testparticles();
     void openbc_particles_inflow();
-
-#ifdef BATSRUS
-    /*! Initial condition: given a fluid model (BATSRUS) */
-    void MaxwellianFromFluid(Field* EMf,Collective *col, int is);
-    /*! Initiate dist. func. for a single cell form a fluid model (BATSRUS) */
-    void MaxwellianFromFluidCell(Collective *col, int is, int i, int j, int k, int &ip, double *x, double *y, double *z, double *q, double *vx, double *vy, double *vz, longid* ParticleID);
-#endif
-
 };
 
 #endif

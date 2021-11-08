@@ -137,12 +137,12 @@ w0 = 0.0	0.0
 #    1 = perfect mirror
 #    2 = riemission
 #    Caveat: if your processor topology is set to be periodic in a direction, automatically the boundary condition in that direction will be periodic
-    bcPfaceXright = 3
+    bcPfaceXright = 2
     bcPfaceXleft =  2
-    bcPfaceYright = 3
-    bcPfaceYleft =  3
-    bcPfaceZright = 3
-    bcPfaceZleft =  3
+    bcPfaceYright = 2
+    bcPfaceYleft =  2
+    bcPfaceZright = 2
+    bcPfaceZleft =  2
 
 #  print to video results 
     verbose = 1
