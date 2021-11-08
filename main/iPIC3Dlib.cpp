@@ -161,7 +161,8 @@ int c_Solver::Init(int argc, char **argv) {
       else if (col->getCase()=="NullPoints")    	part[i].maxwellianNullPoints(EMf);
       else if (col->getCase()=="TaylorGreen")           part[i].maxwellianNullPoints(EMf); // Flow is initiated from the current prescribed on the grid.
       else if (col->getCase()=="GEMDoubleHarris")  	part[i].maxwellianDoubleHarris(EMf);
-      else                                  		part[i].maxwellian(EMf);
+      else if (col->getCase()=="Dipole")     		part[i].maxwellianDipole(EMf,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+      else                                              part[i].maxwellian(EMf);
       part[i].reserve_remaining_particle_IDs();
     }
   }
@@ -276,11 +277,11 @@ void c_Solver::CalculateMoments() {
   // sum all over the species
   EMf->sumOverSpecies();
   // Fill with constant charge the planet
-  if (col->getCase()=="Dipole") {
+  /*if (col->getCase()=="Dipole") {
     EMf->ConstantChargePlanet(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
   }else if(col->getCase()=="Dipole2D") {
     EMf->ConstantChargePlanet2DPlaneXZ(col->getL_square(),col->getx_center(),col->getz_center());
-  }
+  }*/
   // Set a constant charge in the OpenBC boundaries
   //EMf->ConstantChargeOpenBC();
   // calculate densities on centers from nodes
@@ -354,7 +355,7 @@ bool c_Solver::ParticlesMover(int cycle)
     /* Count pcls inside the planet (ni,ne) and */
     /* change the velocity in random radial out */
     /* ---------------------------------------- */
-    if (col->getCase()=="Dipole") {
+    /*if (col->getCase()=="Dipole") {
       for (int i=0; i < ns; i++){
         if(cycle>0) Qremoved[i] = part[i].rotateAndCountParticlesInsideSphere(cycle, col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
       }
@@ -365,13 +366,13 @@ bool c_Solver::ParticlesMover(int cycle)
       }
     }
     if ((Qremoved[0]!=0) and (Qremoved[1]!=0) and (cycle>0)) dprintf("RotateAndCount->For proc %d the Qe/Qi counted is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
-  
+    */
 
     /* --------------------------------------- */
     /* Remove particles from depopulation area */
     /* imposing that net charge zero (ni=ne)   */
     /* --------------------------------------- */
-    double Qrm = std::min(Qremoved[1],-Qremoved[0]);
+    double Qrm = FLT_MAX;// std::min(Qremoved[1],-Qremoved[0]);
   
     if (col->getCase()=="Dipole") {
       for (int i=0; i < ns; i++)
@@ -381,7 +382,7 @@ bool c_Solver::ParticlesMover(int cycle)
       for (int i=0; i < ns; i++)
         Qremoved[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(cycle, Qrm,col->getL_square(),col->getx_center(),col->getz_center());
     }	    
-    if ((Qremoved[0]!=0) and (Qremoved[1]!=0.)) dprintf("Delete->For proc %d the Qe/Qi removed is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
+    if ((Qremoved[0]!=0) and (Qremoved[1]!=0)) dprintf("Delete->For proc %d the Qe/Qi removed is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
 
 
     /* ---------------------------------- */

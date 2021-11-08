@@ -2734,3 +2734,48 @@ double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(int cycle, double Qrm, 
   my_file.close();
   return(Q_removed);
 }
+
+
+/** Maxellian random velocity and uniform spatial distribution, no pcls inside planet */
+void Particles3D::maxwellianDipole(Field * EMf, double R, double x_center, double y_center, double z_center)
+{
+  /* initialize random generator with different seed on different processor */
+  srand(vct->getCartesian_rank() + 2);
+
+  assert_eq(_pcls.size(),0);
+
+  const double q_sgn = (qom / fabs(qom));
+  // multipled by charge density gives charge per particle
+  const double q_factor =  q_sgn * grid->getVOL() / npcel;
+  double x,y,z,u,v,w,q;
+  double DipoleOffset, xd,yd,zd;
+
+  DipoleOffset = col->getDipoleOffset();
+
+  for (int i = 1; i < grid->getNXC() - 1; i++){
+    for (int j = 1; j < grid->getNYC() - 1; j++)
+      for (int k = 1; k < grid->getNZC() - 1; k++){
+        q = q_factor * EMf->getRHOcs(i, j, k, ns);
+        for (int ii = 0; ii < npcelx; ii++)
+          for (int jj = 0; jj < npcely; jj++)
+            for (int kk = 0; kk < npcelz; kk++){
+              sample_maxwellian(u,v,w,uth, vth, wth,u0, v0, w0);
+              x = (ii + .5) * (dx / npcelx) + grid->getXN(i, j, k);
+              y = (jj + .5) * (dy / npcely) + grid->getYN(i, j, k);
+              z = (kk + .5) * (dz / npcelz) + grid->getZN(i, j, k);
+              xd = x-x_center;
+              yd = y-y_center;
+              zd = z-z_center-DipoleOffset;
+              if( (xd*xd+yd*yd+zd*zd)>(R*R) )
+                create_new_particle(u,v,w,q,x,y,z);
+            }
+      }
+  //dprintf("capacity=%d, size=%d", _pcls.capacity(), getNOP());
+  }
+  if(0){
+    dprintf("number of particles of species %d: %d", ns, getNOP());
+    const int num_ids = 1;
+    longid id_list[num_ids] = {0};
+    print_pcls(_pcls,ns,id_list, num_ids);
+  }
+}

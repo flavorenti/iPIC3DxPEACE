@@ -3489,7 +3489,7 @@ void EMfields3D::SetLambda(Grid *grid){
         double r2_planet = ((x-xc)*(x-xc)) + ((y-yc)*(y-yc)) + ((z-zc-DipoleOffset)*(z-zc-DipoleOffset));
 
         if (r2_planet>a*a) Lambda[i][j][k] = 0.0;
-        else               Lambda[i][j][k] = (a-sqrt(r2_planet))*10.0/dr;
+        else               Lambda[i][j][k] = (a-sqrt(r2_planet))*4.*M_PI/dr;
 
       }
     }

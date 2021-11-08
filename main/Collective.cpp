@@ -1286,7 +1286,7 @@ void Collective::save() {
 
   my_file << "Number of species    = " << ns << endl;
   for (int i = 0; i < ns; i++)
-    my_file << "qom[%d] = " << qom[i] << endl;
+    my_file << "qom[" << i << "] = " << qom[i] << endl;
   my_file << "---------------------------" << endl;
   my_file << "x-Length                 = " << Lx << endl;
   my_file << "y-Length                 = " << Ly << endl;
@@ -1294,6 +1294,15 @@ void Collective::save() {
   my_file << "Number of cells (x)      = " << nxc << endl;
   my_file << "Number of cells (y)      = " << nyc << endl;
   my_file << "Number of cells (z)      = " << nzc << endl;
+  my_file << "---------------------------" << endl;
+  my_file << "x-center                 = " << x_center << endl;
+  my_file << "y-center                 = " << y_center << endl;
+  my_file << "z-center                 = " << z_center << endl;
+  my_file << "Radius planet            = " << L_square << endl;
+  my_file << "Dipole Offset            = " << DipoleOffset << endl;
+  my_file << "---------------------------" << endl;
+  my_file << "SAL                      = " << yes_sal << endl;
+  my_file << "Nlayers_SAL             = " << n_layers_sal << endl;
   my_file << "---------------------------" << endl;
   my_file << "Time step                = " << dt << endl;
   my_file << "Number of cycles         = " << ncycles << endl;
@@ -1304,7 +1313,7 @@ void Collective::save() {
   }
   my_file << "current sheet thickness  = " << delta << endl;
   my_file << "B0x                      = " << B0x << endl;
-  my_file << "BOy                      = " << B0y << endl;
+  my_file << "B0y                      = " << B0y << endl;
   my_file << "B0z                      = " << B0z << endl;
   my_file << "---------------------------" << endl;
   my_file << "Smooth                   = " << Smooth << endl;
