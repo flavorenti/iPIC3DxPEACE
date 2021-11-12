@@ -180,7 +180,7 @@ void Collective::ReadInput(string inputfile) {
     TestParticlesOutputCycle = config.read < int >("TestPartOutputCycle",0);
     testPartFlushCycle = config.read < int >("TestParticlesOutputCycle",10);
     RestartOutputCycle = config.read < int >("RestartOutputCycle",5000);
-    RemoveParticlesOutputCycle = config.read < int >("RemoveParticlesOutputCycle",INT_MAX);
+    RemoveParticlesOutputCycle = config.read < int >("RemoveParticlesOutputCycle",0);
     DiagnosticsOutputCycle = config.read < int >("DiagnosticsOutputCycle", FieldOutputCycle);
     CallFinalize = config.read < bool >("CallFinalize", true);
   }
@@ -215,6 +215,9 @@ void Collective::ReadInput(string inputfile) {
 
   yes_sal = config.read < int >("yes_sal",0);
   n_layers_sal = config.read < int >("n_layers_sal",3);
+
+  NonTrivialBCPlanet = config.read < int >("NonTrivialBCPlanet",1);
+  AddExosphere = config.read < int >("AddExosphere",1);
 
   uth = new double[ns];
   vth = new double[ns];
@@ -1315,6 +1318,12 @@ void Collective::save() {
   my_file << "B0x                      = " << B0x << endl;
   my_file << "B0y                      = " << B0y << endl;
   my_file << "B0z                      = " << B0z << endl;
+  my_file << "---------------------------" << endl;
+  my_file << "v0x                      = " << u0 << endl;
+  my_file << "v0y                      = " << u0 << endl;
+  my_file << "v0z                      = " << w0 << endl;
+  for (int is = 0; is < ns; is++) 
+  my_file << "vth["<<is<<"]            = " << uth[is] << endl;
   my_file << "---------------------------" << endl;
   my_file << "Smooth                   = " << Smooth << endl;
   my_file << "SmoothNiter              = " << SmoothNiter<< endl;

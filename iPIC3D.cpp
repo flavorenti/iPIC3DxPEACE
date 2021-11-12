@@ -52,8 +52,6 @@ int main(int argc, char **argv) {
     timeTasks.resetCycle();
     KCode.CalculateField(i);
     KCode.ParticlesMover(i);
-    if (KCode.get_myrank() == 0)
-      printf("** Particle Mover done **\n");
     KCode.CalculateB();
     KCode.CalculateMoments();
     KCode.WriteOutput(i);

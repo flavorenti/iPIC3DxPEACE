@@ -2136,7 +2136,7 @@ void EMfields3D::calculateE(int cycle)
 		delete[]bkrylovPoisson;
   }                             // end of divergence cleaning
   */
-  if (vct->getCartesian_rank() == 0)
+  if (col->getVerbose() and vct->getCartesian_rank() == 0)
     cout << "*** MAXWELL SOLVER ***" << endl;
   // prepare the source 
   MaxwellSource(bkrylov);
@@ -2388,7 +2388,7 @@ void EMfields3D::MaxwellImage(double *im, double* vector)
   sumscalprod(imageY, delt, vectY, Lambda, nxn, nyn, nzn);
   sumscalprod(imageZ, delt, vectZ, Lambda, nxn, nyn, nzn);
 
-  // boundary condition: Xleft
+  /* // boundary condition: Xleft
   if (vct->getXleft_neighbor() == MPI_PROC_NULL && bcEMfaceXleft == 0)  // perfect conductor
     perfectConductorLeft(imageX, imageY, imageZ, vectX, vectY, vectZ, 0);
   // boundary condition: Xright
@@ -2406,7 +2406,7 @@ void EMfields3D::MaxwellImage(double *im, double* vector)
   // boundary condition: Zright
   if (vct->getZright_neighbor() == MPI_PROC_NULL && bcEMfaceZright == 0)  // perfect conductor
     perfectConductorRight(imageX, imageY, imageZ, vectX, vectY, vectZ, 2);
-
+  */
   // OpenBC
   OpenBoundaryInflowEImage(imageX, imageY, imageZ, vectX, vectY, vectZ, nxn, nyn, nzn);
 
@@ -2468,6 +2468,7 @@ void EMfields3D::MUdot(arr3_double MUdotX, arr3_double MUdotY, arr3_double MUdot
 void EMfields3D::smooth(arr3_double vector, int type)
 {
   if(Smooth==1.0) return;
+  const Collective *col = &get_col();
   const VirtualTopology3D *vct = &get_vct();
   const Grid *grid = &get_grid();
 
@@ -2476,7 +2477,7 @@ void EMfields3D::smooth(arr3_double vector, int type)
   double beta2D  = (1-alpha)/4.0;
   int nx, ny, nz;
 
-  if (vct->getCartesian_rank() == 0)
+  if (col->getVerbose() and vct->getCartesian_rank() == 0)
     cout << "*** smooth rho,Jx,Jy,Jz "<< SmoothNiter <<" times, strength (in range 0-1) = "<< 1.-alpha <<" ***" << endl;
     
   switch (type) {
@@ -2535,7 +2536,7 @@ void EMfields3D::smoothE()
 
   double ***temp = newArr3(double, nxn, nyn, nzn);
 
-  if (vct->getCartesian_rank() == 0)
+  if (col->getVerbose() and vct->getCartesian_rank() == 0)
     cout << "*** smoothE "<< SmoothNiter <<" times, strength (in range 0-1) = "<< 1.-alpha <<" ***" << endl;
 
   for (int icount = 1; icount < SmoothNiter + 1; icount++) {
@@ -2983,9 +2984,7 @@ void EMfields3D::ConstantChargePlanet(double R,
 void EMfields3D::ConstantChargePlanet2DPlaneXZ(double R,  double x_center,double z_center)
 {
   const Grid *grid = &get_grid();
-  //if (get_vct().getCartesian_rank() == 0)
-      //cout << "*** Constant Charge 2D Planet ***" << endl;
-
+  
   assert_eq(nyn,4);
   double xd;
   double zd;
@@ -3096,7 +3095,7 @@ void EMfields3D::calculateB()
   // move to krylov space the RHS
   phys2solver(bkrylovPoisson, divB, nxc, nyc, nzc);
   // compute solution poisson lapl(PSI)=0 using GMRES
-  if (vct->getCartesian_rank() == 0) cout << "*** DIVERGENCE CLEANING div(B)=0 using GMRes***" << endl;
+  if (col->getVerbose() and vct->getCartesian_rank() == 0) cout << "*** DIVERGENCE CLEANING div(B)=0 using GMRes***" << endl;
   GMRES(&Field::PoissonImage, xkrylovPoisson, (nxc - 2) * (nyc - 2) * (nzc - 2), bkrylovPoisson, 20, 200, GMREStol, this);
   // solution back to physical space 
   solver2phys(PSI, xkrylovPoisson, nxc, nyc, nzc);

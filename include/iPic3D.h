@@ -57,7 +57,10 @@ namespace iPic3D {
       rho(0),
       BulkEnergy(0),
       momentum(0),
-      Qremoved(0),
+      Count(0),
+      Qdel(0),
+      Qexo(0),
+      Qrep(0),
       my_clock(0)
     {}
     int Init(int argc, char **argv);
@@ -101,7 +104,10 @@ namespace iPic3D {
     double        *rho;
     double        *BulkEnergy;
     double        *momentum;
-    double        *Qremoved;
+    double        *Count;
+    double        *Qdel;
+    double        *Qexo;
+    double        *Qrep;
     Timing        *my_clock;
 
 #ifndef NO_HDF5

@@ -106,18 +106,18 @@ class Particles3D:public Particles3Dcomm {
     int mover_relativistic(Field * EMf);
    private:
     /** repopulate particles in a single cell */
-    void populate_cell_with_particles(int i, int j, int k, double q,
-      double dx_per_pcl, double dy_per_pcl, double dz_per_pcl, int num_layers, Field * EMf);
-    void populate_cell_with_particles_interp(int i, int j, int k, double q,
-      double dx_per_pcl, double dy_per_pcl, double dz_per_pcl, double rho_close[7], double V_close[3][7], int dir[6]);
+    double populate_cell_with_particles(int i, int j, int k, double q, double dx_per_pcl, double dy_per_pcl, double dz_per_pcl, int num_layers, Field * EMf);
+    void populate_cell_with_particles_interp(int i, int j, int k, double q, double dx_per_pcl, double dy_per_pcl, double dz_per_pcl, double rho_close[7], double V_close[3][7], int dir[6]);
    public:
     /** repopulate particles in boundary layer */
-    void repopulate_particles(Field * EMf);
+    double repopulate_particles(Field * EMf);
     /*! Delete the particles inside the sphere with radius R and center x_center y_center and return the total charge removed */
     double rotateAndCountParticlesInsideSphere(int cycle, double R, double x_center, double y_center, double z_center);
     double deleteParticlesInsideSphere(int cycle, double Qrm, double R, double x_center, double y_center, double z_center);
     double rotateAndCountParticlesInsideSphere2DPlaneXZ(int cycle, double R, double x_center, double z_center);
     double deleteParticlesInsideSphere2DPlaneXZ(int cycle, double Qrm, double R, double x_center, double z_center);
+    /** Add the ionized exosphere */
+    double AddIonizedExosphere(double R, double x_center, double y_center, double z_center);
     /**Particles Open Boundary */
     void openbc_particles_outflow();
     void openbc_delete_testparticles();

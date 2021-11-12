@@ -596,13 +596,11 @@ void Particles3D::mover_PC_AoS(Field * EMf)
 	{
 	  convertParticlesToAoS();
 
-#ifdef PRINTPCL   
           #pragma omp master
 	  if (vct->getCartesian_rank() == 0) {
 		cout << "***AoS MOVER species " << ns << " *** Max." << NiterMover << " ITERATIONS   ****" << endl;
 	  }
 	  int sum_innter = 0;
-#endif
 	  const_arr4_pfloat fieldForPcls = EMf->get_fieldForPcls();
 	
 
@@ -1600,13 +1598,14 @@ int Particles3D::mover_relativistic(Field * EMf)
 }
 
 // this populate a cell with maxwellian particles using n,V,T at t=0
-inline void Particles3D::populate_cell_with_particles(
+inline double Particles3D::populate_cell_with_particles(
   int i, int j, int k, double q_per_particle,
   double dx_per_pcl, double dy_per_pcl, double dz_per_pcl, int num_layers, Field * EMf)
 {
   double  FourPI =16*atan(1.0);
   double du0=0., dv0=0., dw0=0.;
   double rotx, roty, rotz;
+  double Qremoved=0.;
   //for Xleft, for electrons add correction rot(B) to V0 
   if ((i<=num_layers)*(ns==0)){
     rotx = EMf->getCurlN2CB_x(i,j,k);
@@ -1637,14 +1636,14 @@ inline void Particles3D::populate_cell_with_particles(
     z = (kk + sample_u_double())*dz_per_pcl + cell_low_z;
     }while((x>Lx) || (y>Ly) || (z>Lz) || (x*y*z)<0 || sqrt(u*u+v*v+w*w)>1.0); //avoid to create particles out of the box and supra-luminous 
     create_new_particle(u,v,w,q_per_particle,x,y,z);
+    Qremoved += q_per_particle;
   }
+  return Qremoved;
 }
 
 
 // this populate a cell with maxwellian particles using T(t=0) and n,V interpolated on the nearest 6 cells at t=t 
-inline void Particles3D::populate_cell_with_particles_interp(
-  int i, int j, int k, double q_per_particle,
-  double dx_per_pcl, double dy_per_pcl, double dz_per_pcl, double rho_close[7], double V_close[3][7], int dir[6])
+inline void Particles3D::populate_cell_with_particles_interp(int i, int j, int k, double q_per_particle,double dx_per_pcl, double dy_per_pcl, double dz_per_pcl, double rho_close[7], double V_close[3][7], int dir[6])
 {
   // declare extrapolatd values 
   double rho_til,u_til,v_til,w_til; 
@@ -1689,12 +1688,12 @@ inline void Particles3D::populate_cell_with_particles_interp(
 // This could be generalized to use fluid moments
 // to generate particles.
 //
-void Particles3D::repopulate_particles(Field * EMf)
+double Particles3D::repopulate_particles(Field * EMf)
 {
   using namespace BCparticles;
 
   // if this is not a boundary process then there is nothing to do
-  if(!vct->isBoundaryProcess_P()) return;
+  if(!vct->isBoundaryProcess_P()) return 0.;
 
   // if there are no reemission boundaries then no one has anything to do
   const bool repop_bndry_in_X = !vct->getPERIODICX_P() &&
@@ -1706,7 +1705,7 @@ void Particles3D::repopulate_particles(Field * EMf)
   const bool repopulation_boundary_exists =
         repop_bndry_in_X || repop_bndry_in_Y || repop_bndry_in_Z;
 
-  if(!repopulation_boundary_exists) return;
+  if(!repopulation_boundary_exists) return 0.;
 
 
   // boundaries to repopulate
@@ -1724,7 +1723,7 @@ void Particles3D::repopulate_particles(Field * EMf)
   //dprintf("repopulate = %d,%d,%d,%d,%d,%d",repopulateXleft,repopulateYleft,repopulateZleft,repopulateXrght,repopulateYrght,repopulateZrght);
   // if this process has no reemission boundaries then there is nothing to do
   if(!do_repopulate)
-    return; 
+    return 0.; 
 
   // there are better ways to obtain these values...
   //
@@ -1733,7 +1732,8 @@ void Particles3D::repopulate_particles(Field * EMf)
     = (qom/fabs(qom))*(Ninj/FourPI/npcel)*(1.0/grid->getInvVOL());
 
   const int nxc = grid->getNXC();
-  const int nyc = grid->getNYC(); const int nzc = grid->getNZC();
+  const int nyc = grid->getNYC();
+  const int nzc = grid->getNZC();
   // number of cell layers to repopulate at boundary
   const int num_layers = 3;
   const double xLow = num_layers*dx;
@@ -1745,6 +1745,8 @@ void Particles3D::repopulate_particles(Field * EMf)
   if(repopulateXleft || repopulateXrght) assert_gt(nxc, 2*num_layers);
   if(repopulateYleft || repopulateYrght) assert_gt(nyc, 2*num_layers);
   if(repopulateZleft || repopulateZrght) assert_gt(nzc, 2*num_layers);
+
+  double Qremoved=0.,Qtmp=0.;
 
   // delete particles in repopulation layers
   //if(ns==1)
@@ -1762,8 +1764,10 @@ void Particles3D::repopulate_particles(Field * EMf)
       (repopulateXrght && pcl.get_x() > xHgh) ||
       (repopulateYrght && pcl.get_y() > yHgh) ||
       (repopulateZrght && pcl.get_z() > zHgh);
-    if(delete_pcl)
+    if(delete_pcl){
+      Qremoved += pcl.get_q();
       delete_particle(pidx);
+    }
     else
       pidx++;
   }
@@ -1805,7 +1809,8 @@ void Particles3D::repopulate_particles(Field * EMf)
       for (int j=ybeg; j<=yend; j++)
       for (int k=zbeg; k<=zend; k++)
       {
-        populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
+        Qtmp = populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
+        Qremoved += Qtmp;
       }
       // these have all been filled, so never touch them again.
       xbeg += num_layers;
@@ -1893,7 +1898,8 @@ void Particles3D::repopulate_particles(Field * EMf)
         
         // fill the cell with new method that uses n,V extrapolated
         if(warning)*/
-          populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
+        Qtmp = populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
+        Qremoved += Qtmp;
         //else
         //  populate_cell_with_particles_interp(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl,rho_close,V_close,dir);
       }
@@ -1932,7 +1938,8 @@ void Particles3D::repopulate_particles(Field * EMf)
         }
         // fill the cell with new method that uses n,V extrapolated
         if(warning)*/
-          populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
+        Qtmp = populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
+        Qremoved += Qtmp;
         //else
         //  populate_cell_with_particles_interp(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl,rho_close,V_close,dir);
         //
@@ -1970,7 +1977,8 @@ void Particles3D::repopulate_particles(Field * EMf)
         }
         // fill the cell with new method that uses n,V extrapolated
         if(warning)*/
-          populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
+        Qtmp = populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
+        Qremoved += Qtmp;
         //else
         //  populate_cell_with_particles_interp(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl,rho_close,V_close,dir);
         //
@@ -2007,8 +2015,8 @@ void Particles3D::repopulate_particles(Field * EMf)
         }
         // fill the cell with new method that uses n,V extrapolated
         if(warning)*/
-          populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
-        //else
+        Qtmp = populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
+        Qremoved += Qtmp;//else
         //  populate_cell_with_particles_interp(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl,rho_close,V_close,dir);
         //
       }
@@ -2023,6 +2031,8 @@ void Particles3D::repopulate_particles(Field * EMf)
 
   //if (vct->getCartesian_rank()==0)
   //  cout << "*** number of particles after repopulate" << getNOP() << " ***" << endl;
+
+  return Qremoved;
 }
 
 // Open BC for particles: duplicate particles on the boundary,.
@@ -2030,7 +2040,7 @@ void Particles3D::repopulate_particles(Field * EMf)
 // if so, add to particle list
 void Particles3D::openbc_particles_inflow()
 {
- // dprintf("openbc_particles_inflow UNDER CONSTRUCTION!!!");
+  eprintf("openbc_particles_inflow DEPRECATED!!!");
 
   if(!vct->isBoundaryProcess_P()) return;
 
@@ -2160,6 +2170,8 @@ void Particles3D::openbc_particles_inflow()
 // if so, add to particle list
 void Particles3D::openbc_particles_outflow()
 {
+  eprintf("openbc_particles_outflow DEPRECATED!!!");
+
   // if this is not a boundary process then there is nothing to do
   if(!vct->isBoundaryProcess_P()) return;
 
@@ -2528,7 +2540,7 @@ double Particles3D::rotateAndCountParticlesInsideSphere(int cycle, double R, dou
       pcl.set_u(u);
       pcl.set_v(v);
       pcl.set_w(w);
-      if(cycle>0 and ((cycle%OutputCycle)==0)) my_file_rt << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
+      if( (OutputCycle!=0) and ((cycle%OutputCycle)==0) ) my_file_rt << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
     }
     pidx++;
   }
@@ -2567,7 +2579,7 @@ double Particles3D::deleteParticlesInsideSphere(int cycle, double Qrm, double R,
     if ( (xd*xd+yd*yd+zd*zd)<R*R ){
       if (prm<=Nrm){
         Q_removed += pcl.get_q();
-        if(cycle>0 and ((cycle%OutputCycle)==0)) my_file << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
+        if( (OutputCycle!=0) and ((cycle%OutputCycle)==0) ) my_file << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
         delete_particle(pidx);
         prm++;
       }
@@ -2616,7 +2628,7 @@ double Particles3D::rotateAndCountParticlesInsideSphere2DPlaneXZ(int cycle, doub
       wold = pcl.get_w();
       Vmod = sqrt( pow(uold,2) + pow(vold,2) + pow(wold,2) );
       Q_removed += pcl.get_q();
-      if(cycle>0 and ((cycle%OutputCycle)==0)) my_file_ct << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
+      if( (OutputCycle!=0) and ((cycle%OutputCycle)==0) ) my_file_ct << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
       do{
          theta = rand() * RandNorm;
          u = Vmod*sin( theta );
@@ -2626,7 +2638,7 @@ double Particles3D::rotateAndCountParticlesInsideSphere2DPlaneXZ(int cycle, doub
       pcl.set_u(u);
       pcl.set_v(v);
       pcl.set_w(w);  
-      if(cycle>0 and ((cycle%OutputCycle)==0)) my_file_rt << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
+      if( (OutputCycle!=0) and ((cycle%OutputCycle)==0) ) my_file_rt << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
     }
     pidx++;
   }
@@ -2659,7 +2671,7 @@ double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(int cycle, double Qrm, 
     if ( (xd*xd+zd*zd) < R*R ){
       if(prm<=Nrm){
         Q_removed += pcl.get_q();
-        if(cycle>0 and ((cycle%OutputCycle)==0)) my_file << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
+        if( (OutputCycle!=0) and ((cycle%OutputCycle)==0) ) my_file << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
         delete_particle(pidx);
         prm++;
       }
@@ -2689,6 +2701,7 @@ void Particles3D::maxwellianDipole(Field * EMf, double R, double x_center, doubl
 
   assert_eq(_pcls.size(),0);
 
+  double Rmax = 3.*R;        // max radius to inject pcls
   const double q_sgn = (qom / fabs(qom));
   // multipled by charge density gives charge per particle
   const double q_factor =  q_sgn * grid->getVOL() / npcel;
@@ -2711,7 +2724,7 @@ void Particles3D::maxwellianDipole(Field * EMf, double R, double x_center, doubl
               xd = x-x_center;
               yd = y-y_center;
               zd = z-z_center-DipoleOffset;
-              if( (xd*xd+yd*yd+zd*zd)>(R*R) )
+              if( (xd*xd+yd*yd+zd*zd)>(Rmax*Rmax) )
                 create_new_particle(u,v,w,q,x,y,z);
             }
       }
@@ -2723,4 +2736,64 @@ void Particles3D::maxwellianDipole(Field * EMf, double R, double x_center, doubl
     longid id_list[num_ids] = {0};
     print_pcls(_pcls,ns,id_list, num_ids);
   }
+}
+
+
+/** Implementation of an ionized exosphere for Mercury */
+double Particles3D::AddIonizedExosphere(double R, double x_center, double y_center, double z_center)
+{
+  double Rmax = 3.*R;        // max radius to inject pcls
+  //double Nexo = 3.e3;        // density of exosphere neutrals at the surface (in nsw units)
+  //double fexo = 1e-9;        // ioniz. frequency in units of wpi
+  double hexo = 0.5*R;       // scale length of exosphere
+
+  double randx,randy,randz;
+  int Ninject_int;
+  double  FourPI =16*atan(1.0);
+  const double q_sgn = (qom / fabs(qom));
+  const double q_factor =  q_sgn * grid->getVOL() / npcel;
+  double x,y,z,u,v,w,q,Ninject;
+  double DipoleOffset, xd,yd,zd, dist, dist_sq;
+  double Qinject=0.;
+
+  DipoleOffset = col->getDipoleOffset();
+
+  if (col->getVerbose() and vct->getCartesian_rank()==0)  cout << "*** Species " << ns << "-" << " Injecting ionized exosphere particles ****" << endl;
+
+  for (int i=1; i<grid->getNXC()-1;i++)
+    for (int j=1; j<grid->getNYC()-1;j++)
+      for (int k=1; k<grid->getNZC()-1;k++) {
+              
+        xd = x-x_center;
+        yd = y-y_center;
+        zd = z-z_center-DipoleOffset;
+        
+	dist_sq = xd*xd+yd*yd+zd*zd;
+        dist    = sqrt(dist_sq);
+
+        if( (dist_sq>R) and (dist_sq<pow(Rmax,2)) ){
+
+          Ninject = 10.*exp(-(dist-R)/hexo);  //CAREFUL: it should be *Nexo*(dt*fexo) instead of 10.!
+          Ninject_int = (int) Ninject;
+
+          for (int jj=0; jj<Ninject_int; jj++){
+            // Assign random position in the cell
+            randx = rand()/(double)RAND_MAX;
+            randy = rand()/(double)RAND_MAX;
+            randz = rand()/(double)RAND_MAX;
+            x = grid->getXC(i,j,k)+(randx-0.5)*dx;
+            y = grid->getYC(i,j,k)+(randy-0.5)*dy;
+            z = grid->getZC(i,j,k)+(randz-0.5)*dz;
+            //Assign velocities
+	    sample_maxwellian(u, v, w, uth, vth, wth, u0, v0, w0);
+	    // Assign charge 
+            q = q_sgn*q_factor/FourPI;
+            // create particle
+	    create_new_particle(u,v,w,q,x,y,z);
+	    Qinject += q;
+          }
+
+        } 
+      }
+  return Qinject;
 }

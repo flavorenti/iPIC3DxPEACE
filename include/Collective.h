@@ -136,6 +136,9 @@ class Collective
     int getYes_sal()const{ return (yes_sal); }
     int getN_layers_sal()const{ return (n_layers_sal); }
 
+    int getNonTrivialBCPlanet()const{ return (NonTrivialBCPlanet); }
+    int getAddExosphere()const{ return (AddExosphere); }
+
     int getBcPfaceXright()const{ return (bcPfaceXright); }
     int getBcPfaceXleft()const{ return (bcPfaceXleft); }
     int getBcPfaceYright()const{ return (bcPfaceYright); }
@@ -310,6 +313,10 @@ class Collective
     /* number of cells for the SAL method */
     int n_layers_sal;
 
+    /* bool value for applying new planet BC (reinject pcls) */
+    int NonTrivialBCPlanet;
+    /* bool value for applying exosphere pcls */
+    int AddExosphere;
 
     /*! Case type */
     string Case;

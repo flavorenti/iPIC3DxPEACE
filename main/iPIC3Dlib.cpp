@@ -74,7 +74,10 @@ c_Solver::~c_Solver()
   delete [] Ke;
   delete [] rho;
   delete [] momentum;
-  delete [] Qremoved;
+  delete [] Count;
+  delete [] Qdel;
+  delete [] Qrep;
+  delete [] Qexo;
   delete my_clock;
 }
 
@@ -162,6 +165,7 @@ int c_Solver::Init(int argc, char **argv) {
       else if (col->getCase()=="TaylorGreen")           part[i].maxwellianNullPoints(EMf); // Flow is initiated from the current prescribed on the grid.
       else if (col->getCase()=="GEMDoubleHarris")  	part[i].maxwellianDoubleHarris(EMf);
       else if (col->getCase()=="Dipole")     		part[i].maxwellianDipole(EMf,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+      else if (col->getCase()=="Dipole2D")     		part[i].maxwellianDipole(EMf,col->getL_square(),col->getx_center(),0.,col->getz_center());
       else                                              part[i].maxwellian(EMf);
       part[i].reserve_remaining_particle_IDs();
     }
@@ -214,7 +218,10 @@ int c_Solver::Init(int argc, char **argv) {
     my_file.close();
   }
   
-  Qremoved = new double[ns];
+  Qdel = new double[ns];
+  Count = new double[ns];
+  Qrep = new double[ns];
+  Qexo = new double[ns];
   my_clock = new Timing(myrank);
 
   return 0;
@@ -277,13 +284,13 @@ void c_Solver::CalculateMoments() {
   // sum all over the species
   EMf->sumOverSpecies();
   // Fill with constant charge the planet
-  /*if (col->getCase()=="Dipole") {
+  if (col->getCase()=="Dipole") {
     EMf->ConstantChargePlanet(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+    if (col->getVerbose() and myrank==0) printf("**** Apply Constant Charge Inside Planet **** \n");
   }else if(col->getCase()=="Dipole2D") {
     EMf->ConstantChargePlanet2DPlaneXZ(col->getL_square(),col->getx_center(),col->getz_center());
-  }*/
-  // Set a constant charge in the OpenBC boundaries
-  //EMf->ConstantChargeOpenBC();
+    if (col->getVerbose() and myrank==0) printf("**** Apply Constant Charge Inside Planet 2D **** \n");
+  }
   // calculate densities on centers from nodes
   EMf->interpDensitiesN2C();
   // calculate the hat quantities for the implicit method
@@ -319,7 +326,7 @@ bool c_Solver::ParticlesMover(int cycle)
 
     for (int i = 0; i < ns; i++)  // move each species
     {
-      // #pragma omp task inout(part[i]) in(grid) target_device(booster)
+     // #pragma omp task inout(part[i]) in(grid) target_device(booster)
       // should merely pass EMf->get_fieldForPcls() rather than EMf.
       // use the Predictor Corrector scheme to move particles
       switch(Parameters::get_MOVER_TYPE())
@@ -343,46 +350,35 @@ bool c_Solver::ParticlesMover(int cycle)
           unsupported_value_error(Parameters::get_MOVER_TYPE());
       }
 
-
-      //Should integrate BC into separate_and_send_particles
-      //part[i].openbc_particles_inflow();
-      part[i].repopulate_particles(EMf);  // external boundary conditions for pcls
-      //part[i].openbc_delete_testparticles(); // to be sure that there are no particle out of the box (or problem with proc communication) 
+      // Injection particles from ionized exosphere ./Job
+      if (col->getAddExosphere()) Qexo[i] = part[i].AddIonizedExosphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+      // External boundary conditions particles     ./Job
+      Qrep[i] = part[i].repopulate_particles(EMf); 
     }
 
 
-    /* ---------------------------------------- */
-    /* Count pcls inside the planet (ni,ne) and */
-    /* change the velocity in random radial out */
-    /* ---------------------------------------- */
-    /*if (col->getCase()=="Dipole") {
+    // Internal boundary conditions particles.                 ./Job
+    // case with re-inejction of pcls to keep net charge zero  ./Job
+    double Qrm, Count_plus, Count_mins;
+    if (col->getNonTrivialBCPlanet()) {
       for (int i=0; i < ns; i++){
-        if(cycle>0) Qremoved[i] = part[i].rotateAndCountParticlesInsideSphere(cycle, col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+        if (col->getCase()=="Dipole") Count[i] = part[i].rotateAndCountParticlesInsideSphere(cycle,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+        else if (col->getCase()=="Dipole2D") Count[i] = part[i].rotateAndCountParticlesInsideSphere2DPlaneXZ(cycle,col->getL_square(),col->getx_center(),col->getz_center());
+        if (Count[i]>0)  Count_plus += Count[i];
+        if (Count[i]<0)  Count_mins += Count[i];
+        if (col->getVerbose() and Count[i]!=0) dprintf("RotateAndCount->For proc %d the Q%i counted is = %f",myrank,i,Count[i]);
       }
+      Qrm = std::min(Count_plus,-Count_mins);
     }
-    else if (col->getCase()=="Dipole2D") {
-      for (int i=0; i < ns; i++){
-        if(cycle>0) Qremoved[i] = part[i].rotateAndCountParticlesInsideSphere2DPlaneXZ(cycle, col->getL_square(),col->getx_center(),col->getz_center());
-      }
+    // trivial case with only pcls removal ./Job
+    else {
+      Qrm = (double) INT_MAX;
     }
-    if ((Qremoved[0]!=0) and (Qremoved[1]!=0) and (cycle>0)) dprintf("RotateAndCount->For proc %d the Qe/Qi counted is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
-    */
-
-    /* --------------------------------------- */
-    /* Remove particles from depopulation area */
-    /* imposing that net charge zero (ni=ne)   */
-    /* --------------------------------------- */
-    double Qrm = INT_MAX;// std::min(Qremoved[1],-Qremoved[0]);
-  
-    if (col->getCase()=="Dipole") {
-      for (int i=0; i < ns; i++)
-        Qremoved[i] = part[i].deleteParticlesInsideSphere(cycle, Qrm,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+    for (int i=0; i < ns; i++) {
+      if (col->getCase()=="Dipole") Qdel[i] = part[i].deleteParticlesInsideSphere(cycle,Qrm,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+      else if (col->getCase()=="Dipole2D") Qdel[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(cycle,Qrm,col->getL_square(),col->getx_center(),col->getz_center());
+      if (col->getVerbose() and Qdel[i]!=0) dprintf("Delete->For proc %d the Q%i removed is = %f",myrank,i,Qdel[i]);
     }
-    else if (col->getCase()=="Dipole2D") {
-      for (int i=0; i < ns; i++)
-        Qremoved[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(cycle, Qrm,col->getL_square(),col->getx_center(),col->getz_center());
-    }	    
-    if ((Qremoved[0]!=0) and (Qremoved[1]!=0)) dprintf("Delete->For proc %d the Qe/Qi removed is = %f/%f",myrank,Qremoved[0],Qremoved[1]);
 
 
     /* ---------------------------------- */
@@ -573,7 +569,13 @@ void c_Solver::WriteConserved(int cycle) {
     }
     if (myrank == (nprocs-1)) {
       ofstream my_file(cq.c_str(), fstream::app);
-      if(cycle==0) my_file << "cycle" << "\t" << "Total_Energy" << "\t" << "Momentum" << "\t" << "Eenergy" << "\t" << "Benergy" << "\t" << "Kenergy" << "\t" << "Kenergy(0)" << "\t" << "Kenergy(1)" << "\t" << "BulkEnergy(0)" << "\t" << "BulkEnergy(1)" << "\t" << "Rho(0)" << "\t" << "Rho(1)" << endl;
+      if(cycle==0){ 
+	      my_file << "cycle" << "\t" << "Total_Energy" << "\t" << "Momentum" << "\t" << "Eenergy" << "\t" << "Benergy" << "\t" << "Kenergy" ;
+	      for (int is = 0; is < ns; is++) my_file << "Kenergy("<<is<<")" << "\t";
+	      for (int is = 0; is < ns; is++) my_file << "BulkEnergy("<<is<<")" << "\t";
+	      for (int is = 0; is < ns; is++) my_file << "Rho("<<is<<")" << "\t";
+	      my_file << endl;
+      }
       my_file << cycle << "\t" << (Eenergy + Benergy + TOTenergy) << "\t" << TOTmomentum << "\t" << Eenergy << "\t" << Benergy << "\t" << TOTenergy;
       for (int is = 0; is < ns; is++) my_file << "\t" << Ke[is];
       for (int is = 0; is < ns; is++) my_file << "\t" << BulkEnergy[is];
