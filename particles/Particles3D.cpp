@@ -2516,20 +2516,19 @@ double Particles3D::rotateAndCountParticlesInsideSphere(int cycle, double R, dou
 
   ofstream my_file_ct ("data/CountedParticles.txt", ios::app);
   ofstream my_file_rt ("data/RotatedParticles.txt", ios::app);
-
   while (pidx < _pcls.size())
   {
     SpeciesParticle& pcl = _pcls[pidx];
     xd = pcl.get_x() - x_center;
     yd = pcl.get_y() - y_center;
     zd = pcl.get_z() - z_center - DipoleOffset;
-    if ( (xd*xd+yd*yd+zd*zd) < R*R ){
+    if ( (xd*xd+yd*yd+zd*zd) < (R*R) ){
       uold = pcl.get_u();
       vold = pcl.get_v();
       wold = pcl.get_w();
       Vmod = sqrt( pow(uold,2) + pow(vold,2) + pow(wold,2) );
       Q_removed += pcl.get_q();
-      if(cycle>0 and ((cycle%OutputCycle)==0)) my_file_ct << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
+      if( (OutputCycle!=0) and ((cycle%OutputCycle)==0) ) my_file_ct << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
       do{
          theta = rand() * RandNorm/2.;
 	 phi   = rand() * RandNorm;
@@ -2563,8 +2562,7 @@ double Particles3D::deleteParticlesInsideSphere(int cycle, double Qrm, double R,
   int Nrm;
   double DipoleOffset;
 
-  if (cycle==0) Nrm = INT_MAX;
-  else          Nrm = Qrm/q_per_particle;
+  Nrm = (int) Qrm/q_per_particle;
  
   DipoleOffset = col->getDipoleOffset();
 
@@ -2658,8 +2656,7 @@ double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(int cycle, double Qrm, 
   const double q_per_particle = (Ninj/FourPI/npcel)*(1.0/grid->getInvVOL());
   int Nrm;
 
-  if (cycle==0) Nrm = INT_MAX;
-  else          Nrm = Qrm/q_per_particle;
+  Nrm = (int) Qrm/q_per_particle;
 
   ofstream my_file ("data/RemovedParticles.txt", ios::app);
 
@@ -2751,7 +2748,7 @@ double Particles3D::AddIonizedExosphere(double R, double x_center, double y_cent
   int Ninject_int;
   double  FourPI =16*atan(1.0);
   const double q_sgn = (qom / fabs(qom));
-  const double q_factor =  q_sgn * grid->getVOL() / npcel;
+  const double q_factor =  q_sgn * grid->getVOL() / npcel_sw;
   double x,y,z,u,v,w,q,Ninject;
   double DipoleOffset, xd,yd,zd, dist, dist_sq;
   double Qinject=0.;
@@ -2771,7 +2768,7 @@ double Particles3D::AddIonizedExosphere(double R, double x_center, double y_cent
 	dist_sq = xd*xd+yd*yd+zd*zd;
         dist    = sqrt(dist_sq);
 
-        if( (dist_sq>R) and (dist_sq<pow(Rmax,2)) ){
+        if( (dist_sq>(R*R)) and (dist_sq<(Rmax*Rmax)) ){
 
           Ninject = 10.*exp(-(dist-R)/hexo);  //CAREFUL: it should be *Nexo*(dt*fexo) instead of 10.!
           Ninject_int = (int) Ninject;

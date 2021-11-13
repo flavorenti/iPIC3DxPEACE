@@ -167,11 +167,12 @@ Particles3Dcomm::Particles3Dcomm(
 
   // info from collectiveIO
   isTestParticle = (get_species_num()>=col->getNs());
-  npcel  = col->getNpcel(get_species_num());
-  npcelx = col->getNpcelx(get_species_num());
-  npcely = col->getNpcely(get_species_num());
-  npcelz = col->getNpcelz(get_species_num());
-  qom    = col->getQOM(get_species_num());
+  npcel    = col->getNpcel(get_species_num());
+  npcel_sw = col->getNpcel(0);
+  npcelx   = col->getNpcelx(get_species_num());
+  npcely   = col->getNpcely(get_species_num());
+  npcelz   = col->getNpcelz(get_species_num());
+  qom      = col->getQOM(get_species_num());
 
 if( !isTestParticle ){
   uth = col->getUth(get_species_num());

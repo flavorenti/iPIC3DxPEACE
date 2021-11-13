@@ -95,11 +95,11 @@ npcelz =  4  4  0  0
 # qom = charge to mass ratio for different species 
 qom =  -25.0	1.0  -25.0  1.0	
 # uth = thermal velocity for different species - Direction X  
-uth =  0.045  0.0063  0.0031  0.0001
+uth =  0.045  0.0063  0.031  0.0005
 # vth = thermal velocity for different species - Direction Y 
-vth =  0.045  0.0063  0.0031  0.0001
+vth =  0.045  0.0063  0.031  0.0005
 # wth = thermal velocity for different species - Direction Z 
-wth =  0.045  0.0063  0.0031  0.0001
+wth =  0.045  0.0063  0.031  0.0005
 
 # u0 = drift velocity   - Direction X    
 u0 =  0.02  0.02  0.0  0.0

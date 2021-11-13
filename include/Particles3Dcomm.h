@@ -269,6 +269,8 @@ protected:
   //long long np_tot;
   /** number of particles per cell */
   int npcel;
+  /** number of particles per cell of sw plasma*/
+  int npcel_sw;
   /** number of particles per cell - X direction */
   int npcelx;
   /** number of particles per cell - Y direction */

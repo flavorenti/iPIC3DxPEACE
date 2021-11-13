@@ -164,7 +164,7 @@ int c_Solver::Init(int argc, char **argv) {
       else if (col->getCase()=="NullPoints")    	part[i].maxwellianNullPoints(EMf);
       else if (col->getCase()=="TaylorGreen")           part[i].maxwellianNullPoints(EMf); // Flow is initiated from the current prescribed on the grid.
       else if (col->getCase()=="GEMDoubleHarris")  	part[i].maxwellianDoubleHarris(EMf);
-      else if (col->getCase()=="Dipole")     		part[i].maxwellianDipole(EMf,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+      //else if (col->getCase()=="Dipole")     		part[i].maxwellianDipole(EMf,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
       else if (col->getCase()=="Dipole2D")     		part[i].maxwellianDipole(EMf,col->getL_square(),col->getx_center(),0.,col->getz_center());
       else                                              part[i].maxwellian(EMf);
       part[i].reserve_remaining_particle_IDs();
@@ -351,7 +351,7 @@ bool c_Solver::ParticlesMover(int cycle)
       }
 
       // Injection particles from ionized exosphere ./Job
-      if (col->getAddExosphere()) Qexo[i] = part[i].AddIonizedExosphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+      if (i>1 and col->getAddExosphere()) Qexo[i] = part[i].AddIonizedExosphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
       // External boundary conditions particles     ./Job
       Qrep[i] = part[i].repopulate_particles(EMf); 
     }
@@ -359,8 +359,8 @@ bool c_Solver::ParticlesMover(int cycle)
 
     // Internal boundary conditions particles.                 ./Job
     // case with re-inejction of pcls to keep net charge zero  ./Job
-    double Qrm, Count_plus, Count_mins;
-    if (col->getNonTrivialBCPlanet()) {
+    double Qrm, Count_plus=0., Count_mins=0.;
+    if (cycle>0 and col->getNonTrivialBCPlanet()) {
       for (int i=0; i < ns; i++){
         if (col->getCase()=="Dipole") Count[i] = part[i].rotateAndCountParticlesInsideSphere(cycle,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
         else if (col->getCase()=="Dipole2D") Count[i] = part[i].rotateAndCountParticlesInsideSphere2DPlaneXZ(cycle,col->getL_square(),col->getx_center(),col->getz_center());

@@ -1319,9 +1319,9 @@ void Collective::save() {
   my_file << "B0y                      = " << B0y << endl;
   my_file << "B0z                      = " << B0z << endl;
   my_file << "---------------------------" << endl;
-  my_file << "v0x                      = " << u0 << endl;
-  my_file << "v0y                      = " << u0 << endl;
-  my_file << "v0z                      = " << w0 << endl;
+  my_file << "v0x                      = " << u0[0] << endl;
+  my_file << "v0y                      = " << v0[0] << endl;
+  my_file << "v0z                      = " << w0[0] << endl;
   for (int is = 0; is < ns; is++) 
   my_file << "vth["<<is<<"]            = " << uth[is] << endl;
   my_file << "---------------------------" << endl;
