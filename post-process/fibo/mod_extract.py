@@ -257,7 +257,7 @@ class fibo_extract :
     
     # and finally proceed with the extraction
     new_data = new_data[range_x[0]:range_x[1],range_y[0]:range_y[1],range_z[0]:range_z[1]]
-    
+
     # then let's have the meta fixed
     if np.any([range_x[0]!=0 , range_x[1]!=nx]) :
      

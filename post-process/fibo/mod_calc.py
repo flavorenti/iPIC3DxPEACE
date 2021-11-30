@@ -1000,10 +1000,10 @@ class fibo_calc:
       - norm_factors     [float,float,float,float,float] factors to change units of B, E, J, P, rho
     """  
     FourPi = 4.*np.pi
-    me     = np.absolute(self.meta['msQOM'][0])
-    mi     = np.absolute(self.meta['msQOM'][1])
-    qe     = np.sign(self.meta['msQOM'][0])
-    qi     = np.sign(self.meta['msQOM'][1])
+    me     = np.absolute(self.meta['sQOM'][0])
+    mi     = np.absolute(self.meta['sQOM'][1])
+    qe     = np.sign(self.meta['sQOM'][0])
+    qi     = np.sign(self.meta['sQOM'][1])
     Bsw    = np.sqrt(self.meta['Bx0']**2+self.meta['By0']**2+self.meta['Bz0']**2)
     Vsw    = np.sqrt(self.meta['Vx0']**2+self.meta['Vy0']**2+self.meta['Vz0']**2) 
     Esw    = Bsw*Vsw      #NB: this is not really the most general case...

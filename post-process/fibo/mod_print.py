@@ -11,6 +11,8 @@ import itertools as itt
 import struct
 import re
 import time
+import vtk
+from vtk.util import numpy_support as VN
 
 class fibo_print: 
 
@@ -18,149 +20,124 @@ class fibo_print:
   #--------------------routines-for-printing--------------------
   #------------------------------------------------------------  
   def print_vtk_scal(self,  
-      address,
-      tar_name,
       tar_var,
-      digits = '%.9f',
+      seg,
+      address,
+      out_name,
       double_y = False, 
-      aka = None):
+      silent   = True):
     """ 
     Prints .vtk file of your tar_var
     
     Parameters :
-      - address           [address] address of printing
-      - tar_name          [str] name for the printed variable (inside the file)
       - tar_var           [fibo.data] target variable of the procedure
-      - digits = '%.9f'   [format str] format you will use for printing
+      - seg               [str] cycle of the simulation
+      - address           [str] address of printing
+      - out_name          [str] name for the printed variable (don't include '.vtk')
       - double_y = False  [bool] if you want to print twice the box (two boxes close in y)
-      - aka = None        [None or str] if not None you give the full name of the .vtk file
+      - silent = True     [bool] print status at the end?
     
     """  
-
     #determine the coefficients
     nx,ny,nz = self.meta['nnn'] 
     dx,dy,dz = self.meta['ddd'] 
 
-    #clean the tar_name from possible characters that mess up with paraview's calculator
-    tar_name = re.sub('[()!@#$.,*^]', '', tar_name)
-    if tar_name[0].isdigit() : tar_name = '_'+tar_name
-    #this is the way you create names of the printed files, if you did not mess up with my standard ...
-    if (aka == None) :
-      filen = os.path.join(address,self.fibo_name+'_'+tar_name+'.vtk')
-    else : filen = os.path.join(address,aka+'.vtk')
+    # add seg to the name of tar_var (fibo) 
+    tar_var = tar_var+'%.8i'%int(seg)
 
+    # in case of periodic in y
     if double_y : ny = ny*2
 
-    wf = open(filen, 'w')
-    wf.write('# vtk DataFile Version 1.0 \n')
-    wf.write(tar_var+' from '+self.fibo_name+'\n')
-    wf.write('ASCII'+'\n')
-    wf.write('DATASET STRUCTURED_POINTS'+'\n')
-    wf.write('DIMENSIONS'+' '+str(nx)+' '+str(ny)+' '+str(nz)+'\n')
-    wf.write('ORIGIN  0.0  0.0  0.0'+'\n')
-    wf.write('SPACING'+' '+str(dx)+' '+str(dy)+' '+str(dz)+'\n')
-    wf.write('                '+'\n')
-    wf.write('POINT_DATA'+' '+str(nx*ny*nz)+'\n')
-    wf.write('SCALARS    '+tar_name+'    float  1'+'\n')
-    wf.write('LOOKUP_TABLE default'+'\n')
+    # convert numpy array to vtk
+    vtk_data = VN.numpy_to_vtk(self.get_data(tar_var).ravel(), deep=True, array_type=vtk.VTK_FLOAT)
 
-    for iz in range(0, nz):
-      #print the first time in y
-      for iy in range(0, ny):
-        for ix in range(0, nx):
-          to_write = digits %self.get_data(tar_var)[ix,iy,iz]
-          wf.write(to_write+'\n')
-          #old way: wf.write(str(vals[2,ix,iy,iz,it])+' ')
-      
-      if double_y :
+    # create vtk variable
+    vtk_void = vtk.vtkStructuredPoints()
+    vtk_void.SetName(tar_var.split('0')[0])
+    vtk_void.SetDimensions(nx,ny,nz)
+    #vtk_void.SetOrigin(0.,0.,0.)
+    vtk_void.SetSpacing(dx,dy,dz)
+    vtk_void.AllocateScalars(vtk.VTK_FLOAT, 1)
 
-        #print the second time in y (to keep the res spacing you can't start from zero!)
-        for iy in range(0, ny):
-          for ix in range(0, nx):
-            to_write = digits %self.get_data(tar_var)[ix,iy,iz]
-            wf.write(to_write+'\n')
-            #old way: wf.write(str(vals[2,ix,iy,iz,it])+' ')
-        #wf.write('\n')
+    # fill vtk variable
+    vtk_void.GetPointData().SetScalars(vtk_data)
 
-    wf.close()
-    print('done with the print!')
+    # print vtk to output file
+    writer = vtk.vtkStructuredPointsWriter()
+    writer.SetFileName(os.path.join(address,out_name+'.vtk'))
+    writer.SetInputData(vtk_void)
+    writer.SetFileTypeToBinary()
+    writer.Update()
+    writer.Write()
+
+    if not silent:
+      print('print_vtk_scal> grid dimensions         :  ', self.meta['nnn'])
+      print('print_vtk_scal> grid size               :  ', self.meta['lll'])
+      print('print_vtk_scal> grid spacing            :  ', self.meta['ddd'])
+      print('print_vtk_scal> created file '+out_name+' from fibo.obj '+tar_var)
 
   #------------------------------------------------------------
   def print_vtk_vect(self,
-      address,
-      tar_name,
       tar_var_x,
       tar_var_y,
       tar_var_z,
-      digits_x = '%.7f',
-      digits_y = '%.7f',
-      digits_z = '%.7f',
+      seg,
+      address,
+      out_name,
       double_y = False,  
-      aka = None):
+      silent   = False):
     """ 
-    Prints .vtk file of your tar_var_x, tar_vr_y, tar_var_z
+    Prints .vtk file of your tar_var_x, tar_var_y, tar_var_z
     
     Parameters :
-      - address           [address] address of printing
-      - tar_name          [str] name for the printed variable (inside the file)
       - tar_var_x         [fibo.data] x target variable of the procedure
       - tar_var_y         [fibo.data] y target variable of the procedure
       - tar_var_z         [fibo.data] z target variable of the procedure
-      - digits_x = '%.7f' [format str] format you will use for printing tar_var_x
-      - digits_y = '%.7f' [format str] format you will use for printing tar_var_y
-      - digits_z = '%.7f' [format str] format you will use for printing tar_var_z
+      - address           [address] address of printing
+      - out_name          [str] name for the printed variable (excluding '.vtk')
       - double_y = False  [bool] if you want to print twice the box (two boxes close in y)
-      - aka = None        [None OR str] you can give the full name of the .vtk file
-    
+      - silent = True     [bool] print status at the end?
+ 
     """  
 
     #determine the coefficients
     nx,ny,nz = self.meta['nnn'] #np.shape(self.get_data(tar_var_x))
     dx,dy,dz = self.meta['ddd'] 
 
-    #clean the tar_name from possible characters that mess up with paraview's calculator
-    tar_name = re.sub('[()!@#$.,*^]', '', tar_name)
-    if tar_name[0].isdigit() : tar_name = '_'+tar_name
-    #this is the way you create names of the printed files, if you did not mess up with my standard ... (and here I hope you really have not)
-    if (aka == None) :
-      filen = os.path.join(address,self.fibo_name+'_'+tar_name+'.vtk')
-    else : filen = os.path.join(address,aka+'.vtk')
+    # add seg to the name of tar_var (fibo)
+    tar_var_x = tar_var_x+'%.8i'%int(seg)
+    tar_var_y = tar_var_y+'%.8i'%int(seg)
+    tar_var_z = tar_var_z+'%.8i'%int(seg)
 
+    # in case of periodic in y
     if double_y : ny = ny*2
 
-    wf = open(filen, 'w')
-    wf.write('# vtk DataFile Version 1.0 \n')
-    wf.write('('+tar_var_x+','+tar_var_y+','+tar_var_z+') from '+self.fibo_name+'\n')
-    wf.write('ASCII'+'\n')
-    wf.write('DATASET STRUCTURED_POINTS'+'\n')
-    wf.write('DIMENSIONS'+' '+str(nx)+' '+str(ny)+' '+str(nz)+'\n')
-    wf.write('ORIGIN  0.0  0.0  0.0'+'\n')
-    wf.write('SPACING'+' '+str(dx)+' '+str(dy)+' '+str(dz)+'\n')
-    wf.write('                '+'\n')
-    wf.write('POINT_DATA'+' '+str(nx*ny*nz)+'\n')
-    wf.write('VECTORS    '+tar_name+'    float'+'\n')
+    # convert numpy array to vtk
+    arr_numpy = np.array([self.get_data(tar_var_x),self.get_data(tar_var_y),self.get_data(tar_var_z)]).transpose()
+    vtk_data = VN.numpy_to_vtk(arr_numpy.ravel(), deep=True, array_type=vtk.VTK_FLOAT)
+    vtk_data.SetNumberOfComponents(3)
 
-    for iz in range(0, nz):
-      #print the first time in y
-      for iy in range(0, ny):
-        for ix in range(0, nx):
-          to_write_x = digits_x %self.get_data(tar_var_x)[ix,iy,iz]
-          to_write_y = digits_y %self.get_data(tar_var_y)[ix,iy,iz]
-          to_write_z = digits_z %self.get_data(tar_var_z)[ix,iy,iz]
-          wf.write(to_write_x+' \t'+to_write_y+' \t'+to_write_z+'\n')
-          #old way: wf.write(str(vals_MCA[2,ix,iy,iz,it])+' ')
+    # create vtk variable
+    vtk_void = vtk.vtkStructuredPoints()
+    vtk_data.SetName(tar_var_x.split('_x')[0])
+    vtk_void.SetDimensions(nx,ny,nz)
+    #vtk_void.SetOrigin(0.,0.,0.)
+    vtk_void.SetSpacing(dx,dy,dz)
+    vtk_void.AllocateScalars(vtk.VTK_FLOAT, 3)
 
-      if double_y :
+    # fill vtk variable
+    vtk_void.GetPointData().SetScalars(vtk_data)
 
-        #print the second time in y (to keep the res spacing you can't start from zero!)
-        for iy in range(0, ny):
-          for ix in range(0, nx):
-            to_write_x = digits_x %self.get_data(tar_var_x)[ix,iy,iz]
-            to_write_y = digits_y %self.get_data(tar_var_y)[ix,iy,iz]
-            to_write_z = digits_z %self.get_data(tar_var_z)[ix,iy,iz]
-            wf.write(to_write_x+' \t'+to_write_y+' \t'+to_write_z+'\n')
-            #old way: wf.write(str(vals_MCA[2,ix,iy,iz,it])+' ')
-        #wf.write('\n')
+    # print vtk to output file
+    writer = vtk.vtkStructuredPointsWriter()
+    writer.SetFileName(os.path.join(address,out_name+'.vtk'))
+    writer.SetInputData(vtk_void)
+    writer.SetFileTypeToBinary()
+    writer.Update()
+    writer.Write()
 
-    wf.close()
-    print('done with the print!')
+    if not silent:    
+      print('print_vtk_vect> grid dimensions         :  ', self.meta['nnn'])
+      print('print_vtk_vect> grid size               :  ', self.meta['lll'])
+      print('print_vtk_vect> grid spacing            :  ', self.meta['ddd'])
+      print('print_vtk_vect> created file '+out_name+' from fibo.obj '+tar_var_x+','+tar_var_y+','+tar_var_z)

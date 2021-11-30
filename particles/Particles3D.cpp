@@ -2761,9 +2761,9 @@ double Particles3D::AddIonizedExosphere(double R, double x_center, double y_cent
     for (int j=1; j<grid->getNYC()-1;j++)
       for (int k=1; k<grid->getNZC()-1;k++) {
               
-        xd = x-x_center;
-        yd = y-y_center;
-        zd = z-z_center-DipoleOffset;
+        xd = grid->getXC(i,j,k)-x_center;
+        yd = grid->getYC(i,j,k)-y_center;
+        zd = grid->getZC(i,j,k)-z_center-DipoleOffset;
         
 	dist_sq = xd*xd+yd*yd+zd*zd;
         dist    = sqrt(dist_sq);

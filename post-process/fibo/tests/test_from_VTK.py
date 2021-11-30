@@ -11,7 +11,6 @@ data_address = '/home/flavorenti/Bureau/data_simu_iPIC3D/run5-0_512_3600/all_per
 fibo_name = 'ipic3d' 
 #================================================================================
 
-
 #----create-your-objects-----------
 alldata = fb.fibo(fibo_name)
 from_VTK = fb.from_VTK(data_address)
@@ -19,13 +18,11 @@ from_VTK = fb.from_VTK(data_address)
 #----load-metadata------------------
 from_VTK.get_meta(silent=False)
 alldata.meta = from_VTK.meta
-alldata.segs = from_VTK.segs
-print(alldata.segs)
 print('\n')
 
 #----load-everything-in-code-units-------------------
-for seg in alldata.meta['time2seg']:
-  print(seg)
+for seg in alldata.meta['segcycles']:
+  print('LOAD->',seg)
   from_VTK.get_vect(alldata.meta['name']+'_B_'    +str(seg),seg,fibo_obj=alldata,tar_var='B',silent=False)
   from_VTK.get_vect(alldata.meta['name']+'_E_'    +str(seg),seg,fibo_obj=alldata,tar_var='E')
   from_VTK.get_vect(alldata.meta['name']+'_Je_'   +str(seg),seg,fibo_obj=alldata,tar_var='Je')
@@ -50,16 +47,12 @@ units = 'SW' # possible units are iPIC, SW, SI
 alldata.calc_units(units, fibo_obj=alldata, silent=False)
 
 #----calculate-derived-fields-with-aritm-operations------------------
-for seg in alldata.meta['time2seg']:
-  print(seg)
+for seg in alldata.meta['segcycles']:
+  print('CALC->',seg)
   # Velocity = Je,rhoe0 --> Ve_x,Ve_y,Ve_z
   alldata.calc_divid('Je','rhoe0',new_tar='Ve',seg=seg)
   # Velocity = Ji,rhoi1 --> Vi_x,Vi_y,Vi_z
   alldata.calc_divid('Ji','rhoi1',new_tar='Vi',seg=seg)
-
-#----calculate-derived-fields-with-vector-operations------------------
-for seg in alldata.meta['time2seg']:
-  print(seg)
   # module of B
   alldata.calc_scalr('B_x','B_x','B_y','B_y','B_z','B_z',seg=seg)
   # module of E
@@ -70,19 +63,26 @@ for seg in alldata.meta['time2seg']:
   # E parallel to B --> EparB
   alldata.calc_par_per('E_x','B_x','E_y','B_y','E_z','B_z',seg=seg)
 
-print(alldata.data.keys())
 
+#----print-derived-fields-----------------------
+for seg in alldata.meta['segcycles']:
+  print('PRINT->',seg)
+  alldata.print_vtk_vect('Ve_x','Ve_y','Ve_z',seg,data_address,alldata.meta['name']+'_Ve_'+str(seg))
+  alldata.print_vtk_vect('Vi_x','Vi_y','Vi_z',seg,data_address,alldata.meta['name']+'_Vi_'+str(seg))
+
+'''
 #---extras-----------------------------------
 cycle_ok = int( alldata.get_time_exit(from_VTK.segs,100.,silent=False)[0] )
 print(cycle_ok)
 
 #---plots------------------------------------
-key='EperB'
+key='rhoi1'
 xlab = {'text':'$x/d_i$','fontsize':12,'usetex':True}
 ylab = {'text':'$y/d_i$','fontsize':12,'usetex':True}
 import matplotlib.pyplot as plt
 plot = alldata.draw_canvas([[key],[key],[key]],'line')
-alldata.draw_spotted(plot[0],alldata.data[key+'_x00000400'], range_z=[30,31], label_xyb=[xlab,ylab,{'text':key,'usetex':True,'rotation':90}])
-alldata.draw_spotted(plot[1],alldata.data[key+'_y00000400'], range_z=[30,31], label_xyb=[xlab,ylab,{'text':key,'usetex':True,'rotation':90}])
-alldata.draw_spotted(plot[2],alldata.data[key+'_z00000400'], range_z=[30,31], label_xyb=[xlab,ylab,{'text':key,'usetex':True,'rotation':90}])
+alldata.draw_spotted(plot[0],alldata.data[key+'00000400'], range_z=[30,31], label_xyb=[xlab,ylab,{'text':key,'usetex':True,'rotation':90}])
+alldata.draw_spotted(plot[1],alldata.data[key+'00000400'], range_z=[30,31], label_xyb=[xlab,ylab,{'text':key,'usetex':True,'rotation':90}])
+alldata.draw_spotted(plot[2],alldata.data[key+'00000400'], range_z=[30,31], label_xyb=[xlab,ylab,{'text':key,'usetex':True,'rotation':90}])
 plt.show()
+'''

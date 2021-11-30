@@ -157,9 +157,10 @@ class fibo_draw :
 
     nx,ny,nz = np.shape(self.get_data(tar_data))
 
+    if (range_x==None) and (range_y==None) and (range_z==None) : print('ERROR: WTF you did not specify any range to cut!')
     if range_x == None : range_x = [0,nx]
     if range_y == None : range_y = [0,ny]
-    if range_z == None : range_z = [0,1]
+    if range_z == None : range_z = [0,nz]
     
     if label_xyb[0] is None : label_xyb[0] = {'text':''}
     if label_xyb[1] is None : label_xyb[1] = {'text':''}
@@ -234,12 +235,22 @@ class fibo_draw :
       + label_xyb   [3-list with None OR set_label-kwargs]
     
     """
-
     nx,ny,nz = self.meta['nnn']  
+    if (range_x==None) and (range_y==None) and (range_z==None) : print('ERROR: WTF you did not specify any range to cut!')
     if range_x == None : range_x = [0,nx]
     if range_y == None : range_y = [0,ny]
-    if range_z == None : range_z = [0,1]
-    
+    if range_z == None : range_z = [0,nz]
+        
+    if label_xyb[0] is None : label_xyb[0] = {'text':''}
+    if label_xyb[1] is None : label_xyb[1] = {'text':''}
+    if label_xyb[2] is None : label_xyb[2] = {'text':''}
+
+    nx,ny,nz = self.meta['nnn']
+    if (range_x==None) and (range_y==None) and (range_z==None) : print('ERROR: WTF you did not specify any range to cut!')
+    if range_x == None : range_x = [0,nx]
+    if range_y == None : range_y = [0,ny]
+    if range_z == None : range_z = [0,nz]
+
     if label_xyb[0] is None : label_xyb[0] = {'text':''}
     if label_xyb[1] is None : label_xyb[1] = {'text':''}
     if label_xyb[2] is None : label_xyb[2] = {'text':''}
@@ -255,12 +266,12 @@ class fibo_draw :
     case_y = range_y[1]==range_y[0]+1
     case_z = range_z[1]==range_z[0]+1
     if case_x + case_y + case_z != 1 : print('one among range_x, range_y, range_z must be [k,k+1]')
-    
+
     x_coord, y_coord, z_coord = self.axis_data(range_x,range_y,range_z,coor_like=True,mesh_like=True)
     if case_x : a_coord, b_coord = y_coord[0,:,:], z_coord[0,:,:]
     if case_y : a_coord, b_coord = z_coord[:,0,:], x_coord[:,0,:]
     if case_z : a_coord, b_coord = x_coord[:,:,0], y_coord[:,:,0]
-    
+
     targ, meta = self.extract_range(tar_data,range_x,range_y,range_z)
     if case_x : targ = targ[0,:,:] #np.transpose( targ[:,:,0] )
     if case_y : targ = targ[:,0,:] #np.transpose( targ[:,:,0] )
@@ -275,12 +286,13 @@ class fibo_draw :
     tar_plot.set_ylim( b_coord[0,0], b_coord[0,-1] )
 
     cpts = tar_plot.contourf(a_coord,b_coord,targ,**args_fig)
-    if args_bar is not None: 
+    if args_bar is not None:
       cbar = mpl.pyplot.colorbar(cpts,ax=tar_plot,**args_bar)
 
       if ticks_xyb[2] is not None : cbar.ax.xaxis.set_tick_params(**ticks_xyb[2])
       if ticks_xyb[2] is not None : cbar.ax.yaxis.set_tick_params(**ticks_xyb[2])
       cbar.set_label('',**label_xyb[2])
+
 
 
   #------------------------------------------------------------  
