@@ -117,7 +117,7 @@ class Particles3D:public Particles3Dcomm {
     double rotateAndCountParticlesInsideSphere2DPlaneXZ(int cycle, double R, double x_center, double z_center);
     double deleteParticlesInsideSphere2DPlaneXZ(int cycle, double Qrm, double R, double x_center, double z_center);
     /** Add the ionized exosphere */
-    double AddIonizedExosphere(double R, double x_center, double y_center, double z_center);
+    double AddIonizedExosphere(double R, double x_center, double y_center, double z_center, double Nexo, double fexo, double hexo, double w_fact);
     /**Particles Open Boundary */
     void openbc_particles_outflow();
     void openbc_delete_testparticles();

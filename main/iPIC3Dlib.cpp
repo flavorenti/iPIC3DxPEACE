@@ -324,6 +324,16 @@ bool c_Solver::ParticlesMover(int cycle)
 
     pad_particle_capacities();
 
+    // Varibles for Exosphere injection 
+    const double R = col->getL_square();
+    const double Nexo_H  = 1e4;   // density of exosphere neutrals at the surface (in nsw units)
+    const double fexo_H  = 1e-9;  // ioniz. frequency in units of wpi
+    const double hexo_H  = 0.5*R; // scale length of exosphere
+    const double Nexo_Na = 1e3;
+    const double fexo_Na = 1e-7;
+    const double hexo_Na = 0.025*R;
+    const double w_fact  = 8e3;   // factor weight_exo / weight_sw
+
     for (int i = 0; i < ns; i++)  // move each species
     {
      // #pragma omp task inout(part[i]) in(grid) target_device(booster)
@@ -351,7 +361,15 @@ bool c_Solver::ParticlesMover(int cycle)
       }
 
       // Injection particles from ionized exosphere ./Job
-      if (i>1 and col->getAddExosphere()) Qexo[i] = part[i].AddIonizedExosphere(col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+      // inject hydrogen
+      if ( (i==2 or i==3) and col->getAddExosphere()){	 
+         Qexo[i] = part[i].AddIonizedExosphere(R,col->getx_center(),col->gety_center(),col->getz_center(),Nexo_H,fexo_H,hexo_H,w_fact);
+      }
+      // inject sodium
+      if ( (i==4 or i==5) and col->getAddExosphere()){	 
+         Qexo[i] = part[i].AddIonizedExosphere(R,col->getx_center(),col->gety_center(),col->getz_center(),Nexo_Na,fexo_Na,hexo_Na,w_fact);
+      }
+
       // External boundary conditions particles     ./Job
       Qrep[i] = part[i].repopulate_particles(EMf); 
     }
@@ -362,8 +380,8 @@ bool c_Solver::ParticlesMover(int cycle)
     double Qrm, Count_plus=0., Count_mins=0.;
     if (cycle>0 and col->getNonTrivialBCPlanet()) {
       for (int i=0; i < ns; i++){
-        if (col->getCase()=="Dipole") Count[i] = part[i].rotateAndCountParticlesInsideSphere(cycle,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
-        else if (col->getCase()=="Dipole2D") Count[i] = part[i].rotateAndCountParticlesInsideSphere2DPlaneXZ(cycle,col->getL_square(),col->getx_center(),col->getz_center());
+        if (col->getCase()=="Dipole") Count[i] = part[i].rotateAndCountParticlesInsideSphere(cycle,R,col->getx_center(),col->gety_center(),col->getz_center());
+        else if (col->getCase()=="Dipole2D") Count[i] = part[i].rotateAndCountParticlesInsideSphere2DPlaneXZ(cycle,R,col->getx_center(),col->getz_center());
         if (Count[i]>0)  Count_plus += Count[i];
         if (Count[i]<0)  Count_mins += Count[i];
         if (col->getVerbose() and Count[i]!=0) dprintf("RotateAndCount->For proc %d the Q%i counted is = %f",myrank,i,Count[i]);
@@ -375,8 +393,8 @@ bool c_Solver::ParticlesMover(int cycle)
       Qrm = (double) INT_MAX;
     }
     for (int i=0; i < ns; i++) {
-      if (col->getCase()=="Dipole") Qdel[i] = part[i].deleteParticlesInsideSphere(cycle,Qrm,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
-      else if (col->getCase()=="Dipole2D") Qdel[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(cycle,Qrm,col->getL_square(),col->getx_center(),col->getz_center());
+      if (col->getCase()=="Dipole") Qdel[i] = part[i].deleteParticlesInsideSphere(cycle,Qrm,R,col->getx_center(),col->gety_center(),col->getz_center());
+      else if (col->getCase()=="Dipole2D") Qdel[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(cycle,Qrm,R,col->getx_center(),col->getz_center());
       if (col->getVerbose() and Qdel[i]!=0) dprintf("Delete->For proc %d the Q%i removed is = %f",myrank,i,Qdel[i]);
     }
 

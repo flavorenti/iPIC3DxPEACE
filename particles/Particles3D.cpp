@@ -2582,13 +2582,13 @@ double Particles3D::deleteParticlesInsideSphere(int cycle, double Qrm, double R,
         prm++;
       }
       else{
-        Rnw = 2.*R - sqrt(xd*xd+yd*yd+zd*zd);
+        /*Rnw = 2.*R - sqrt(xd*xd+yd*yd+zd*zd);
 	xnw = Rnw/sqrt(xd*xd+yd*yd+zd*zd)*xd + x_center;
         ynw = Rnw/sqrt(xd*xd+yd*yd+zd*zd)*yd + y_center;
         znw = Rnw/sqrt(xd*xd+yd*yd+zd*zd)*zd + z_center + DipoleOffset;
         pcl.set_x(xnw);	      
         pcl.set_y(ynw);	      
-        pcl.set_z(znw);	      
+        pcl.set_z(znw);*/	      
         pidx++;
       }
     }
@@ -2737,19 +2737,15 @@ void Particles3D::maxwellianDipole(Field * EMf, double R, double x_center, doubl
 
 
 /** Implementation of an ionized exosphere for Mercury */
-double Particles3D::AddIonizedExosphere(double R, double x_center, double y_center, double z_center)
+double Particles3D::AddIonizedExosphere(double R, double x_center, double y_center, double z_center, double Nexo, double fexo, double hexo, double w_fact)
 {
-  double Rmax = 3.*R;        // max radius to inject pcls
-  //double Nexo = 3.e3;        // density of exosphere neutrals at the surface (in nsw units)
-  //double fexo = 1e-9;        // ioniz. frequency in units of wpi
-  double hexo = 0.5*R;       // scale length of exosphere
-
+  const double Rmax = 3.*R;          // max radius to inject pcls
+  const double FourPI =16*atan(1.0);
+  const double q = (qom/fabs(qom))*grid->getVOL()/npcel_sw/FourPI/w_fact; // charge of injected pcls
+ 
+  int    Ninject_int;
   double randx,randy,randz;
-  int Ninject_int;
-  double  FourPI =16*atan(1.0);
-  const double q_sgn = (qom / fabs(qom));
-  const double q_factor =  q_sgn * grid->getVOL() / npcel_sw;
-  double x,y,z,u,v,w,q,Ninject;
+  double x,y,z,u,v,w,Ninject;
   double DipoleOffset, xd,yd,zd, dist, dist_sq;
   double Qinject=0.;
 
@@ -2770,7 +2766,7 @@ double Particles3D::AddIonizedExosphere(double R, double x_center, double y_cent
 
         if( (dist_sq>(R*R)) and (dist_sq<(Rmax*Rmax)) ){
 
-          Ninject = 10.*exp(-(dist-R)/hexo);  //CAREFUL: it should be *Nexo*(dt*fexo) instead of 10.!
+          Ninject = (npcel_sw*Nexo*w_fact)*(dt*fexo)*exp(-(dist-R)/hexo);
           Ninject_int = (int) Ninject;
 
           for (int jj=0; jj<Ninject_int; jj++){
@@ -2783,8 +2779,6 @@ double Particles3D::AddIonizedExosphere(double R, double x_center, double y_cent
             z = grid->getZC(i,j,k)+(randz-0.5)*dz;
             //Assign velocities
 	    sample_maxwellian(u, v, w, uth, vth, wth, u0, v0, w0);
-	    // Assign charge 
-            q = q_sgn*q_factor/FourPI;
             // create particle
 	    create_new_particle(u,v,w,q,x,y,z);
 	    Qinject += q;

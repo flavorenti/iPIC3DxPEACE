@@ -77,7 +77,7 @@ PERIODICZ = 0
 #    1 = solar wind protons
 #    2 = exosphere elctrons
 #    3 = exosphere protons
-ns = 2
+ns = 4
 # Initial density (make sure you are neutral)
 rhoINIT =  1.0	1.0  1.0  1.0
 # Injection density (make sure you are neutral)
