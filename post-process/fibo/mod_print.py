@@ -49,11 +49,13 @@ class fibo_print:
     if double_y : ny = ny*2
 
     # convert numpy array to vtk
-    vtk_data = VN.numpy_to_vtk(self.get_data(tar_var).ravel(), deep=True, array_type=vtk.VTK_FLOAT)
+    arr_numpy = np.array(self.get_data(tar_var)).transpose()
+    vtk_data = VN.numpy_to_vtk(arr_numpy.ravel(), deep=True, array_type=vtk.VTK_FLOAT)
+    vtk_data.SetNumberOfComponents(1)
 
     # create vtk variable
     vtk_void = vtk.vtkStructuredPoints()
-    vtk_void.SetName(tar_var.split('0')[0])
+    vtk_data.SetName(tar_var.split('0')[0])
     vtk_void.SetDimensions(nx,ny,nz)
     #vtk_void.SetOrigin(0.,0.,0.)
     vtk_void.SetSpacing(dx,dy,dz)
