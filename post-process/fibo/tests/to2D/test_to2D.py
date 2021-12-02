@@ -3,9 +3,9 @@
 #  the three-dimensional output of an iPIC3D simu. The cuts are done
 #  in Lz/2 and Ly/2. The cuts are saved in the same dir as the data,
 #  named as e.g. Beq, Bdp for equatorial and dipolar cut.
+#  Add global path to data dir in command line.
 #  Only parameters to change are:
 #
-#  data_address = [str] path of your simulation data 
 #  tars         = [str] target variables you want to use (in order!)
 #  cycle_min    = [int] minimum cycle to read
 #  cycle_max    = [int] maximum cycle to read
@@ -15,7 +15,6 @@
 
 ######################################################################################
 #======regulate=parameters=============================================================
-data_address = '/home/flavorenti/Bureau/data_simu_iPIC3D/Mercury_SaeInit/PR1/run1/data' 
 tars = ['E','B','Je','Ji','PXX','PXY','PXZ','PYY','PYZ','PZZ','rho']
 cycle_min = 0
 cycle_max  = 2000000
@@ -28,6 +27,10 @@ cycle_max  = 2000000
 #----import-modules---------------
 import fibo as fb 
 import time
+import sys
+
+#----path-to-run-------------------
+data_address = sys.argv[1]
 
 #----create-your-objects-----------
 fibo_name = 'ipic3d' 
@@ -52,10 +55,10 @@ for cut in cuts:
 #----load-everything-in-code-units-------------------
 for seg in data3D.meta['segcycles']:
   t0 = time.time()
-  if cycle_min<seg<cycle_max :
+  if cycle_min<=seg<=cycle_max :
     print('LOAD->',seg)
-    for it,tar in enumerate(tars):
-      if it<4 :
+    for tar in tars:
+      if len(tar)<3 :
         from_VTK.get_vect(data3D.meta['name']+'_'+tar+'_'+str(seg),seg,fibo_obj=data3D,tar_var=tar,silent=True)
       else :
         for sp in data3D.meta['species']:
@@ -64,8 +67,8 @@ for seg in data3D.meta['segcycles']:
 #----cut-to-2D------------------
     print('CUT->',seg)
     for ic,cut in enumerate(cuts):
-      for it,tar in enumerate(tars):
-        if it<4 :
+      for tar in tars:
+        if len(tar)<3 :
           fibos[ic].data[tar+'_x%.8i'%int(seg)], fibos[ic].meta = data3D.extract_range(tar+'_x%.8i'%int(seg),cut[1],cut[2],cut[3])
           fibos[ic].data[tar+'_y%.8i'%int(seg)], fibos[ic].meta = data3D.extract_range(tar+'_y%.8i'%int(seg),cut[1],cut[2],cut[3])
           fibos[ic].data[tar+'_z%.8i'%int(seg)], fibos[ic].meta = data3D.extract_range(tar+'_z%.8i'%int(seg),cut[1],cut[2],cut[3])
@@ -76,12 +79,21 @@ for seg in data3D.meta['segcycles']:
 #----print-derived-fields-----------------------
     print('PRINT->',seg)
     for ic,cut in enumerate(cuts):
-      for it,tar in enumerate(tars):
-        if it<4 :
+      for tar in tars:
+        if len(tar)<3 :
           fibos[ic].print_vtk_vect(tar+'_x',tar+'_y',tar+'_z',seg,data_address,data3D.meta['name']+'_'+tar+cut[0]+'_'+str(seg),silent=True)
         else :
           for sp in data3D.meta['species']:
-            fibos[ic].print_vtk_scal(tar+sp,seg,data_address,data3D.meta['name']+'_'+tar+sp+cut[0]+'_'+str(seg),silent=True)\
+            fibos[ic].print_vtk_scal(tar+sp,seg,data_address,data3D.meta['name']+'_'+tar+sp+cut[0]+'_'+str(seg),silent=True)
+
+#----del-3D-fields----------------------------
+    print('DELETE->',seg)
+    for tar in tars:
+      if len(tar)<3 :
+        del data3D.data[tar+'_x'+'%.8i'%int(seg)], data3D.data[tar+'_y'+'%.8i'%int(seg)], data3D.data[tar+'_z'+'%.8i'%int(seg)]
+      else :
+        for sp in data3D.meta['species']:
+          del data3D.data[tar+sp+'%.8i'%int(seg)]
 
 #----print-comp-time--------------------
     print('COMP.TIME [seg%i] = %.3f s\n'%(seg,time.time()-t0))

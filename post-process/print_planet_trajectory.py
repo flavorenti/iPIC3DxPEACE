@@ -16,7 +16,7 @@ def main(PR_number,fact,run_number,Ncycle):
     global x,y,z,dt,ypl,zpl,qome
 
     # path to the simulation data
-    data_path = '../data_simu_iPIC3D/Mercury_SaeInit/PR'+PR_number+'/run'+str(run_number)+'/data/'
+    data_path = '/home/flavorenti/Bureau/data_simu_iPIC3D/Mercury_SaeInit/PR'+PR_number+'/run'+str(run_number)+'/data/'
 
     # box parameters, code units di,wci,c
     x   = np.linspace(0,10.,256*fact)
@@ -280,8 +280,8 @@ def main(PR_number,fact,run_number,Ncycle):
     plt.vlines([tBS1,tMP1,tBS2,tMP2],0,90,linestyle='--',color='grey')
     plt.xlim(tt[imin],tt[imax])
     '''
-    plt.savefig('images/plot_MarinerX_DF-9-2_PR'+str(PR_number)+'_'+str(Ncycle)+'.png',format='png')
-    plt.close()
+    #plt.savefig('images/plot_MarinerX_DF-9-2_PR'+str(PR_number)+'_'+str(Ncycle)+'.png',format='png')
+    #plt.close()
     '''
     # plot angles
     plt.subplot(211)
@@ -397,12 +397,12 @@ def pcl_patch(PR_number,fact,run_number,Ncycle,traj):
 
 
 
-#traj=main('1',2,1,7500)
-#pcl_patch('1',2,1,7500,traj)
+traj=main('1',2,1,7500)
+pcl_patch('1',2,1,7500,traj)
 
-main('0',1,1,5500)
+#main('0',1,1,5500)
 #main('0-bigbox',2,1,9500)
-main('1',2,1,7500)
+#main('1',2,1,7500)
 #main('2',4,28,11200)
 
 

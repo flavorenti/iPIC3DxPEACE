@@ -2509,8 +2509,8 @@ double Particles3D::rotateAndCountParticlesInsideSphere(int cycle, double R, dou
   double uold,vold,wold,u,v,w,xd,yd,zd,theta,phi,Vmod;
   const double RandNorm = 8 * atan(1.0) / (double) RAND_MAX;
   double DipoleOffset;
-
-  srand(vct->getCartesian_rank()+2);
+  
+  //srand(vct->getCartesian_rank()+2); DIABOLICO, mai usare! ./Job
 
   DipoleOffset = col->getDipoleOffset();
 
@@ -2545,7 +2545,7 @@ double Particles3D::rotateAndCountParticlesInsideSphere(int cycle, double R, dou
   }
   my_file_ct.close();
   my_file_rt.close();
-  return(Q_removed);
+  return Q_removed;
 }
 
 
@@ -2574,7 +2574,7 @@ double Particles3D::deleteParticlesInsideSphere(int cycle, double Qrm, double R,
     xd = pcl.get_x() - x_center;
     yd = pcl.get_y() - y_center;
     zd = pcl.get_z() - z_center - DipoleOffset;
-    if ( (xd*xd+yd*yd+zd*zd)<R*R ){
+    if ( (xd*xd+yd*yd+zd*zd) < (R*R) ){
       if (prm<=Nrm){
         Q_removed += pcl.get_q();
         if( (OutputCycle!=0) and ((cycle%OutputCycle)==0) ) my_file << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
@@ -2582,13 +2582,13 @@ double Particles3D::deleteParticlesInsideSphere(int cycle, double Qrm, double R,
         prm++;
       }
       else{
-        /*Rnw = 2.*R - sqrt(xd*xd+yd*yd+zd*zd);
+        Rnw = 2.*R - sqrt(xd*xd+yd*yd+zd*zd);
 	xnw = Rnw/sqrt(xd*xd+yd*yd+zd*zd)*xd + x_center;
         ynw = Rnw/sqrt(xd*xd+yd*yd+zd*zd)*yd + y_center;
         znw = Rnw/sqrt(xd*xd+yd*yd+zd*zd)*zd + z_center + DipoleOffset;
         pcl.set_x(xnw);	      
         pcl.set_y(ynw);	      
-        pcl.set_z(znw);*/	      
+        pcl.set_z(znw);	      
         pidx++;
       }
     }
@@ -2597,7 +2597,7 @@ double Particles3D::deleteParticlesInsideSphere(int cycle, double Qrm, double R,
     }
   }
   my_file.close();
-  return(Q_removed);
+  return Q_removed;
 }
 
 
@@ -2610,7 +2610,7 @@ double Particles3D::rotateAndCountParticlesInsideSphere2DPlaneXZ(int cycle, doub
   double uold,vold,wold,u,v,w,xd,zd,theta,Vmod;
   const double RandNorm = 8 * atan(1.0) / (double) RAND_MAX;
 
-  srand(vct->getCartesian_rank()+2);
+  //srand(vct->getCartesian_rank()+2);
 
   ofstream my_file_ct ("data/CountedParticles.txt", ios::app);
   ofstream my_file_rt ("data/RotatedParticles.txt", ios::app);
@@ -2620,7 +2620,7 @@ double Particles3D::rotateAndCountParticlesInsideSphere2DPlaneXZ(int cycle, doub
     SpeciesParticle& pcl = _pcls[pidx];
     xd = pcl.get_x() - x_center;
     zd = pcl.get_z() - z_center;
-    if ( (xd*xd+zd*zd) < R*R ){
+    if ( (xd*xd+zd*zd) < (R*R) ){
       uold = pcl.get_u();
       vold = pcl.get_v();
       wold = pcl.get_w();
@@ -2642,7 +2642,7 @@ double Particles3D::rotateAndCountParticlesInsideSphere2DPlaneXZ(int cycle, doub
   }
   my_file_ct.close();
   my_file_rt.close();
-  return(Q_removed);
+  return Q_removed;
 }
 
 
@@ -2665,7 +2665,7 @@ double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(int cycle, double Qrm, 
     SpeciesParticle& pcl = _pcls[pidx];
     xd = pcl.get_x() - x_center;
     zd = pcl.get_z() - z_center;
-    if ( (xd*xd+zd*zd) < R*R ){
+    if ( (xd*xd+zd*zd) < (R*R) ){
       if(prm<=Nrm){
         Q_removed += pcl.get_q();
         if( (OutputCycle!=0) and ((cycle%OutputCycle)==0) ) my_file << cycle << "\t" << pcl.get_x() << "\t" << pcl.get_y() << "\t" << pcl.get_z() << "\t" << pcl.get_u() << "\t" << pcl.get_v() << "\t" << pcl.get_w() << "\t" << pcl.get_q() << endl;
@@ -2686,7 +2686,7 @@ double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(int cycle, double Qrm, 
     }
   }
   my_file.close();
-  return(Q_removed);
+  return Q_removed;
 }
 
 

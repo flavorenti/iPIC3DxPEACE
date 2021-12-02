@@ -38,8 +38,8 @@ DipoleOffset = -0.5   #negative for Mercury
 
 
 #  %%%%%%%%%%%%%%%%%%% TIME %%%%%%%%%%%%%%%%%%
-dt = 0.15                   # dt = time step  
-ncycles = 42		 #!!!    # cycles
+dt = 0.5                    # dt = time step  
+ncycles = 82		 #!!!    # cycles
 th = 1.0                     # th =   decentering parameter
 c = 1.0                      # c = light speed 
 
@@ -149,7 +149,7 @@ w0 =  0.0  0.0  0.0  0.0
    yes_sal = 1
    n_layers_sal = 3
 # Internal boundary conditions (Trivial=delete or NonTrivial=delete+reflection)
-   NonTrivialBCPlanet = 0
+   NonTrivialBCPlanet = 1
 # Add ionization of the exosphere
    AddExosphere = 0
 # Print to video results (deprecated)
