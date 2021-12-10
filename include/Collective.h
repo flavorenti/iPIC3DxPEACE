@@ -136,6 +136,7 @@ class Collective
     int getYes_sal()const{ return (yes_sal); }
     int getN_layers_sal()const{ return (n_layers_sal); }
 
+    int getNewPclInit()const{ return (NewPclInit); }
     int getNonTrivialBCPlanet()const{ return (NonTrivialBCPlanet); }
     int getAddExosphere()const{ return (AddExosphere); }
 
@@ -313,6 +314,8 @@ class Collective
     /* number of cells for the SAL method */
     int n_layers_sal;
 
+    /* bool to use the new initialization for particles */
+    int NewPclInit;
     /* bool value for applying new planet BC (reinject pcls) */
     int NonTrivialBCPlanet;
     /* bool value for applying exosphere pcls */

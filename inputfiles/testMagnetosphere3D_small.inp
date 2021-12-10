@@ -148,6 +148,8 @@ w0 =  0.0  0.0  0.0  0.0
 # SAL external boundary conditions (1=True, 0=False)
    yes_sal = 1
    n_layers_sal = 3
+# Dipole initialization for particles 
+   NewPclInit = 1
 # Internal boundary conditions (Trivial=delete or NonTrivial=delete+reflection)
    NonTrivialBCPlanet = 1
 # Add ionization of the exosphere

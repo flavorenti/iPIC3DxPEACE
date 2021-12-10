@@ -164,9 +164,9 @@ int c_Solver::Init(int argc, char **argv) {
       else if (col->getCase()=="NullPoints")    	part[i].maxwellianNullPoints(EMf);
       else if (col->getCase()=="TaylorGreen")           part[i].maxwellianNullPoints(EMf); // Flow is initiated from the current prescribed on the grid.
       else if (col->getCase()=="GEMDoubleHarris")  	part[i].maxwellianDoubleHarris(EMf);
-      else if (col->getCase()=="Dipole")     		part[i].maxwellianDipole(EMf,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
-      else if (col->getCase()=="Dipole2D")     		part[i].maxwellianDipole(EMf,col->getL_square(),col->getx_center(),0.,col->getz_center());
-      else                                              part[i].maxwellian(EMf);
+      else if (col->getCase()=="Dipole" and col->getNewPclInit())      part[i].maxwellianDipole(EMf,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
+      else if (col->getCase()=="Dipole2D" and col->getNewPclInit())    part[i].maxwellianDipole(EMf,col->getL_square(),col->getx_center(),0.,col->getz_center());
+      else                                                             part[i].maxwellian(EMf);
       part[i].reserve_remaining_particle_IDs();
     }
   }
@@ -384,7 +384,7 @@ bool c_Solver::ParticlesMover(int cycle)
         else if (col->getCase()=="Dipole2D") Count[i] = part[i].rotateAndCountParticlesInsideSphere2DPlaneXZ(cycle,R,col->getx_center(),col->getz_center());
         if (Count[i]>0)  Count_plus += Count[i];
         if (Count[i]<0)  Count_mins += Count[i];
-        if (col->getVerbose() and Count[i]!=0) dprintf("RotateAndCount->For proc %d the Q%i counted is = %f",myrank,i,Count[i]);
+        //if (col->getVerbose() and Count[i]!=0) dprintf("RotateAndCount->For proc %d the Q%i counted is = %f",myrank,i,Count[i]);
       }
       Qrm = std::min(Count_plus,-Count_mins);
     }
@@ -395,7 +395,7 @@ bool c_Solver::ParticlesMover(int cycle)
     for (int i=0; i < ns; i++) {
       if (col->getCase()=="Dipole") Qdel[i] = part[i].deleteParticlesInsideSphere(cycle,Qrm,R,col->getx_center(),col->gety_center(),col->getz_center());
       else if (col->getCase()=="Dipole2D") Qdel[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(cycle,Qrm,R,col->getx_center(),col->getz_center());
-      if (col->getVerbose() and Qdel[i]!=0) dprintf("Delete->For proc %d the Q%i removed is = %f",myrank,i,Qdel[i]);
+      //if (col->getVerbose() and Qdel[i]!=0) dprintf("Delete->For proc %d the Q%i removed is = %f",myrank,i,Qdel[i]);
     }
 
 

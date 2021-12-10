@@ -216,6 +216,7 @@ void Collective::ReadInput(string inputfile) {
   yes_sal = config.read < int >("yes_sal",0);
   n_layers_sal = config.read < int >("n_layers_sal",3);
 
+  NewPclInit = config.read < int >("NewPclInit",1); 
   NonTrivialBCPlanet = config.read < int >("NonTrivialBCPlanet",1);
   AddExosphere = config.read < int >("AddExosphere",1);
 

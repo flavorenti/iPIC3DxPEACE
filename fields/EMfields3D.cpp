@@ -2384,9 +2384,10 @@ void EMfields3D::MaxwellImage(double *im, double* vector)
   sum(imageZ, vectZ, nxn, nyn, nzn);
 
   // Temporal damping
-  sumscalprod(imageX, delt, vectX, Lambda, nxn, nyn, nzn);
+  /*sumscalprod(imageX, delt, vectX, Lambda, nxn, nyn, nzn);
   sumscalprod(imageY, delt, vectY, Lambda, nxn, nyn, nzn);
   sumscalprod(imageZ, delt, vectZ, Lambda, nxn, nyn, nzn);
+  */
 
   /* // boundary condition: Xleft
   if (vct->getXleft_neighbor() == MPI_PROC_NULL && bcEMfaceXleft == 0)  // perfect conductor
@@ -2973,13 +2974,21 @@ void EMfields3D::ConstantChargePlanet(double R,
         yd = grid->getYN(i,j,k) - y_center;
         zd = grid->getZN(i,j,k) - z_center - DipoleOffset;
 
-        for (int is = 0; is < ns; is++) {
-          ff = qom[is]/fabs(qom[is]);
-          if ((xd*xd+yd*yd+zd*zd) <= R*R)
-            rhons[is][i][j][k] = ff * rhoINIT[is] / FourPI;
-        }
-      } 
+        if ((xd*xd+yd*yd+zd*zd) <= (R*R) ){
+	  
+	  Ex[i][j][k]=0.;
+	  Ey[i][j][k]=0.;
+	  Ez[i][j][k]=0.;
+        
+	  for (int is = 0; is < ns; is++) {
+            ff = qom[is]/fabs(qom[is]);
+            rhons[is][i][j][k] = 0.; //ff * rhoINIT[is] / FourPI;
+          }
+
+        } 
+      }
 }
+
 
 void EMfields3D::ConstantChargePlanet2DPlaneXZ(double R,  double x_center,double z_center)
 {
@@ -4512,9 +4521,6 @@ void EMfields3D::initDipole()
   for (int i=0; i < nxn; i++){
     for (int j=0; j < nyn; j++){
       for (int k=0; k < nzn; k++){
-        for (int is=0; is < ns; is++){
-          rhons[is][i][j][k] = rhoINIT[is]/FourPI;
-        }
 
         double x = grid->getXN(i,j,k);
         double y = grid->getYN(i,j,k);
@@ -4522,17 +4528,17 @@ void EMfields3D::initDipole()
         double r2_dipole = ((x-xc)*(x-xc)) + ((y-yc)*(y-yc)) + ((z-zc)*(z-zc));
         double r2_planet = ((x-xc)*(x-xc)) + ((y-yc)*(y-yc)) + ((z-zc-DipoleOffset)*(z-zc-DipoleOffset));
 
+        for (int is=0; is < ns; is++){
+	  if ( r2_planet > (a*a) )
+            rhons[is][i][j][k] = rhoINIT[is]/FourPI;
+          else
+            rhons[is][i][j][k] = 0.;
+	}
+
         // electric field values 
-        if ( r2_planet > a*a ) {
-          Ex[i][j][k] = ebc[0];
-          Ey[i][j][k] = ebc[1];
-          Ez[i][j][k] = ebc[2];
-        }
-        else{ // no E-field inside the planet, no plasma moving
-          Ex[i][j][k] = 0.0;
-          Ey[i][j][k] = 0.0;
-          Ez[i][j][k] = 0.0;
-        }
+        Ex[i][j][k] = ebc[0];
+        Ey[i][j][k] = ebc[1];
+        Ez[i][j][k] = ebc[2];
 
         // magnetic field values
         Bxn[i][j][k] = B0x;
@@ -4540,41 +4546,42 @@ void EMfields3D::initDipole()
         Bzn[i][j][k] = B0z;
 
         // dipolar field B_ext
-        if ( r2_dipole >  a*a ) {
-         x_displ = x - xc;
-         y_displ = y - yc;
-         z_displ = z - zc;
-         fac1 =  -B1z*a*a*a/pow(r2_dipole,2.5);
-	     Bx_ext[i][j][k] = 3*x_displ*z_displ*fac1;
-	     By_ext[i][j][k] = 3*y_displ*z_displ*fac1;
-	     Bz_ext[i][j][k] = (2*z_displ*z_displ -x_displ*x_displ -y_displ*y_displ)*fac1;
+        if ( r2_dipole > (4*dx*dx) ) {
+          x_displ = x - xc;
+          y_displ = y - yc;
+          z_displ = z - zc;
+          fac1 =  -B1z*a*a*a/pow(r2_dipole,2.5);
+	  Bx_ext[i][j][k] = 3*x_displ*z_displ*fac1;
+	  By_ext[i][j][k] = 3*y_displ*z_displ*fac1;
+	  Bz_ext[i][j][k] = (2*z_displ*z_displ -x_displ*x_displ -y_displ*y_displ)*fac1;
         }
         else { // avoid singularity
-         Bx_ext[i][j][k]  = 0.0;
-         By_ext[i][j][k]  = 0.0;
-         Bz_ext[i][j][k]  = 0.0;
+          Bx_ext[i][j][k]  = 0.0;
+          By_ext[i][j][k]  = 0.0;
+          Bz_ext[i][j][k]  = 0.0;
         }
  
       }
     }
   }
 
-	grid->interpN2C(Bxc,Bxn);
-	grid->interpN2C(Byc,Byn);
-	grid->interpN2C(Bzc,Bzn);
+  grid->interpN2C(Bxc,Bxn);
+  grid->interpN2C(Byc,Byn);
+  grid->interpN2C(Bzc,Bzn);
 
-	communicateCenterBC_P(nxc,nyc,nzc,Bxc,col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5],vct, this);
-	communicateCenterBC_P(nxc,nyc,nzc,Byc,col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5],vct, this);
-	communicateCenterBC_P(nxc,nyc,nzc,Bzc,col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5],vct, this);
+  communicateCenterBC_P(nxc,nyc,nzc,Bxc,col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5],vct, this);
+  communicateCenterBC_P(nxc,nyc,nzc,Byc,col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5],vct, this);
+  communicateCenterBC_P(nxc,nyc,nzc,Bzc,col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5],vct, this);
 
-	for (int is=0 ; is<ns; is++)
-		grid->interpN2C(rhocs,is,rhons);
+  for (int is=0 ; is<ns; is++)
+    grid->interpN2C(rhocs,is,rhons);
 
-	if (restart1 != 0) { // EM initialization from RESTART
-		init();  // use the fields from restart file
-	}
+  if (restart1 != 0) { // EM initialization from RESTART
+    init();  // use the fields from restart file
+  }
 
 }
+
 
 /*! Initialise a 2D magnetic dipoles according to paper L.K.S Two-way coupling of a global Hall ....*/
 void EMfields3D::initDipole2D()

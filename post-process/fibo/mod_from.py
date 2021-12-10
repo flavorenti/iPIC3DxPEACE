@@ -51,7 +51,7 @@ class from_VTK (object):
       line_number = len(foo.readlines())
 
     if line_number==35 : old_vers=True
-    elif line_number==58 : old_vers=False
+    elif line_number>35 : old_vers=False
     
     self.get_meta_A(old_vers,extra_address)
 
