@@ -1004,15 +1004,17 @@ class fibo_calc:
     mi     = np.absolute(self.meta['sQOM'][1])
     qe     = np.sign(self.meta['sQOM'][0])
     qi     = np.sign(self.meta['sQOM'][1])
-    Bsw    = np.sqrt(self.meta['Bx0']**2+self.meta['By0']**2+self.meta['Bz0']**2)
-    Vsw    = np.sqrt(self.meta['Vx0']**2+self.meta['Vy0']**2+self.meta['Vz0']**2) 
-    Esw    = Bsw*Vsw      #NB: this is not really the most general case...
-
     if mi!=1. or qi!=1 : print('ERROR: qi or mi are not 1 !!!')
 
-    if units == 'iPIC'  : norm_fact = np.array([1.,     1.,     1.,         1.,            1./FourPi]) 
-    elif units == 'SW'  : norm_fact = np.array([1./Bsw, 1./Esw, FourPi/Vsw, FourPi/Vsw**2, 1.])
-    #elif units == 'SI' : norm_fact = np.array()
+    if units == 'iPIC' : 
+      norm_fact = np.array([1.,     1.,     1.,         1.,            1./FourPi]) 
+    elif units == 'SW' :
+      Bsw    = np.sqrt(self.meta['Bx0']**2+self.meta['By0']**2+self.meta['Bz0']**2)
+      Vsw    = np.sqrt(self.meta['Vx0']**2+self.meta['Vy0']**2+self.meta['Vz0']**2) 
+      Esw    = Bsw*Vsw
+      norm_fact = np.array([1./Bsw, 1./Esw, FourPi/Vsw, FourPi/Vsw**2, 1.])
+    elif units == 'SI' : 
+      norm_fact = np.array([1.]) #TBD
     else :
       print('ERROR: arg units ='+units+' not recognized (choose iPIC,SW,SI)')
 
@@ -1079,4 +1081,45 @@ class fibo_calc:
     else: 
       return np.array([tar_arr_x,tar_arr_y,tar_arr_z])
 
+
+  #------------------------------------------------------------  
+  #--JOB:func-to-compute-Tij-from-Pij-J-rho--------------------  
+  #------------------------------------------------------------  
+  def calc_temp(self,
+      tar_var_Pij,
+      new_tar,
+      seg = None,
+      fill = True):
+
+    """
+    compute Tij=(Pij-JiJj/rho)/qom and creates a new fibo.data
+
+    Parameters :
+      - tar_var_Pij             [str] name of the varible to use in fibo.data (e.g. PXXi1)
+      - new_tar                 [str] name of new fibo.data created
+      - seg = None              [None or str] segment to use, if None use simply tar_var_vect, tar_var_scal
+      - fill = True             [bool] do you want to add this new array to the class self?
+
+    Returns :
+      - New scalar field Tij computed from Pij
+    """
+
+    sp  = tar_var_Pij.split('P')[1][2:4]
+    i1  = '_'+tar_var_Pij.split('P')[1][0].lower()
+    i2  = '_'+tar_var_Pij.split('P')[1][1].lower()
+    cut = tar_var_Pij.split('P')[1][4:]
+
+    if (seg != None) :
+      tar_var_Pij = tar_var_Pij+'%.8i'%int(seg)
+
+    Tij  = self.get_data(tar_var_Pij)
+    Tij -= ( self.get_data('J'+sp[0]+i1+'%.8i'%int(seg))*self.get_data('J'+sp[0]+i2+'%.8i'%int(seg))/self.get_data('rho'+sp+'%.8i'%int(seg)) )
+    Tij /= ( np.abs(self.meta['sQOM'][int(sp[1])])*self.get_data('rho'+sp+'%.8i'%int(seg)) )
+
+    if fill:
+      self.data[new_tar+'%.8i'%int(seg)] = Tij
+    else:
+      return Tij
+
+ 
 
