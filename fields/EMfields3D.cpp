@@ -2976,9 +2976,9 @@ void EMfields3D::ConstantChargePlanet(double R,
 
         if ((xd*xd+yd*yd+zd*zd) <= (R*R) ){
 	  
-	  Ex[i][j][k]=0.;
-	  Ey[i][j][k]=0.;
-	  Ez[i][j][k]=0.;
+          //Ex[i][j][k]=0.;
+	  //Ey[i][j][k]=0.;
+	  //Ez[i][j][k]=0.;
         
 	  for (int is = 0; is < ns; is++) {
             ff = qom[is]/fabs(qom[is]);
@@ -4529,10 +4529,7 @@ void EMfields3D::initDipole()
         double r2_planet = ((x-xc)*(x-xc)) + ((y-yc)*(y-yc)) + ((z-zc-DipoleOffset)*(z-zc-DipoleOffset));
 
         for (int is=0; is < ns; is++){
-	  if ( r2_planet > (a*a) )
-            rhons[is][i][j][k] = rhoINIT[is]/FourPI;
-          else
-            rhons[is][i][j][k] = 0.;
+          rhons[is][i][j][k] = rhoINIT[is]/FourPI;
 	}
 
         // electric field values 
