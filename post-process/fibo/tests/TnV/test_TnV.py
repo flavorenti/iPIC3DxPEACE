@@ -7,7 +7,8 @@
 #  Add global path to data dir in command line.
 #  Only parameters to change are:
 #
-#  tars         = [str] target variables you want to use (in order!)
+#  inp_tars     = [str] target variables you want to use as input (in order!)
+#  out_tars     = [str] name variables you want to create as output (same order)
 #  cuts         = [str] cuts to use if the data are 2D (eg data1), if [''] data are 3D (eg data2)
 #  cycle_min    = [int] minimum cycle to read
 #  cycle_max    = [int] maximum cycle to read
