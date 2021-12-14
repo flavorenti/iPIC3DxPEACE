@@ -2559,7 +2559,7 @@ double Particles3D::deleteParticlesInsideSphere(int cycle, double Qrm, double R,
   double xd,yd,zd,xnw,ynw,znw,Rnw;
   double  FourPI =16*atan(1.0);
   const double q_per_particle = (Ninj/FourPI/npcel)*(1.0/grid->getInvVOL());
-  int Nrm;
+  unsigned int Nrm;
   double DipoleOffset;
 
   Nrm = (int) Qrm/q_per_particle;
@@ -2654,7 +2654,7 @@ double Particles3D::deleteParticlesInsideSphere2DPlaneXZ(int cycle, double Qrm, 
   double xd,zd,xnw,znw,Rnw;
   double  FourPI =16*atan(1.0);
   const double q_per_particle = (Ninj/FourPI/npcel)*(1.0/grid->getInvVOL());
-  int Nrm;
+  unsigned int Nrm;
 
   Nrm = (int) Qrm/q_per_particle;
 
