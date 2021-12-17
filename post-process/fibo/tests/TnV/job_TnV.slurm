@@ -10,6 +10,8 @@
 #MSUB -Q normal  ### test  ### queue
 #MSUB -A gen12428 ##12622
 
+ml python
+
 set -x
 
 ccc_mprun -E'--exclusive' -n 1 python -u test_TnV.py /ccc/work/cont005/gen12428/lavorenf/Mercury_SaeInit/PR0/Normal-bigbox/run0/data1 &

@@ -2103,7 +2103,7 @@ void EMfields3D::calculateE(int cycle)
   eqValue(0.0, gradPHIY, nxn, nyn, nzn);
   eqValue(0.0, gradPHIZ, nxn, nyn, nzn);
   // Adjust E calculating laplacian(PHI) = div(E) -4*PI*rho DIVERGENCE CLEANING
-  /*
+  
   if (PoissonCorrection &&  cycle%PoissonCorrectionCycle == 0) {
 		double *xkrylovPoisson = new double[(nxc - 2) * (nyc - 2) * (nzc - 2)];
 		double *bkrylovPoisson = new double[(nxc - 2) * (nyc - 2) * (nzc - 2)];
@@ -2135,7 +2135,7 @@ void EMfields3D::calculateE(int cycle)
 		delete[]xkrylovPoisson;
 		delete[]bkrylovPoisson;
   }                             // end of divergence cleaning
-  */
+  
   if (col->getVerbose() and vct->getCartesian_rank() == 0)
     cout << "*** MAXWELL SOLVER ***" << endl;
   // prepare the source 
@@ -2145,12 +2145,12 @@ void EMfields3D::calculateE(int cycle)
   GMRES(&Field::MaxwellImage, xkrylov, 3 * (nxn - 2) * (nyn - 2) * (nzn - 2),
     bkrylov, 20, 200, GMREStol, this);
   // move from krylov space to physical space
-  solver2phys(Exth, Eyth, Ezth, xkrylov, nxn, nyn, nzn);
-
+ solver2phys(Exth, Eyth, Ezth, xkrylov, nxn, nyn, nzn);
+ 
   addscale(1 / th, -(1.0 - th) / th, Ex, Exth, nxn, nyn, nzn);
   addscale(1 / th, -(1.0 - th) / th, Ey, Eyth, nxn, nyn, nzn);
   addscale(1 / th, -(1.0 - th) / th, Ez, Ezth, nxn, nyn, nzn);
-
+ 
   // apply to smooth to electric field 3 times
   smoothE();
 
@@ -2161,11 +2161,11 @@ void EMfields3D::calculateE(int cycle)
   communicateNodeBC(nxn, nyn, nzn, Ex,   col->bcEx[0],col->bcEx[1],col->bcEx[2],col->bcEx[3],col->bcEx[4],col->bcEx[5], vct, this);
   communicateNodeBC(nxn, nyn, nzn, Ey,   col->bcEy[0],col->bcEy[1],col->bcEy[2],col->bcEy[3],col->bcEy[4],col->bcEy[5], vct, this);
   communicateNodeBC(nxn, nyn, nzn, Ez,   col->bcEz[0],col->bcEz[1],col->bcEz[2],col->bcEz[3],col->bcEz[4],col->bcEz[5], vct, this);
-
+ 
   // OpenBC Inflow: this needs to be integrate to Halo Exchange BC
   OpenBoundaryInflowE(Exth, Eyth, Ezth, nxn, nyn, nzn);
   OpenBoundaryInflowE(Ex, Ey, Ez, nxn, nyn, nzn);
-
+ 
   // deallocate temporary arrays
   delete[]xkrylov;
   delete[]bkrylov;
@@ -2192,7 +2192,7 @@ void EMfields3D::MaxwellSource(double *bkrylov)
   communicateCenterBC(nxc, nyc, nzc, Bxc, col->bcBx[0],col->bcBx[1],col->bcBx[2],col->bcBx[3],col->bcBx[4],col->bcBx[5], vct, this);
   communicateCenterBC(nxc, nyc, nzc, Byc, col->bcBy[0],col->bcBy[1],col->bcBy[2],col->bcBy[3],col->bcBy[4],col->bcBy[5], vct, this);
   communicateCenterBC(nxc, nyc, nzc, Bzc, col->bcBz[0],col->bcBz[1],col->bcBz[2],col->bcBz[3],col->bcBz[4],col->bcBz[5], vct, this);
-
+ 
   if (get_col().getCase()=="ForceFree") 		fixBforcefree();
   if (get_col().getCase()=="GEM")       		fixBnGEM();
   if (get_col().getCase()=="GEMnoPert") 		fixBnGEM();
@@ -2200,7 +2200,7 @@ void EMfields3D::MaxwellSource(double *bkrylov)
 
   // OpenBC:
   OpenBoundaryInflowB(Bxc,Byc,Bzc,nxc,nyc,nzc);
-
+ 
   if (get_col().getCase()=="GEM")       		fixBcGEM();
   if (get_col().getCase()=="GEMnoPert") 		fixBcGEM();
   if (get_col().getCase()=="GEMDoubleHarris") 	        fixBcGEM();
@@ -2210,7 +2210,7 @@ void EMfields3D::MaxwellSource(double *bkrylov)
   scale(temp2X, Jxh, -FourPI / c, nxn, nyn, nzn);
   scale(temp2Y, Jyh, -FourPI / c, nxn, nyn, nzn);
   scale(temp2Z, Jzh, -FourPI / c, nxn, nyn, nzn);
-
+ 
   /* -- dipole SOURCE version using J_ext,This is not initialized, causing program crash over 2048 processes
   addscale(-FourPI/c,temp2X,Jx_ext,nxn,nyn,nzn);
   addscale(-FourPI/c,temp2Y,Jy_ext,nxn,nyn,nzn);
@@ -2223,10 +2223,10 @@ void EMfields3D::MaxwellSource(double *bkrylov)
   scale(temp2X, delt, nxn, nyn, nzn);
   scale(temp2Y, delt, nxn, nyn, nzn);
   scale(temp2Z, delt, nxn, nyn, nzn);
-
+ 
   communicateCenterBC_P(nxc, nyc, nzc, rhoh, 2, 2, 2, 2, 2, 2, vct, this);
   grid->gradC2N(tempX, tempY, tempZ, rhoh);
-
+ 
   scale(tempX, -delt * delt * FourPI, nxn, nyn, nzn);
   scale(tempY, -delt * delt * FourPI, nxn, nyn, nzn);
   scale(tempZ, -delt * delt * FourPI, nxn, nyn, nzn);
@@ -2264,6 +2264,7 @@ void EMfields3D::MaxwellSource(double *bkrylov)
   // physical space -> Krylov space
   phys2solver(bkrylov, tempX, tempY, tempZ, nxn, nyn, nzn);
 }
+
 
 /*! Mapping of Maxwell image to give to solver */
 //
@@ -5118,8 +5119,7 @@ void EMfields3D::OpenBoundaryInflowEImage(arr3_double imageX, arr3_double imageY
 }
 
 
-void EMfields3D::OpenBoundaryInflowB(arr3_double vectorX, arr3_double vectorY, arr3_double vectorZ,
-  int nx, int ny, int nz)
+void EMfields3D::OpenBoundaryInflowB(arr3_double vectorX, arr3_double vectorY, arr3_double vectorZ, int nx, int ny, int nz)
 {
   const Collective *col = &get_col();
   const VirtualTopology3D *vct = &get_vct();
@@ -5145,7 +5145,7 @@ void EMfields3D::OpenBoundaryInflowB(arr3_double vectorX, arr3_double vectorY, a
         for (int k=0; k<nz; k++){
           
           if(yes_sal){
-  	        vectorX[i][j][k] = vectorX[i][j][k]*sal + B0x*(1.-sal);
+  	    vectorX[i][j][k] = vectorX[i][j][k]*sal + B0x*(1.-sal);
             vectorY[i][j][k] = vectorY[i][j][k]*sal + B0y*(1.-sal);
             vectorZ[i][j][k] = vectorZ[i][j][k]*sal + B0z*(1.-sal);
           }
@@ -5154,7 +5154,7 @@ void EMfields3D::OpenBoundaryInflowB(arr3_double vectorX, arr3_double vectorY, a
             vectorY[i][j][k] = B0y;
             vectorZ[i][j][k] = B0z;
           }
-
+	  
         }
     }
   }

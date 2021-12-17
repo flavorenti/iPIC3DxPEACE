@@ -1,6 +1,6 @@
 #--------------------------------------------------------------------
-#  Code based on fibo library that (1) READS, (2) COMPUTE Tper,Tpar,Epar,Eper,
-#  |Eper+VixB|,|Eper+VexB|, and (3) PRINT the new fields. Uses the derived two-dimensional 
+#  Code based on fibo library that (1) READS, (2) COMPUTE Anis,Gyro
+#  and (3) PRINT the new fields. Uses the derived two-dimensional 
 #  and three-dimensional output of an iPIC3D simu.
 #  The new fields are saved in the same dir as the data, with the same dimensions.
 #  Add global path to data dir in command line.
@@ -20,8 +20,8 @@
 
 ######################################################################################
 #======regulate=parameters=============================================================
-inp_tars = ['B','E','Ve','Vi','TXX','TXY','TXZ','TYY','TYZ','TZZ']
-out_tars = ['Eper','Epar','Eprimei','Eprimee','Tiso','Tper','Tpar']
+inp_tars = ['B','TXX','TXY','TXZ','TYY','TYZ','TZZ','Tpar','Tper']
+out_tars = ['Anis','Gyro']
 cuts = ['eq','dp']
 cycle_min = 0
 cycle_max  = 2000000
@@ -74,33 +74,15 @@ for cut in cuts:
 
 #----compute-derived-fields------------------
       print('COMPUTE->',seg)
-      for tar in out_tars:
-        if tar=='Eper' :
-          alldata.calc_par_per('E_x','B_x','E_y','B_y','E_z','B_z',seg=seg)
-          mod2Eper = alldata.calc_scalr('EperB_x','EperB_x','EperB_y','EperB_y','EperB_z','EperB_z',seg=seg,fill=False)
-          alldata.data[tar+'%.8i'%int(seg)] = np.sqrt( mod2Eper )
-        if tar=='Epar' :
-          mod2Epar = alldata.calc_scalr('EparB_x','EparB_x','EparB_y','EparB_y','EparB_z','EparB_z',seg=seg,fill=False)
-          alldata.data[tar+'%.8i'%int(seg)] = np.sqrt( mod2Epar )
-        if tar=='Eprimei' :
-          alldata.calc_cross('Vi_x','B_x','Vi_y','B_y','Vi_z','B_z',seg=seg)
-          mod2VixB = alldata.calc_scalr('VixB_x','VixB_x','VixB_y','VixB_y','VixB_z','VixB_z',seg=seg,fill=False)
-          alldata.data[tar+'%.8i'%int(seg)] = np.sqrt( mod2Eper+mod2VixB+2.*alldata.calc_scalr('EperB_x','VixB_x','EperB_y','VixB_y','EperB_z','VixB_z',seg=seg,fill=False) )
-        if tar=='Eprimee' :
-          alldata.calc_cross('Ve_x','B_x','Ve_y','B_y','Ve_z','B_z',seg=seg)
-          mod2VexB = alldata.calc_scalr('VexB_x','VexB_x','VexB_y','VexB_y','VexB_z','VexB_z',seg=seg,fill=False)
-          alldata.data[tar+'%.8i'%int(seg)] = np.sqrt( mod2Eper+mod2VexB+2.*alldata.calc_scalr('EperB_x','VexB_x','EperB_y','VexB_y','EperB_z','VexB_z',seg=seg,fill=False) )
-        for sp in alldata.meta['species']:
-          if tar=='Tiso' :
-            alldata.data[tar+sp+'%.8i'%int(seg)] = (alldata.data['TXX'+sp+'%.8i'%int(seg)]+alldata.data['TYY'+sp+'%.8i'%int(seg)]+alldata.data['TZZ'+sp+'%.8i'%int(seg)])/3.
-          if tar=='Tper' :
-            alldata.data['temp_x%.8i'%int(seg)] = alldata.calc_scalr('TXX'+sp,'B_x','TXY'+sp,'B_y','TXZ'+sp,'B_z',seg=seg,fill=False)
-            alldata.data['temp_y%.8i'%int(seg)] = alldata.calc_scalr('TXY'+sp,'B_x','TYY'+sp,'B_y','TYZ'+sp,'B_z',seg=seg,fill=False)
-            alldata.data['temp_z%.8i'%int(seg)] = alldata.calc_scalr('TXZ'+sp,'B_x','TYZ'+sp,'B_y','TZZ'+sp,'B_z',seg=seg,fill=False)
-            mod2B = alldata.calc_scalr('B_x','B_x','B_y','B_y','B_z','B_z',seg=seg,fill=False)
-            alldata.data[tar+sp+'%.8i'%int(seg)] = (3.*alldata.data['Tiso'+sp+'%.8i'%int(seg)]-(alldata.calc_scalr('temp_x','B_x','temp_y','B_y','temp_z','B_z',seg=seg,fill=False)/mod2B))
-          if tar=='Tpar' :
-            alldata.data[tar+sp+'%.8i'%int(seg)] = alldata.calc_scalr('temp_x','B_x','temp_y','B_y','temp_z','B_z',seg=seg,fill=False)/mod2B
+      for sp in alldata.meta['species']:
+        I1  = alldata.data['TXX'+sp+'%.8i'%int(seg)]+alldata.data['TYY'+sp+'%.8i'%int(seg)]+alldata.data['TZZ'+sp+'%.8i'%int(seg)]
+        I2  = alldata.calc_scalr('TXX'+sp,'TYY'+sp,'TXX'+sp,'TZZ'+sp,'TYY'+sp,'TZZ'+sp,seg=seg,fill=False)
+        I2 -= alldata.calc_scalr('TXY'+sp,'TXY'+sp,'TXZ'+sp,'TXZ'+sp,'TYZ'+sp,'TYZ'+sp,seg=seg,fill=False)
+        for tar in out_tars:
+          if tar=='Anis' :
+            alldata.data[tar+sp+'%.8i'%int(seg)] = 2.*alldata.data['Tpar'+sp+'%.8i'%int(seg)]/alldata.data['Tper'+sp+'%.8i'%int(seg)]
+          if tar=='Gyro' :
+            alldata.data[tar+sp+'%.8i'%int(seg)] = 1. - (4.*I2/(I1-alldata.data['Tpar'+sp+'%.8i'%int(seg)])/(I1+3.*alldata.data['Tpar'+sp+'%.8i'%int(seg)]))
 
       print(alldata.data.keys())
       
@@ -108,14 +90,12 @@ for cut in cuts:
 #----print-derived-fields-----------------------
       print('PRINT->',seg)
       for tar in out_tars:
-        if 'E' in tar :
-          alldata.print_vtk_scal(tar,seg,data_address,alldata.meta['name']+'_'+tar+cut+'_'+str(seg),silent=True)
-        else :
-          for sp in alldata.meta['species']:
-            alldata.print_vtk_scal(tar+sp,seg,data_address,alldata.meta['name']+'_'+tar+sp+cut+'_'+str(seg),silent=True)
+        for sp in alldata.meta['species']:
+          alldata.print_vtk_scal(tar+sp,seg,data_address,alldata.meta['name']+'_'+tar+sp+cut+'_'+str(seg),silent=True)
 
 #----del-3D-fields----------------------------
       print('DELETE->',seg)
+      del I1,I2
       for key in alldata.data.keys():
           del alldata.data[key]
 

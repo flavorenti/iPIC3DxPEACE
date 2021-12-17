@@ -374,7 +374,6 @@ bool c_Solver::ParticlesMover(int cycle)
       Qrep[i] = part[i].repopulate_particles(EMf); 
     }
 
-
     // Internal boundary conditions particles.                 ./Job
     // case with re-inejction of pcls to keep net charge zero  ./Job
     double Qrm, Count_plus=0., Count_mins=0.;
@@ -397,7 +396,6 @@ bool c_Solver::ParticlesMover(int cycle)
       else if (col->getCase()=="Dipole2D") Qdel[i] = part[i].deleteParticlesInsideSphere2DPlaneXZ(cycle,Qrm,R,col->getx_center(),col->getz_center());
       //if (col->getVerbose() and Qdel[i]!=0) dprintf("Delete->For proc %d the Q%i removed is = %f",myrank,i,Qdel[i]);
     }
-
 
     /* ---------------------------------- */
     /* communicate pcls between procs     */

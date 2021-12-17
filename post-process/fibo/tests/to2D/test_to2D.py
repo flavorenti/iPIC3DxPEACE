@@ -9,6 +9,7 @@
 #  tars         = [str] target variables you want to use (in order!)
 #  cycle_min    = [int] minimum cycle to read
 #  cycle_max    = [int] maximum cycle to read
+#  diffRho      = [bool] do you want to compute total charge rhoi+rhoe?
 #
 # Job 11/2021
 #-------------------------------------------------------------------
@@ -18,6 +19,7 @@
 tars = ['E','B','Je','Ji','PXX','PXY','PXZ','PYY','PYZ','PZZ','rho']
 cycle_min = 0
 cycle_max  = 2000000
+diffRho = True
 #=======================================================================================
 ########################################################################################
 
@@ -75,7 +77,11 @@ for seg in data3D.meta['segcycles']:
         else :
           for sp in data3D.meta['species']:
             fibos[ic].data[tar+sp+'%.8i'%int(seg)], fibos[ic].meta = data3D.extract_range(tar+sp+'%.8i'%int(seg),cut[1],cut[2],cut[3])
-    
+      if diffRho :
+        for isp,sp in enumerate(data3D.meta['species']):
+          if isp==0 : fibos[ic].data['Drho+%.8i'%int(seg)]  = fibos[ic].data['rho'+sp+'%.8i'%int(seg)]
+          elif isp>0: fibos[ic].data['Drho+%.8i'%int(seg)] += fibos[ic].data['rho'+sp+'%.8i'%int(seg)]
+
 #----print-derived-fields-----------------------
     print('PRINT->',seg)
     for ic,cut in enumerate(cuts):

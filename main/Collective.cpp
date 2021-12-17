@@ -1275,7 +1275,13 @@ void Collective::Print() {
 
   if (yes_sal){
     cout << "REQUIRE SAL_length/(Vthi*dt)>>1 = " << n_layers_sal*dz/dt/vth[1] << endl;
-  }
+    if (n_layers_sal>=(nxc/XLEN)) 
+      eprintf("ERROR: n_layers_sal bigger than Nx/XLEN")
+    if (n_layers_sal>=(nyc/YLEN)) 
+      eprintf("ERROR: n_layers_sal bigger than Ny/YLEN")
+     if (n_layers_sal>=(nzc/ZLEN)) 
+      eprintf("ERROR: n_layers_sal bigger than Nz/ZLEN")
+   }
 
 
 }
