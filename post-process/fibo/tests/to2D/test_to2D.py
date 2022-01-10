@@ -16,10 +16,10 @@
 
 ######################################################################################
 #======regulate=parameters=============================================================
-tars = ['E','B','Je','Ji','PXX','PXY','PXZ','PYY','PYZ','PZZ','rho']
-cycle_min = 0
-cycle_max  = 2000000
-diffRho = True
+tars = ['B','E','Je','rho']#'PXX','PXY','PXZ','PYY','PYZ','PZZ','rho']
+cycle_min = 2100
+cycle_max  = 200000
+diffRho = False
 #=======================================================================================
 ########################################################################################
 
@@ -91,15 +91,14 @@ for seg in data3D.meta['segcycles']:
         else :
           for sp in data3D.meta['species']:
             fibos[ic].print_vtk_scal(tar+sp,seg,data_address,data3D.meta['name']+'_'+tar+sp+cut[0]+'_'+str(seg),silent=True)
+      if diffRho :
+        fibos[ic].print_vtk_scal('Drho',seg,data_address,data3D.meta['name']+'_Drho'+cut[0]+'_'+str(seg),silent=True)
 
 #----del-3D-fields----------------------------
     print('DELETE->',seg)
-    for tar in tars:
-      if len(tar)<3 :
-        del data3D.data[tar+'_x'+'%.8i'%int(seg)], data3D.data[tar+'_y'+'%.8i'%int(seg)], data3D.data[tar+'_z'+'%.8i'%int(seg)]
-      else :
-        for sp in data3D.meta['species']:
-          del data3D.data[tar+sp+'%.8i'%int(seg)]
+    for ic,cut in enumerate(cuts):
+      for key in fibos[ic].data.keys():
+        del fibos[ic].data[key]
 
 #----print-comp-time--------------------
     print('COMP.TIME [seg%i] = %.3f s\n'%(seg,time.time()-t0))

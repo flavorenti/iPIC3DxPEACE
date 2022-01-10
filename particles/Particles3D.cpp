@@ -2583,9 +2583,9 @@ double Particles3D::deleteParticlesInsideSphere(int cycle, double Qrm, double R,
       }
       else{
         Rnw = 2.*R - sqrt(xd*xd+yd*yd+zd*zd);
-	xnw = Rnw/sqrt(xd*xd+yd*yd+zd*zd)*xd + x_center;
-        ynw = Rnw/sqrt(xd*xd+yd*yd+zd*zd)*yd + y_center;
-        znw = Rnw/sqrt(xd*xd+yd*yd+zd*zd)*zd + z_center + DipoleOffset;
+	xnw = Rnw/sqrt(xd*xd+yd*yd+zd*zd)*pcl.get_x();
+        ynw = Rnw/sqrt(xd*xd+yd*yd+zd*zd)*pcl.get_y();
+        znw = Rnw/sqrt(xd*xd+yd*yd+zd*zd)*pcl.get_z();
         pcl.set_x(xnw);	      
         pcl.set_y(ynw);	      
         pcl.set_z(znw);	      
