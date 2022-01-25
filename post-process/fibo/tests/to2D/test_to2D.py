@@ -16,8 +16,8 @@
 
 ######################################################################################
 #======regulate=parameters=============================================================
-tars = ['B','E','Je','rho']#'PXX','PXY','PXZ','PYY','PYZ','PZZ','rho']
-cycle_min = 2100
+tars = ['Jpergf3','Jpargf3','Jper','Jipar']#['B','E','Je','Ji','PXX','PXY','PXZ','PYY','PYZ','PZZ','rho']
+cycle_min = 0
 cycle_max  = 200000
 diffRho = False
 #=======================================================================================
@@ -60,37 +60,37 @@ for seg in data3D.meta['segcycles']:
   if cycle_min<=seg<=cycle_max :
     print('LOAD->',seg)
     for tar in tars:
-      if len(tar)<3 :
-        from_VTK.get_vect(data3D.meta['name']+'_'+tar+'_'+str(seg),seg,fibo_obj=data3D,tar_var=tar,silent=True)
-      else :
+      if ('P' or 'rho') in tar :
         for sp in data3D.meta['species']:
           from_VTK.get_scal(data3D.meta['name']+'_'+tar+sp+'_'+str(seg),seg,fibo_obj=data3D,tar_var=tar+sp,silent=True)
+      else:
+        from_VTK.get_vect(data3D.meta['name']+'_'+tar+'_'+str(seg),seg,fibo_obj=data3D,tar_var=tar,silent=True)
 
 #----cut-to-2D------------------
     print('CUT->',seg)
     for ic,cut in enumerate(cuts):
       for tar in tars:
-        if len(tar)<3 :
+        if ('P' or 'rho') in tar :
+          for sp in data3D.meta['species']:
+            fibos[ic].data[tar+sp+'%.8i'%int(seg)], fibos[ic].meta = data3D.extract_range(tar+sp+'%.8i'%int(seg),cut[1],cut[2],cut[3])
+        else:
           fibos[ic].data[tar+'_x%.8i'%int(seg)], fibos[ic].meta = data3D.extract_range(tar+'_x%.8i'%int(seg),cut[1],cut[2],cut[3])
           fibos[ic].data[tar+'_y%.8i'%int(seg)], fibos[ic].meta = data3D.extract_range(tar+'_y%.8i'%int(seg),cut[1],cut[2],cut[3])
           fibos[ic].data[tar+'_z%.8i'%int(seg)], fibos[ic].meta = data3D.extract_range(tar+'_z%.8i'%int(seg),cut[1],cut[2],cut[3])
-        else :
-          for sp in data3D.meta['species']:
-            fibos[ic].data[tar+sp+'%.8i'%int(seg)], fibos[ic].meta = data3D.extract_range(tar+sp+'%.8i'%int(seg),cut[1],cut[2],cut[3])
       if diffRho :
+        fibos[ic].data['Drho%.8i'%int(seg)] = np.zeros((nx,ny,nz))
         for isp,sp in enumerate(data3D.meta['species']):
-          if isp==0 : fibos[ic].data['Drho+%.8i'%int(seg)]  = fibos[ic].data['rho'+sp+'%.8i'%int(seg)]
-          elif isp>0: fibos[ic].data['Drho+%.8i'%int(seg)] += fibos[ic].data['rho'+sp+'%.8i'%int(seg)]
+          fibos[ic].data['Drho%.8i'%int(seg)] += fibos[ic].data['rho'+sp+'%.8i'%int(seg)]
 
 #----print-derived-fields-----------------------
     print('PRINT->',seg)
     for ic,cut in enumerate(cuts):
       for tar in tars:
-        if len(tar)<3 :
-          fibos[ic].print_vtk_vect(tar+'_x',tar+'_y',tar+'_z',seg,data_address,data3D.meta['name']+'_'+tar+cut[0]+'_'+str(seg),silent=True)
-        else :
+        if ('P' or 'rho') in tar :
           for sp in data3D.meta['species']:
             fibos[ic].print_vtk_scal(tar+sp,seg,data_address,data3D.meta['name']+'_'+tar+sp+cut[0]+'_'+str(seg),silent=True)
+        else:
+          fibos[ic].print_vtk_vect(tar+'_x',tar+'_y',tar+'_z',seg,data_address,data3D.meta['name']+'_'+tar+cut[0]+'_'+str(seg),silent=True)
       if diffRho :
         fibos[ic].print_vtk_scal('Drho',seg,data_address,data3D.meta['name']+'_Drho'+cut[0]+'_'+str(seg),silent=True)
 

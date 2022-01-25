@@ -1,0 +1,175 @@
+ # Publications that use results from iPIC3D need to properly cite  
+ # 'S. Markidis, G. Lapenta, and Rizwan-uddin. "Multi-scale simulations of 
+ # plasma with iPIC3D." Mathematics and Computers in Simulation 80.7 (2010): 1509-1519.'
+ #
+ #        Copyright 2015 KTH Royal Institute of Technology
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+ # You may obtain a copy of the License at 
+ #
+ #         http://www.apache.org/licenses/LICENSE-2.0
+ #
+ # Unless required by applicable law or agreed to in writing, software
+ # distributed under the License is distributed on an "AS IS" BASIS,
+ # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+
+# Directories
+SaveDirName = data
+RestartDirName = data
+
+Case              = Dipole 
+PoissonCorrection = no         # Poisson correction
+WriteMethod       = pvtk       # Output method [ shdf5 || pvtk ||nbcvtk]
+SimulationName    = Dipole3D   # Simulation name for the output
+
+#  Initial Magnetic Field
+B0x = 0.0
+B0y = 0.0
+B0z = 0.00562
+
+
+# External magnetic field parameters: DIPOLE - Magnetic Moment in Z direction
+B1x = 0.0
+B1y = 0.0
+B1z = 0.056
+DipoleOffset = -0.5   #negative for Mercury
+
+
+#  %%%%%%%%%%%%%%%%%%% TIME %%%%%%%%%%%%%%%%%%
+dt = 0.5                    # dt = time step  
+ncycles = 82		 #!!!    # cycles
+th = 1.0                     # th =   decentering parameter
+c = 1.0                      # c = light speed 
+
+#  %%%%%%%%%%%%%%%%%%% SMOOTH %%%%%%%%%%%%%%%%%%
+Smooth = 0.5                  # Smoothing value (5-points stencil)
+SmoothNiter = 2           # How many times the smoothing is applied, default is 6
+
+# %%%%%%%%%%%%%%%%%% BOX SIZE %%%%%%%%%%%%%%%
+Lx =   10.0                  # Lx = simulation box length - x direction   
+Ly =   10.0                  # Ly = simulation box length - y direction
+Lz =   10.0                  # Lz = simulation box length - z direction   
+
+x_center =   6.0             # center of the dipole - X
+y_center =   5.0             # center of the dipole - Y
+z_center =   5.0             # center of the dipole - Z  
+L_square =   0.5              # radius of the planet
+
+nxc =  32                  # nxc = number of cells - x direction        
+nyc =  32                  # nyc = number of cells - y direction
+nzc =  32                  # nzc = number of cells - z direction        
+
+# %%%%%%%%%%%%%% MPI TOPOLOGY %%%%%%%%%%%%%%
+# number of MPI subdomains in each direction
+XLEN = 2
+YLEN = 2
+ZLEN = 2
+# topology (1=true, 0=false): USE PERIODIC IN ALL DIRECTIONS
+PERIODICX = 0
+PERIODICY = 0
+PERIODICZ = 0
+
+# %%%%%%%%%%%%%% PARTICLES %%%%%%%%%%%%%%%%%
+#    ns = number of species
+#    0 = solar wind electrons
+#    1 = solar wind protons
+#    2 = exosphere elctrons
+#    3 = exosphere protons
+ns = 4
+# Initial density (make sure you are neutral)
+rhoINIT =  1.0	1.0  1.0  1.0
+# Injection density (make sure you are neutral)
+rhoINJECT =  1.0   1.0  1.0  1.0
+# TrackParticleID[species] = 1=true, 0=false --> Assign ID to particles
+TrackParticleID = 0  0  0  0
+
+# npcelx = number of particles per cell - Direction X 
+npcelx =  4  4  0  0	
+# npcely = number of particles per cell - Direction Y 
+npcely =  4  4  0  0		
+# npcelz = number of particles per cell - Direction Z 
+npcelz =  4  4  0  0
+
+# qom = charge to mass ratio for different species 
+qom =  -25.0	1.0  -25.0  1.0	
+# uth = thermal velocity for different species - Direction X  
+uth =  0.045  0.0063  0.031  0.0005
+# vth = thermal velocity for different species - Direction Y 
+vth =  0.045  0.0063  0.031  0.0005
+# wth = thermal velocity for different species - Direction Z 
+wth =  0.045  0.0063  0.031  0.0005
+
+# u0 = drift velocity   - Direction X    
+u0 =  0.02  0.02  0.0  0.0
+# v0 = drift velocity   - Direction Y    
+v0 =  0.0  0.0  0.0  0.0
+# w0 = drift velocity   - Direction Z    
+w0 =  0.0  0.0  0.0  0.0
+
+# %%%%%%%%%%%%%% BOUNDARIES %%%%%%%%%%%%%%%%%
+# PHI Electrostatic Potential     
+# 0,1 = Dirichilet boundary condition ;     
+# 2   = Neumann boundary condition
+#    Caveat: if your processor topology is set to be periodic in a direction, automatically the boundary condition in that direction will be periodic
+    bcPHIfaceXright = 1
+    bcPHIfaceXleft  = 1
+    bcPHIfaceYright = 1
+    bcPHIfaceYleft  = 1
+    bcPHIfaceZright = 1
+    bcPHIfaceZleft  = 1
+    
+#    EM field boundary condition
+#    0 = perfect conductor
+#    1 = magnetic mirror
+#    Caveat: if your processor topology is set to be periodic in a direction, automatically the boundary condition in that direction will be periodic
+    bcEMfaceXright = 2
+    bcEMfaceXleft =  2
+    bcEMfaceYright = 2
+    bcEMfaceYleft =  2
+    bcEMfaceZright = 2
+    bcEMfaceZleft =  2
+    
+#    Particles Boundary condition
+#    0 = exit
+#    1 = perfect mirror
+#    2 = riemission
+#    Caveat: if your processor topology is set to be periodic in a direction, automatically the boundary condition in that direction will be periodic
+    bcPfaceXright = 2
+    bcPfaceXleft =  2 
+    bcPfaceYright = 2
+    bcPfaceYleft =  2
+    bcPfaceZright = 2
+    bcPfaceZleft =  2
+
+
+# %%%%%%%%%%%%%% OUTPUTS %%%%%%%%%%%%%%%%%
+# SAL external boundary conditions (1=True, 0=False)
+   yes_sal = 1
+   n_layers_sal = 3
+# Dipole initialization for particles 
+   NewPclInit = 1
+# Internal boundary conditions (Trivial=delete or NonTrivial=delete+reflection)
+   NonTrivialBCPlanet = 1
+# Add ionization of the exosphere
+   AddExosphere = 0
+# Print to video results (deprecated)
+   verbose = 1
+# CG solver stopping criterium tolerance
+   CGtol = 1E-3
+# GMRES solver stopping criterium tolerance
+   GMREStol = 1E-3
+# Mover predictor corrector iteration
+   NiterMover = 8
+# Output for field
+   FieldOutputCycle = 10
+   FieldOutputTag   = B+E+Je+Ji
+   MomentsOutputTag = rho+PXX+PXY+PXZ+PYY+PYZ+PZZ
+# Output for particles if 0 it doesnt save particles data
+   ParticlesOutputCycle = 0
+   ParticlesOutputTag = position+velocity+q 
+# Restart cycle
+   RestartOutputCycle = 25
+# Output for particles removed from inside planet
+   RemoveParticlesOutputCycle = 0

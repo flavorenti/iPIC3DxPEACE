@@ -3,10 +3,14 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import colors
+from matplotlib.patches import Wedge
 
 # define path to simu and cycle to plot
 data_address = sys.argv[1]
-cycle = 3500
+cycle = 6000
+xlim=[4.1,-6.1]
+ylim=[4.1,-4.1]
+zlim=[-4.1,4.1]
 
 # conversion factors from code units to SI values
 conv_B = 20./0.00562 #nT
@@ -25,6 +29,13 @@ zc = from_VTK.meta['zc']+from_VTK.meta['Doff']
 x = (-x + xc )/from_VTK.meta['R']
 y = (-y + yc )/from_VTK.meta['R']
 z = ( z - zc )/from_VTK.meta['R']
+ix = [np.argmin(abs(x-xlim[0])), np.argmin(abs(x-xlim[1]))]
+iy = [np.argmin(abs(y-ylim[0])), np.argmin(abs(y-ylim[1]))]
+iz = [np.argmin(abs(z-zlim[0])), np.argmin(abs(z-zlim[1]))]
+print(min(x),max(x),min(y),max(y),min(z),max(z))
+x = x[ix[0]:ix[1]]
+y = y[iy[0]:iy[1]]
+z = z[iz[0]:iz[1]]
 def scalr(a):
     return np.sqrt(a[0]**2+a[1]**2+a[2]**2)
 theta = np.linspace(-np.pi/1.1,np.pi/1.1,10000)
@@ -59,72 +70,84 @@ Neq = conv_N*from_VTK.get_scal(from_VTK.meta['name']+'_rhoi1eq_%i'%cycle,cycle,f
 # plot the figure
 fig = plt.figure(figsize=(18,10))
 plt.axis('off')
-plt.title('$RunS$',fontsize=25)
+plt.title('Northward IMF (RunN)',fontsize=25)
 #density
 ax = fig.add_subplot(231)
-im1 = plt.imshow(np.transpose(Ndp[:,0,:]), cmap='jet', origin='lower', norm=colors.LogNorm(vmin=1., vmax=120.), extent=(max(x),min(x),min(z),max(z)), aspect=1)
+im1 = plt.imshow(np.transpose(Ndp[ix[0]:ix[1],0,iz[0]:iz[1]]), cmap='jet', origin='lower', norm=colors.LogNorm(vmin=1., vmax=120.), extent=(max(x),min(x),min(z),max(z)), aspect=1)
 plt.plot(xx_bs,zz_bs,linestyle='--',color='black')
 plt.plot(xx_mp,zz_mp,linestyle='-',color='black')
-planet = plt.Circle((0., 0.), 1., color='grey', fill=True, linewidth=0.)
-ax.add_patch(planet)
+w1 = Wedge((0.,0.), 1., 90., 270., fc='black')
+w2 = Wedge((0.,0.), 1., 270., 90., fc='grey')
+ax.add_artist(w1)
+ax.add_artist(w2)
 plt.clim(1.,120.)
 plt.xticks([])
 plt.yticks(fontsize=14)
-plt.text(0.6*max(x),0.75*max(z),r'$n_i$[cm-3]',fontsize=14)
+plt.text(0.8*max(x),0.75*max(z),r'$n_i$[cm-3]',fontsize=14)
 plt.ylabel(r'$z_{_{MSO}}$[R]',fontsize=14)
 ax = fig.add_subplot(234)
-plt.imshow(np.transpose(Neq[:,:,0]), cmap='jet', origin='lower', norm=colors.LogNorm(vmin=1., vmax=120.), extent=(max(x),min(x),max(y),min(y)), aspect=1)
+plt.imshow(np.transpose(Neq[ix[0]:ix[1],iy[0]:iy[1],0]), cmap='jet', origin='lower', norm=colors.LogNorm(vmin=1., vmax=120.), extent=(max(x),min(x),max(y),min(y)), aspect=1)
 plt.plot(xx_bs,yy_bs,linestyle='--',color='black')
 plt.plot(xx_mp,yy_mp,linestyle='-',color='black')
-planet = plt.Circle((0., 0.), 1., color='grey', fill=True, linewidth=0.)
-ax.add_patch(planet)
+w1 = Wedge((0.,0.), 1., 90., 270., fc='black')
+w2 = Wedge((0.,0.), 1., 270., 90., fc='grey')
+ax.add_artist(w1)
+ax.add_artist(w2)
 plt.clim(1.,120.)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
-plt.text(0.6*max(x),0.75*min(y),r'$n_i$[cm-3]',fontsize=14)
+plt.text(0.8*max(x),0.75*min(y),r'$n_i$[cm-3]',fontsize=14)
 plt.ylabel(r'$y_{_{MSO}}$[R]',fontsize=14)
 #magnetic field
 ax = fig.add_subplot(232)
-im2 = plt.imshow(np.transpose(Bdp[:,0,:]), cmap='seismic', origin='lower', norm=colors.LogNorm(vmin=1e-1, vmax=1e3), extent=(max(x),min(x),min(z),max(z)), aspect=1)
+im2 = plt.imshow(np.transpose(Bdp[ix[0]:ix[1],0,iz[0]:iz[1]]), cmap='seismic', origin='lower', norm=colors.LogNorm(vmin=1e-1, vmax=1e3), extent=(max(x),min(x),min(z),max(z)), aspect=1)
 plt.plot(xx_bs,zz_bs,linestyle='--',color='black')
 plt.plot(xx_mp,zz_mp,linestyle='-',color='black')
-planet = plt.Circle((0., 0.), 1., color='grey', fill=True, linewidth=0.)
-ax.add_patch(planet)
+w1 = Wedge((0.,0.), 1., 90., 270., fc='black')
+w2 = Wedge((0.,0.), 1., 270., 90., fc='grey')
+ax.add_artist(w1)
+ax.add_artist(w2)
 plt.clim(1e-1,1e3)
 plt.xticks([])
 plt.yticks([])
-plt.text(0.6*max(x),0.75*max(z),r'$|B|$[nT]',fontsize=14)
+plt.text(0.8*max(x),0.75*max(z),r'$|B|$[nT]',fontsize=14)
 ax = fig.add_subplot(235)
-plt.imshow(np.transpose(Beq[:,:,0]), cmap='seismic', origin='lower', norm=colors.LogNorm(vmin=1e-1, vmax=1e3), extent=(max(x),min(x),max(y),min(y)), aspect=1)
+plt.imshow(np.transpose(Beq[ix[0]:ix[1],iy[0]:iy[1],0]), cmap='seismic', origin='lower', norm=colors.LogNorm(vmin=1e-1, vmax=1e3), extent=(max(x),min(x),max(y),min(y)), aspect=1)
 plt.plot(xx_bs,yy_bs,linestyle='--',color='black')
 plt.plot(xx_mp,yy_mp,linestyle='-',color='black')
-planet = plt.Circle((0., 0.), 1., color='grey', fill=True, linewidth=0.)
-ax.add_patch(planet)
+w1 = Wedge((0.,0.), 1., 90., 270., fc='black')
+w2 = Wedge((0.,0.), 1., 270., 90., fc='grey')
+ax.add_artist(w1)
+ax.add_artist(w2)
 plt.clim(1e-1,1e3)
 plt.xticks(fontsize=14)
 plt.yticks([])
-plt.text(0.6*max(x),0.75*min(y),r'$|B|$[nT]',fontsize=14)
+plt.text(0.8*max(x),0.75*min(y),r'$|B|$[nT]',fontsize=14)
 #current
 ax = fig.add_subplot(233)
-im3 = plt.imshow(np.transpose(Jdp[:,0,:]), cmap='seismic', origin='lower', extent=(max(x),min(x),min(z),max(z)), aspect=1)
+im3 = plt.imshow(np.transpose(Jdp[ix[0]:ix[1],0,iz[0]:iz[1]]), cmap='seismic', origin='lower', extent=(max(x),min(x),min(z),max(z)), aspect=1)
 plt.plot(xx_bs,zz_bs,linestyle='--',color='black')
 plt.plot(xx_mp,zz_mp,linestyle='-',color='black')
-planet = plt.Circle((0., 0.), 1., color='grey', fill=True, linewidth=0.)
-ax.add_patch(planet)
+w1 = Wedge((0.,0.), 1., 90., 270., fc='black')
+w2 = Wedge((0.,0.), 1., 270., 90., fc='grey')
+ax.add_artist(w1)
+ax.add_artist(w2)
 plt.clim(-2e3,2e3)
 plt.xticks([])
 plt.yticks([])
-plt.text(0.6*max(x),0.75*max(z),r'$J_y$[nA/$m^2$]',fontsize=14)
+plt.text(0.8*max(x),0.75*max(z),r'$J_y$[nA/$m^2$]',fontsize=14)
 ax = fig.add_subplot(236)
-plt.imshow(np.transpose(Jeq[:,:,0]), cmap='seismic', origin='lower', extent=(max(x),min(x),max(y),min(y)), aspect=1)
+plt.imshow(np.transpose(Jeq[ix[0]:ix[1],iy[0]:iy[1],0]), cmap='seismic', origin='lower', extent=(max(x),min(x),max(y),min(y)), aspect=1)
 plt.plot(xx_bs,yy_bs,linestyle='--',color='black')
 plt.plot(xx_mp,yy_mp,linestyle='-',color='black')
-planet = plt.Circle((0., 0.), 1., color='grey', fill=True, linewidth=0.)
-ax.add_patch(planet)
+w1 = Wedge((0.,0.), 1., 90., 270., fc='black')
+w2 = Wedge((0.,0.), 1., 270., 90., fc='grey')
+ax.add_artist(w1)
+ax.add_artist(w2)
 plt.clim(-2e3,2e3)
 plt.xticks(fontsize=14)
 plt.yticks([])
-plt.text(0.6*max(x),0.75*min(y),r'$J_y$[nA/$m^2$]',fontsize=14)
+plt.text(0.8*max(x),0.75*min(y),r'$J_y$[nA/$m^2$]',fontsize=14)
 
 #colorbar in right places
 cax1 = fig.add_axes([0.128, 0.05, 0.237, 0.015])
@@ -140,5 +163,5 @@ cbar.ax.tick_params(labelsize=12)
 #reduce spacing subplots
 plt.subplots_adjust(wspace=0.1, hspace=0.01)
 
-plt.savefig('./images/plot1_paper_nBJ_2.png',format='png')
+plt.savefig('./images/plot1_paper_nBJ_6N.png',format='png')
 

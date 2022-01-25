@@ -1166,6 +1166,8 @@ void Particles3Dcomm::apply_Yleft_BC(vector_SpeciesParticle& pcls, int start)
         u[1] = fabs(u[1]);
         pcl.set_u(u);
       }
+      if(size>start)
+        cout<<"BCYleft in Particles3DComm.cpp #pcl="<<size-start<<endl;
       break;
     case BCparticles::EXIT:
       pcls.resize(start);
@@ -1216,6 +1218,8 @@ void Particles3Dcomm::apply_Zleft_BC(vector_SpeciesParticle& pcls, int start)
         u[2] = fabs(u[2]);
         pcl.set_u(u);
       }
+      if(size>start)
+        cout<<"BCZleft in Particles3DComm.cpp #pcl="<<size-start<<endl;
       break;
     case BCparticles::EXIT:
       pcls.resize(start);
@@ -1257,7 +1261,7 @@ void Particles3Dcomm::apply_Xrght_BC(vector_SpeciesParticle& pcls, int start)
     case BCparticles::REEMISSION:
       // in this case it might be faster to convert to and
       // from SoA format, if calls to rand() can vectorize.
-      for(int p=start;p<size;p++)
+      /*for(int p=start;p<size;p++)
       {
         SpeciesParticle& pcl = pcls[p];
         double& x = pcl.fetch_x();
@@ -1266,7 +1270,8 @@ void Particles3Dcomm::apply_Xrght_BC(vector_SpeciesParticle& pcls, int start)
         sample_maxwellian(u[0],u[1],u[2], uth,vth,wth);
         u[0] = -fabs(u[0]);
         pcl.set_u(u);
-      }
+      }*/
+      pcls.resize(start);
       if(size>start)
         cout<<"BCXright in Particles3DComm.cpp #pcl="<<size-start<<endl; 
      break;
@@ -1326,6 +1331,8 @@ void Particles3Dcomm::apply_Yrght_BC(vector_SpeciesParticle& pcls, int start)
         u[1] = -fabs(u[1]);
         pcl.set_u(u);
       }
+      if(size>start)
+        cout<<"BCYrght in Particles3DComm.cpp #pcl="<<size-start<<endl;
       break;
     case BCparticles::EXIT:
       pcls.resize(start);
@@ -1376,6 +1383,8 @@ void Particles3Dcomm::apply_Zrght_BC(vector_SpeciesParticle& pcls, int start)
         u[2] = -fabs(u[2]);
         pcl.set_u(u);
       }
+      if(size>start)
+        cout<<"BCZrght in Particles3DComm.cpp #pcl="<<size-start<<endl;
       break;
     case BCparticles::EXIT:
       pcls.resize(start);

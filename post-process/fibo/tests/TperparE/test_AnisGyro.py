@@ -1,5 +1,5 @@
 #--------------------------------------------------------------------
-#  Code based on fibo library that (1) READS, (2) COMPUTE Anis,Gyro
+#  Code based on fibo library that (1) READS, (2) COMPUTE Anis,Gyro,mu=sqrt(Tper)/B
 #  and (3) PRINT the new fields. Uses the derived two-dimensional 
 #  and three-dimensional output of an iPIC3D simu.
 #  The new fields are saved in the same dir as the data, with the same dimensions.
@@ -21,10 +21,10 @@
 ######################################################################################
 #======regulate=parameters=============================================================
 inp_tars = ['B','TXX','TXY','TXZ','TYY','TYZ','TZZ','Tpar','Tper']
-out_tars = ['Anis','Gyro']
+out_tars = ['mu']#['Anis','Gyro','mu']
 cuts = ['eq','dp']
-cycle_min = 0
-cycle_max  = 2000000
+cycle_min = 1000
+cycle_max  = 1000000
 #=======================================================================================
 ########################################################################################
 
@@ -78,11 +78,14 @@ for cut in cuts:
         I1  = alldata.data['TXX'+sp+'%.8i'%int(seg)]+alldata.data['TYY'+sp+'%.8i'%int(seg)]+alldata.data['TZZ'+sp+'%.8i'%int(seg)]
         I2  = alldata.calc_scalr('TXX'+sp,'TYY'+sp,'TXX'+sp,'TZZ'+sp,'TYY'+sp,'TZZ'+sp,seg=seg,fill=False)
         I2 -= alldata.calc_scalr('TXY'+sp,'TXY'+sp,'TXZ'+sp,'TXZ'+sp,'TYZ'+sp,'TYZ'+sp,seg=seg,fill=False)
+        modB2 = alldata.calc_scalr('B_x','B_x','B_y','B_y','B_z','B_z',seg=seg,fill=False)
         for tar in out_tars:
           if tar=='Anis' :
             alldata.data[tar+sp+'%.8i'%int(seg)] = 2.*alldata.data['Tpar'+sp+'%.8i'%int(seg)]/alldata.data['Tper'+sp+'%.8i'%int(seg)]
           if tar=='Gyro' :
             alldata.data[tar+sp+'%.8i'%int(seg)] = 1. - (4.*I2/(I1-alldata.data['Tpar'+sp+'%.8i'%int(seg)])/(I1+3.*alldata.data['Tpar'+sp+'%.8i'%int(seg)]))
+          if tar=='mu' :
+            alldata.data[tar+sp+'%.8i'%int(seg)] = np.sqrt(alldata.data['Tper'+sp+'%.8i'%int(seg)]/modB2)
 
       print(alldata.data.keys())
       

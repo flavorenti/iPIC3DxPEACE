@@ -20,8 +20,8 @@
 
 ######################################################################################
 #======regulate=parameters=============================================================
-inp_tars = ['B','E','Ve','Vi','TXX','TXY','TXZ','TYY','TYZ','TZZ']
-out_tars = ['Eper','Epar','Eprimei','Eprimee','Tiso','Tper','Tpar']
+inp_tars = ['B','E','Je','Ji','Ve','Vi','TXX','TXY','TXZ','TYY','TYZ','TZZ']
+out_tars = ['Eper','Epar','Eprimei','Eprimee','Jper','Jpar','Tiso','Tper','Tpar']
 cuts = ['eq','dp']
 cycle_min = 0
 cycle_max  = 2000000
@@ -90,7 +90,12 @@ for cut in cuts:
           alldata.calc_cross('Ve_x','B_x','Ve_y','B_y','Ve_z','B_z',seg=seg)
           mod2VexB = alldata.calc_scalr('VexB_x','VexB_x','VexB_y','VexB_y','VexB_z','VexB_z',seg=seg,fill=False)
           alldata.data[tar+'%.8i'%int(seg)] = np.sqrt( mod2Eper+mod2VexB+2.*alldata.calc_scalr('EperB_x','VexB_x','EperB_y','VexB_y','EperB_z','VexB_z',seg=seg,fill=False) )
-        for sp in alldata.meta['species']:
+        if tar=='Jper' or tar=='Jpar':
+          alldata.data['J_x%.8i'%seg]=alldata.data['Je_x%.8i'%seg]+alldata.data['Ji_x%.8i'%seg]
+          alldata.data['J_y%.8i'%seg]=alldata.data['Je_y%.8i'%seg]+alldata.data['Ji_y%.8i'%seg]
+          alldata.data['J_z%.8i'%seg]=alldata.data['Je_z%.8i'%seg]+alldata.data['Ji_z%.8i'%seg]
+          alldata.calc_par_per('J_x','B_x','J_y','B_y','J_z','B_z',seg=seg)
+         for sp in alldata.meta['species']:
           if tar=='Tiso' :
             alldata.data[tar+sp+'%.8i'%int(seg)] = (alldata.data['TXX'+sp+'%.8i'%int(seg)]+alldata.data['TYY'+sp+'%.8i'%int(seg)]+alldata.data['TZZ'+sp+'%.8i'%int(seg)])/3.
           if tar=='Tper' :
@@ -108,6 +113,8 @@ for cut in cuts:
 #----print-derived-fields-----------------------
       print('PRINT->',seg)
       for tar in out_tars:
+        if 'J' in tar :
+          alldata.print_vtk_vect(tar+'B_x',tar+'B_y',tar+'B_z',seg,data_address,alldata.meta['name']+'_'+tar+cut+'_'+str(seg),silent=True)
         if 'E' in tar :
           alldata.print_vtk_scal(tar,seg,data_address,alldata.meta['name']+'_'+tar+cut+'_'+str(seg),silent=True)
         else :
