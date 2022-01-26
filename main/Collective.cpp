@@ -177,7 +177,7 @@ void Collective::ReadInput(string inputfile) {
     FieldOutputTag     =   config.read <string>("FieldOutputTag","");
     ParticlesOutputTag =   config.read <string>("ParticlesOutputTag","");
     MomentsOutputTag   =   config.read <string>("MomentsOutputTag","");
-    TestParticlesOutputCycle = config.read < int >("TestPartOutputCycle",0);
+    TestParticlesOutputCycle = config.read < int >("TestPartOutputCycle",10);
     testPartFlushCycle = config.read < int >("TestParticlesOutputCycle",10);
     RestartOutputCycle = config.read < int >("RestartOutputCycle",5000);
     RemoveParticlesOutputCycle = config.read < int >("RemoveParticlesOutputCycle",0);
@@ -215,6 +215,13 @@ void Collective::ReadInput(string inputfile) {
 
   yes_sal = config.read < int >("yes_sal",0);
   n_layers_sal = config.read < int >("n_layers_sal",3);
+
+  xmin = config.read <double>("xmin",0);
+  xmax = config.read <double>("xmax",0);
+  ymin = config.read <double>("ymin",0);
+  ymax = config.read <double>("ymax",0);
+  zmin = config.read <double>("zmin",0);
+  zmax = config.read <double>("zmax",0);
 
   NewPclInit = config.read < int >("NewPclInit",1); 
   NonTrivialBCPlanet = config.read < int >("NonTrivialBCPlanet",1);

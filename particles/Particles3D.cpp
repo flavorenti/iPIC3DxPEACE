@@ -280,18 +280,27 @@ void Particles3D::pitch_angle_energy(Field * EMf) {
     srand(vct->getCartesian_rank() + 3 + ns);
     assert_eq(_pcls.size(),0);
 
+    double  FourPI =16*atan(1.0);
+
     double p0, pperp0, gyro_phase;
 
     const double q_factor =  (qom / fabs(qom)) * grid->getVOL() / npcel;
 
     long long counter=0;
 
+    const double xmin=col->getXmin();
+    const double xmax=col->getXmax();
+    const double ymin=col->getYmin();
+    const double ymax=col->getYmax();
+    const double zmin=col->getZmin();
+    const double zmax=col->getZmax();
+
     for (int i=1; i< grid->getNXC()-1;i++)
         for (int j=1; j< grid->getNYC()-1;j++)
             for (int k=1; k< grid->getNZC()-1;k++){
 
             	// q = charge following electron (species 0)
-            	const double q = q_factor * EMf->getRHOcs(i, j, k, 0);
+            	const double q = q_factor/FourPI; // *EMf->getRHOcs(i, j, k, 0);   ./Job
 
                 for (int ii=0; ii < npcelx; ii++)
                     for (int jj=0; jj < npcely; jj++)
@@ -302,14 +311,18 @@ void Particles3D::pitch_angle_energy(Field * EMf) {
 
                             // velocity - assumes B is along z
                             p0=sqrt((energy+1)*(energy+1)-1);
-                            const double w =p0*cos(pitch_angle);
+                            double w =p0*cos(pitch_angle);
                             pperp0=p0*sin(pitch_angle);
                             gyro_phase = 2*M_PI* rand()/(double)RAND_MAX;
-                            const double u=pperp0*cos(gyro_phase);
-                            const double v=pperp0*sin(gyro_phase);
+                            double u=pperp0*cos(gyro_phase);
+                            double v=pperp0*sin(gyro_phase);
                             counter++ ;
 
-                            create_new_particle(u,v,w,q,x,y,z);
+			    // velocity using maxwellian sampling ./Job
+                            sample_maxwellian(u, v, w, uth, vth, wth, u0, v0, w0);
+
+			    if ((x>xmin)*(x<xmax)*(y>ymin)*(y<ymax)*(z>zmin)*(z<zmax))  //limit box ./Job
+                              create_new_particle(u,v,w,q,x,y,z);
                         }
             }
     const int num_ids = 1;
@@ -2312,7 +2325,8 @@ void Particles3D::openbc_delete_testparticles()
 		    	 pidx ++;
 		     }
 		   }
-		  dprintf( "*** Delete %d Test Particle for OpenBC for Direction %d on particle species %d",delnop, dir_cnt, ns);
+		  if (delnop!=0)
+	            dprintf( "*** Delete %d Test Particle for OpenBC for Direction %d on particle species %d",delnop, dir_cnt, ns);
 	  }
 
   }

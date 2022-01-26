@@ -34,12 +34,12 @@ B0z = 0.00562
 B1x = 0.0
 B1y = 0.0
 B1z = 0.056
-DipoleOffset = -0.5   #negative for Mercury
+DipoleOffset = -0.1   #negative for Mercury
 
 
 #  %%%%%%%%%%%%%%%%%%% TIME %%%%%%%%%%%%%%%%%%
 dt = 0.5                    # dt = time step  
-ncycles = 82		 #!!!    # cycles
+ncycles = 100		 #!!!    # cycles
 th = 1.0                     # th =   decentering parameter
 c = 1.0                      # c = light speed 
 
@@ -75,38 +75,37 @@ PERIODICZ = 0
 #    ns = number of species
 #    0 = solar wind electrons
 #    1 = solar wind protons
-#    2 = exosphere elctrons
-#    3 = exosphere protons
-ns = 4
+ns = 2
+nsTestPart = 1
 # Initial density (make sure you are neutral)
-rhoINIT =  1.0	1.0  1.0  1.0
+rhoINIT =  1.0	1.0  1.0
 # Injection density (make sure you are neutral)
-rhoINJECT =  1.0   1.0  1.0  1.0
+rhoINJECT =  1.0   1.0  1.0
 # TrackParticleID[species] = 1=true, 0=false --> Assign ID to particles
-TrackParticleID = 0  0  0  0
+TrackParticleID = 0  0  0
 
 # npcelx = number of particles per cell - Direction X 
-npcelx =  4  4  0  0	
+npcelx =  4  4  4
 # npcely = number of particles per cell - Direction Y 
-npcely =  4  4  0  0		
+npcely =  4  4  4		
 # npcelz = number of particles per cell - Direction Z 
-npcelz =  4  4  0  0
+npcelz =  4  4  4
 
 # qom = charge to mass ratio for different species 
-qom =  -25.0	1.0  -25.0  1.0	
+qom =  -25.0	1.0  -25.0	
 # uth = thermal velocity for different species - Direction X  
-uth =  0.045  0.0063  0.031  0.0005
+uth =  0.045  0.0063  0.045
 # vth = thermal velocity for different species - Direction Y 
-vth =  0.045  0.0063  0.031  0.0005
+vth =  0.045  0.0063  0.045
 # wth = thermal velocity for different species - Direction Z 
-wth =  0.045  0.0063  0.031  0.0005
+wth =  0.045  0.0063  0.045
 
 # u0 = drift velocity   - Direction X    
-u0 =  0.02  0.02  0.0  0.0
+u0 =  0.02  0.02  0.0
 # v0 = drift velocity   - Direction Y    
-v0 =  0.0  0.0  0.0  0.0
+v0 =  0.0  0.0  0.0
 # w0 = drift velocity   - Direction Z    
-w0 =  0.0  0.0  0.0  0.0
+w0 =  0.0  0.0  0.0
 
 # %%%%%%%%%%%%%% BOUNDARIES %%%%%%%%%%%%%%%%%
 # PHI Electrostatic Potential     
@@ -151,7 +150,7 @@ w0 =  0.0  0.0  0.0  0.0
 # Dipole initialization for particles 
    NewPclInit = 1
 # Internal boundary conditions (Trivial=delete or NonTrivial=delete+reflection)
-   NonTrivialBCPlanet = 1
+   NonTrivialBCPlanet = 0
 # Add ionization of the exosphere
    AddExosphere = 0
 # Print to video results (deprecated)
@@ -170,6 +169,21 @@ w0 =  0.0  0.0  0.0  0.0
    ParticlesOutputCycle = 0
    ParticlesOutputTag = position+velocity+q 
 # Restart cycle
-   RestartOutputCycle = 25
+   RestartOutputCycle = 25000
 # Output for particles removed from inside planet
    RemoveParticlesOutputCycle = 0
+# Output test particles
+   TestPartOutputCycle = 5
+
+%%%%%%%%%%%%%%% TEST PARTICLES %%%%%%%%%%%%%%%%%%%
+# limits sub-box
+  xmin=1.5
+  xmax=2.
+  ymin=2.
+  ymax=2.5
+  zmin=2.
+  zmax=2.5
+
+# other pars for test pcls
+  pitch_angle=1.5
+  energy=0.1

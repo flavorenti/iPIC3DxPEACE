@@ -133,6 +133,13 @@ class Collective
     double getEnergy(int nspecies)const{ return (energy[nspecies]); }
     int    getTestPartFlushCycle()const{ return (testPartFlushCycle); }
 
+    double getXmin()const{ return (xmin); }
+    double getXmax()const{ return (xmax); }
+    double getYmin()const{ return (ymin); }
+    double getYmax()const{ return (ymax); }
+    double getZmin()const{ return (zmin); }
+    double getZmax()const{ return (zmax); }
+
     int getYes_sal()const{ return (yes_sal); }
     int getN_layers_sal()const{ return (n_layers_sal); }
 
@@ -313,6 +320,14 @@ class Collective
     int yes_sal;
     /* number of cells for the SAL method */
     int n_layers_sal;
+
+    /* sub-box limits for test particles  */
+    double xmin;
+    double xmax;
+    double ymin;
+    double ymax;
+    double zmin;
+    double zmax;
 
     /* bool to use the new initialization for particles */
     int NewPclInit;
