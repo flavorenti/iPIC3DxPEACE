@@ -184,7 +184,7 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid, VirtualTopology3D *vct) :
   B1z = col->getB1z();
   // read Dipole Offset from input 
   //
-  DipoleOffset = col->getDipoleOffset();
+  PlanetOffset = col->getPlanetOffset();
   //if(B1x!=0. || B1y !=0. || B1z!=0.)
   //{
   //  eprintf("This functionality has not yet been implemented");
@@ -2973,7 +2973,7 @@ void EMfields3D::ConstantChargePlanet(double R,
 
         xd = grid->getXN(i,j,k) - x_center;
         yd = grid->getYN(i,j,k) - y_center;
-        zd = grid->getZN(i,j,k) - z_center - DipoleOffset;
+        zd = grid->getZN(i,j,k) - z_center - PlanetOffset;
 
         if ((xd*xd+yd*yd+zd*zd) <= (R*R) ){
 	  
@@ -3497,7 +3497,7 @@ void EMfields3D::SetLambda(Grid *grid){
         double y = grid->getYN(i,j,k);
         double z = grid->getZN(i,j,k);
 
-        double r2_planet = ((x-xc)*(x-xc)) + ((y-yc)*(y-yc)) + ((z-zc-DipoleOffset)*(z-zc-DipoleOffset));
+        double r2_planet = ((x-xc)*(x-xc)) + ((y-yc)*(y-yc)) + ((z-zc-PlanetOffset)*(z-zc-PlanetOffset));
 
         if (r2_planet>a*a) Lambda[i][j][k] = 0.0;
         else               Lambda[i][j][k] = (a-sqrt(r2_planet))*4.*M_PI/dr;
@@ -4497,7 +4497,7 @@ void EMfields3D::initDipole()
       cout << "B1x   (external dipole field) - X  = " << B1x << endl;
       cout << "B1y                              = " << B1y << endl;
       cout << "B1z                              = " << B1z << endl;
-      cout << "DipoleOffset [di]                = " << DipoleOffset << endl;
+      cout << "PlanetOffset [di]                = " << PlanetOffset << endl;
       cout << "L_square - no magnetic field inside a sphere with radius L_square  = " << L_square << endl;
       cout << "Center dipole - X                = " << x_center << endl;
       cout << "Center dipole - Y                = " << y_center << endl;
@@ -4527,7 +4527,7 @@ void EMfields3D::initDipole()
         double y = grid->getYN(i,j,k);
         double z = grid->getZN(i,j,k);
         double r2_dipole = ((x-xc)*(x-xc)) + ((y-yc)*(y-yc)) + ((z-zc)*(z-zc));
-        double r2_planet = ((x-xc)*(x-xc)) + ((y-yc)*(y-yc)) + ((z-zc-DipoleOffset)*(z-zc-DipoleOffset));
+        double r2_planet = ((x-xc)*(x-xc)) + ((y-yc)*(y-yc)) + ((z-zc-PlanetOffset)*(z-zc-PlanetOffset));
 
         for (int is=0; is < ns; is++){
           rhons[is][i][j][k] = rhoINIT[is]/FourPI;

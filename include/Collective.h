@@ -172,7 +172,7 @@ class Collective
     double getB1x()const{ return (B1x); }
     double getB1y()const{ return (B1y); }
     double getB1z()const{ return (B1z); }
-    double getDipoleOffset()const{ return (DipoleOffset); }
+    double getPlanetOffset()const{ return (PlanetOffset); }
     bool getVerbose()const{ return (verbose); }
     bool getTrackParticleID(int nspecies)const{ return (TrackParticleID[nspecies]); }
     int getRestart_status()const{ return (restart_status); }
@@ -409,7 +409,7 @@ class Collective
     double B1x;
     double B1y;
     double B1z;
-    double DipoleOffset;
+    double PlanetOffset;
 
     /*! boolean value for verbose results */
     bool verbose;

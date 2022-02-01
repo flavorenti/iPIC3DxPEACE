@@ -2522,11 +2522,11 @@ double Particles3D::rotateAndCountParticlesInsideSphere(int cycle, double R, dou
   int OutputCycle = col->getRemoveParticlesOutputCycle();
   double uold,vold,wold,u,v,w,xd,yd,zd,theta,phi,Vmod;
   const double RandNorm = 8 * atan(1.0) / (double) RAND_MAX;
-  double DipoleOffset;
+  double PlanetOffset;
   
   //srand(vct->getCartesian_rank()+2); DIABOLICO, mai usare! ./Job
 
-  DipoleOffset = col->getDipoleOffset();
+  PlanetOffset = col->getPlanetOffset();
 
   ofstream my_file_ct ("data/CountedParticles.txt", ios::app);
   ofstream my_file_rt ("data/RotatedParticles.txt", ios::app);
@@ -2535,7 +2535,7 @@ double Particles3D::rotateAndCountParticlesInsideSphere(int cycle, double R, dou
     SpeciesParticle& pcl = _pcls[pidx];
     xd = pcl.get_x() - x_center;
     yd = pcl.get_y() - y_center;
-    zd = pcl.get_z() - z_center - DipoleOffset;
+    zd = pcl.get_z() - z_center - PlanetOffset;
     if ( (xd*xd+yd*yd+zd*zd) < (R*R) ){
       uold = pcl.get_u();
       vold = pcl.get_v();
@@ -2574,11 +2574,11 @@ double Particles3D::deleteParticlesInsideSphere(int cycle, double Qrm, double R,
   double  FourPI =16*atan(1.0);
   const double q_per_particle = (Ninj/FourPI/npcel)*(1.0/grid->getInvVOL());
   unsigned int Nrm;
-  double DipoleOffset;
+  double PlanetOffset;
 
   Nrm = (int) Qrm/q_per_particle;
  
-  DipoleOffset = col->getDipoleOffset();
+  PlanetOffset = col->getPlanetOffset();
 
   ofstream my_file ("data/RemovedParticles.txt", ios::app);
 
@@ -2587,7 +2587,7 @@ double Particles3D::deleteParticlesInsideSphere(int cycle, double Qrm, double R,
     SpeciesParticle& pcl = _pcls[pidx];
     xd = pcl.get_x() - x_center;
     yd = pcl.get_y() - y_center;
-    zd = pcl.get_z() - z_center - DipoleOffset;
+    zd = pcl.get_z() - z_center - PlanetOffset;
     if ( (xd*xd+yd*yd+zd*zd) < (R*R) ){
       if (prm<=Nrm){
         Q_removed += pcl.get_q();
@@ -2717,9 +2717,9 @@ void Particles3D::maxwellianDipole(Field * EMf, double R, double x_center, doubl
   // multipled by charge density gives charge per particle
   const double q_factor =  q_sgn * grid->getVOL() / npcel;
   double x,y,z,u,v,w,q;
-  double DipoleOffset, xd,yd,zd;
+  double PlanetOffset, xd,yd,zd;
 
-  DipoleOffset = col->getDipoleOffset();
+  PlanetOffset = col->getPlanetOffset();
 
   for (int i = 1; i < grid->getNXC() - 1; i++){
     for (int j = 1; j < grid->getNYC() - 1; j++)
@@ -2734,7 +2734,7 @@ void Particles3D::maxwellianDipole(Field * EMf, double R, double x_center, doubl
               z = (kk + .5) * (dz / npcelz) + grid->getZN(i, j, k);
               xd = x-x_center;
               yd = y-y_center;
-              zd = z-z_center-DipoleOffset;
+              zd = z-z_center-PlanetOffset;
               if( (xd*xd+yd*yd+zd*zd)>(Rmax*Rmax) )
                 create_new_particle(u,v,w,q,x,y,z);
             }
@@ -2760,10 +2760,10 @@ double Particles3D::AddIonizedExosphere(double R, double x_center, double y_cent
   int    Ninject_int;
   double randx,randy,randz;
   double x,y,z,u,v,w,Ninject;
-  double DipoleOffset, xd,yd,zd, dist, dist_sq;
+  double PlanetOffset, xd,yd,zd, dist, dist_sq;
   double Qinject=0.;
 
-  DipoleOffset = col->getDipoleOffset();
+  PlanetOffset = col->getPlanetOffset();
 
   if (col->getVerbose() and vct->getCartesian_rank()==0)  cout << "*** Species " << ns << "-" << " Injecting ionized exosphere particles ****" << endl;
 
@@ -2773,7 +2773,7 @@ double Particles3D::AddIonizedExosphere(double R, double x_center, double y_cent
               
         xd = grid->getXC(i,j,k)-x_center;
         yd = grid->getYC(i,j,k)-y_center;
-        zd = grid->getZC(i,j,k)-z_center-DipoleOffset;
+        zd = grid->getZC(i,j,k)-z_center-PlanetOffset;
         
 	dist_sq = xd*xd+yd*yd+zd*zd;
         dist    = sqrt(dist_sq);

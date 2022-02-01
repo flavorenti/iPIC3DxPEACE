@@ -126,7 +126,7 @@ void Collective::ReadInput(string inputfile) {
     B1x = config.read <double>("B1x",0.0);
     B1y = config.read <double>("B1y",0.0);
     B1z = config.read <double>("B1z",0.0);
-    DipoleOffset = config.read <double>("DipoleOffset",0.0);
+    PlanetOffset = config.read <double>("PlanetOffset",0.0);
 
     delta = config.read < double >("delta",0.5);
 
@@ -1316,7 +1316,7 @@ void Collective::save() {
   my_file << "y-center                 = " << y_center << endl;
   my_file << "z-center                 = " << z_center << endl;
   my_file << "Radius planet            = " << L_square << endl;
-  my_file << "Dipole Offset            = " << DipoleOffset << endl;
+  my_file << "Planet Offset            = " << PlanetOffset << endl;
   my_file << "---------------------------" << endl;
   my_file << "SAL                      = " << yes_sal << endl;
   my_file << "Nlayers_SAL             = " << n_layers_sal << endl;

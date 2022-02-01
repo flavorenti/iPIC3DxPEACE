@@ -355,7 +355,7 @@ class EMfields3D                // :public Field
     /*! GEM challenge parameters */
     double B0x, B0y, B0z, delta;
     /** Earth Model parameters */
-    double B1x, B1y, B1z, DipoleOffset;
+    double B1x, B1y, B1z, PlanetOffset;
     /*! charge to mass ratio array for different species */
     double *qom;
     /*! Boundary electron speed */

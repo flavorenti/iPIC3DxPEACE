@@ -34,7 +34,7 @@ B0z = 0.00562
 B1x = 0.0
 B1y = 0.0
 B1z = 0.056
-DipoleOffset = -0.5   #negative for Mercury
+PlanetOffset = -0.5   #negative for Mercury
 
 
 #  %%%%%%%%%%%%%%%%%%% TIME %%%%%%%%%%%%%%%%%%
