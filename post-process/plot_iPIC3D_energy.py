@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 #	   3 = background ions
 
 # path to data
-simu_path = '/ccc/scratch/cont005/gen12622/lavorenf/Mercury_SaeInit/PR0'
-nrun=1
+simu_path = '/ccc/scratch/cont005/gen12428/lavorenf/Mercury_SaeInit/PR1/Normal-newbox'
+nrun=5
 
 Ncycle = []
 TotEnergy = []
@@ -22,16 +22,17 @@ KinEnergy0 = []
 KinEnergy1 = []
 BulEnergy0 = []
 BulEnergy1 = []
-Charge = []
+Chargee = []
+Chargei = []
 
 for irun in range(0,nrun):
 
-    if (irun==0): 
+    if irun==0 :
         sr=1
-    else:
+    else :        
         sr=0
 
-    Ncycle_1, TotEnergy_1, TotMomentum_1, EleEnergy_1, MagEnergy_1, KinEnergy_1, KinEnergy0_1, KinEnergy1_1, BulEnergy0_1, BulEnergy1_1, Charge_1 = np.loadtxt(simu_path+'/run_new/data/ConservedQuantities.txt',unpack='True',skiprows=sr)
+    Ncycle_1, TotEnergy_1, TotMomentum_1, EleEnergy_1, MagEnergy_1, KinEnergy_1, KinEnergy0_1, KinEnergy1_1, BulEnergy0_1, BulEnergy1_1, Chargee_1, Chargei_1 = np.loadtxt(simu_path+'/run%i/data/ConservedQuantities.txt'%irun,unpack='True',skiprows=sr)
 
     Ncycle = np.concatenate((Ncycle,Ncycle_1))
     TotEnergy = np.concatenate((TotEnergy,TotEnergy_1))
@@ -43,7 +44,8 @@ for irun in range(0,nrun):
     KinEnergy1 = np.concatenate((KinEnergy1,KinEnergy1_1))
     BulEnergy0 = np.concatenate((BulEnergy0,BulEnergy0_1))
     BulEnergy1 = np.concatenate((BulEnergy1,BulEnergy1_1))
-    Charge = np.concatenate((Charge,Charge_1))
+    Chargee = np.concatenate((Chargee,Chargee_1))
+    Chargei = np.concatenate((Chargei,Chargei_1))
 
     print(irun)
     print(Ncycle)
@@ -53,7 +55,8 @@ plt.subplot(211)
 plt.title(simu_path,fontsize=13)
 plt.plot(Ncycle,TotEnergy/TotEnergy[0],label='Total E/E[0]')
 plt.plot(Ncycle,TotMomentum/TotMomentum[0],label='Total Mom/Mom[0]')
-#plt.plot(Ncycle,(Charge+1.)/(Charge[0]+1.),label='Total (Rho+1)/(Rho[0]+1)')
+plt.plot(Ncycle,Chargee/Chargee[0],label=r'$\rho_e/\rho_e$[0]')
+plt.plot(Ncycle,Chargei/Chargei[0],label=r'$\rho_i/\rho_i$[0]')
 plt.legend(loc=0,fontsize=14)
 plt.yticks(fontsize=14)
 

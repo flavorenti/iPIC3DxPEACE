@@ -1,0 +1,30 @@
+slurmstepd-irene8001: error: task/cgroup: task[0] unable to set taskset '0x0'
++ SCRIPT_PID=200813
++ set +x
++ /bin/bash -x /tmp/jobstart.200764
++ unset _mlshdbg
++ '[' 1 = 1 ']'
++ case "$-" in
++ set +x
++ unset _mlshdbg
++ ml python
++ module ml python
++ unset _mlshdbg
++ '[' 1 = 1 ']'
++ case "$-" in
++ set +x
+load module python/2.7.14 (Python)
++ unset _mlshdbg
++ return 0
++ set -x
++ ccc_mprun -E--exclusive -n 1 python -u test_TperparE.py /ccc/scratch/cont005/gen12428/lavorenf/Mercury_SaeInit/PR0/Normal/run2/old_bc/data
++ wait
++ ccc_mprun -E--exclusive -n 1 python -u test_TperparE.py /ccc/scratch/cont005/gen12428/lavorenf/Mercury_SaeInit/PR0/minusBz/run1_oldbc/data
+Traceback (most recent call last):
+  File "test_TperparE.py", line 54, in <module>
+    from_VTK.get_meta(silent=False)
+  File "/ccc/cont005/home/oca/lavorenf/ipic3d-klm_Irene/post-process/fibo/mod_from.py", line 50, in get_meta
+    with open(os.path.join(self.address,extra_address,'SimulationData.txt'),'r') as foo:
+IOError: [Errno 2] No such file or directory: '/ccc/scratch/cont005/gen12428/lavorenf/Mercury_SaeInit/PR0/Normal/run2/old_bc/data/SimulationData.txt'
+srun: error: irene8001: task 0: Exited with exit code 1
++ exit 0

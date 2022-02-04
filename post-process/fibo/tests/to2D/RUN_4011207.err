@@ -1,0 +1,30 @@
+slurmstepd-irene8001: error: task/cgroup: task[0] unable to set taskset '0x0'
++ SCRIPT_PID=91323
++ set +x
++ /bin/bash -x /tmp/jobstart.91276
++ unset _mlshdbg
++ '[' 1 = 1 ']'
++ case "$-" in
++ set +x
++ unset _mlshdbg
++ ml python
++ module ml python
++ unset _mlshdbg
++ '[' 1 = 1 ']'
++ case "$-" in
++ set +x
+load module python/2.7.14 (Python)
++ unset _mlshdbg
++ return 0
++ set -x
++ ccc_mprun -E--exclusive -n 1 python -u test_to2D.py /ccc/scratch/cont005/gen12428/lavorenf/Mercury_SaeInit/PR1/Normal-newbox/run0/data
++ ccc_mprun -E--exclusive -n 1 python -u test_to2D.py /ccc/scratch/cont005/gen12428/lavorenf/Mercury_SaeInit/PR1/Normal-newbox/run1/data
++ wait
++ ccc_mprun -E--exclusive -n 1 python -u test_to2D.py /ccc/scratch/cont005/gen12428/lavorenf/Mercury_SaeInit/PR1/Normal-newbox/run2/data
++ ccc_mprun -E--exclusive -n 1 python -u test_to2D.py /ccc/scratch/cont005/gen12428/lavorenf/Mercury_SaeInit/PR1/Normal-newbox/run3/data
+srun: Job step aborted: Waiting up to 302 seconds for job step to finish.
+slurmstepd-irene8001: error: *** STEP 4011207.2 ON irene8001 CANCELLED AT 2022-02-02T16:47:26 ***
+slurmstepd-irene8001: error: *** STEP 4011207.3 ON irene8001 CANCELLED AT 2022-02-02T16:47:26 ***
+slurmstepd-irene8001: error: *** STEP 4011207.0 ON irene8001 CANCELLED AT 2022-02-02T16:47:26 ***
+slurmstepd-irene8001: error: *** STEP 4011207.1 ON irene8001 CANCELLED AT 2022-02-02T16:47:26 ***
+slurmstepd-irene8001: error: *** JOB 4011207 ON irene8001 CANCELLED AT 2022-02-02T16:47:26 ***

@@ -1,0 +1,46 @@
+('iPIC3D> cell number               :  ', (256, 208, 208))
+('iPIC3D> domain size               :  ', (25.0, 20.0, 20.0))
+('iPIC3D> mesh spacing              :  ', (0.09765625, 0.09615384615384616, 0.09615384615384616))
+('iPIC3D> periodicity               :  ', (False, False, False))
+('iPIC3D> time step                 :  ', 0.5)
+('iPIC3D> species                   :  ', ['e0', 'i1'])
+('          e0 charge-over-mass           :  ', -100.0)
+('          i1 charge-over-mass           :  ', 1.0)
+('LOAD->', 5000)
+['Je_y00005000', 'Je_z00005000', 'Je_x00005000']
+('COMPUTE->', 5000)
+['Je_y00005000', 'Jegf_y00005000', 'Je_x00005000', 'Jegf_z00005000', 'Je_z00005000', 'Jegf_x00005000']
+('PRINT->', 5000)
+('DELETE->', 5000)
+COMP.TIME [seg5000] = 59.174 s
+
+########## ########## ########## ########## ########## ########## ########## ##########
+Execution Sum Up
+########## ########## ########## ########## ########## ########## ########## ##########
+Jobid     : 8062432
+Jobname   : TperparE
+User      : lavorenf
+Account   : gen12428@xlarge
+Limits    : time = 2:47:00 , memory/task = 26800 Mo
+Date      : submit = 20/01/2022 11:32:45 , start = 20/01/2022 11:32:45 , end = 20/01/2022 14:19:45
+Execution : partition = xlarge , QoS = normal@xlarge , Comment = (null)
+Resources : ntasks = 2 , cpus/task = 6 , ncpus = 12 , nodes = 1
+   Nodes=irene8001 CPU_IDs=44-55 Mem=321600 GRES=
+ 
+Memory / step 
+--------------
+                          Resident Size (Mo)                     Virtual Size (Go)
+JobID            Max     (Node:Task)       AveTask    Max  (Node:Task)            AveTask
+-----------      ------------------------  -------    --------------------------  -------
+
+Accounting / step 
+------------------
+
+JobID           JobName                  Ntasks  Ncpus Nnodes  Layout       Elapsed               User         System     Eff  State
+------------    ------------             ------  ----- ------  -------      -------               -------      ------     ---  -----
+8062432         TperparE                      -     12      1        -     00:08:17   (100%)            -            -      -  -
+8062432.batch   batch                         1     12      1  Unknown     00:08:17   (100%)     00:00:00     00:00:00      0  RUNNING
+8062432.extern  extern                        1     12      1  Unknown     00:08:17 (100.0%)     00:00:00     00:00:00      0  RUNNING
+8062432.0       python                        1      6      1   BBlock     00:08:09  (98.3%)     00:00:05     00:00:02     .2  COMPLETED
+8062432.1       python                        1      6      1   BBlock     00:07:32  (90.9%)     00:00:01     00:00:01      0  FAILED
+########## ########## ########## ########## ########## ########## ########## ##########

@@ -1,0 +1,156 @@
+('iPIC3D> cell number               :  ', (960, 768, 768))
+('iPIC3D> cell number               :  ', (960, 768, 768))
+('iPIC3D> cell number               :  ', (960, 768, 768))
+('iPIC3D> domain size               :  ', (82.5, 66.0, 66.0))
+('iPIC3D> mesh spacing              :  ', (0.0859375, 0.0859375, 0.0859375))
+('iPIC3D> periodicity               :  ', (False, False, False))
+('iPIC3D> time step                 :  ', 0.5)
+('iPIC3D> domain size               :  ', (82.5, 66.0, 66.0))
+('iPIC3D> species                   :  ', ['e0', 'i1'])
+('iPIC3D> mesh spacing              :  ', (0.0859375, 0.0859375, 0.0859375))
+('          e0 charge-over-mass           :  ', -100.0)
+('iPIC3D> periodicity               :  ', (False, False, False))
+('          i1 charge-over-mass           :  ', 1.0)
+('iPIC3D> time step                 :  ', 0.5)
+('LOAD->', 500)
+('iPIC3D> species                   :  ', ['e0', 'i1'])
+('          e0 charge-over-mass           :  ', -100.0)
+('          i1 charge-over-mass           :  ', 1.0)
+('LOAD->', 4500)
+('iPIC3D> domain size               :  ', (82.5, 66.0, 66.0))
+('iPIC3D> mesh spacing              :  ', (0.0859375, 0.0859375, 0.0859375))
+('iPIC3D> periodicity               :  ', (False, False, False))
+('iPIC3D> time step                 :  ', 0.5)
+('iPIC3D> species                   :  ', ['e0', 'i1'])
+('          e0 charge-over-mass           :  ', -100.0)
+('          i1 charge-over-mass           :  ', 1.0)
+('LOAD->', 6500)
+('iPIC3D> cell number               :  ', (960, 768, 768))
+('iPIC3D> domain size               :  ', (82.5, 66.0, 66.0))
+('iPIC3D> mesh spacing              :  ', (0.0859375, 0.0859375, 0.0859375))
+('iPIC3D> periodicity               :  ', (False, False, False))
+('iPIC3D> time step                 :  ', 0.5)
+('iPIC3D> species                   :  ', ['e0', 'i1'])
+('          e0 charge-over-mass           :  ', -100.0)
+('          i1 charge-over-mass           :  ', 1.0)
+('LOAD->', 2500)
+('CUT->', 500)
+('CUT->', 6500)
+('CUT->', 2500)
+('PRINT->', 500)
+('PRINT->', 6500)
+('CUT->', 4500)
+('PRINT->', 2500)
+('DELETE->', 500)
+COMP.TIME [seg500] = 747.017 s
+
+('LOAD->', 600)
+('DELETE->', 6500)
+COMP.TIME [seg6500] = 754.882 s
+
+('LOAD->', 6600)
+('DELETE->', 2500)
+COMP.TIME [seg2500] = 759.538 s
+
+('LOAD->', 2600)
+('PRINT->', 4500)
+('DELETE->', 4500)
+COMP.TIME [seg4500] = 829.867 s
+
+('LOAD->', 4600)
+('CUT->', 600)
+('CUT->', 2600)
+('PRINT->', 600)
+('CUT->', 4600)
+('CUT->', 6600)
+('PRINT->', 2600)
+('DELETE->', 600)
+COMP.TIME [seg600] = 748.475 s
+
+('LOAD->', 700)
+('DELETE->', 2600)
+COMP.TIME [seg2600] = 755.393 s
+
+('LOAD->', 2700)
+('PRINT->', 4600)
+('PRINT->', 6600)
+('DELETE->', 4600)
+COMP.TIME [seg4600] = 741.459 s
+
+('LOAD->', 4700)
+('DELETE->', 6600)
+COMP.TIME [seg6600] = 831.141 s
+
+('LOAD->', 6700)
+('CUT->', 700)
+('CUT->', 2700)
+('PRINT->', 700)
+('CUT->', 6700)
+('DELETE->', 700)
+COMP.TIME [seg700] = 753.166 s
+
+('LOAD->', 800)
+('PRINT->', 2700)
+('DELETE->', 2700)
+COMP.TIME [seg2700] = 790.641 s
+
+('LOAD->', 2800)
+('PRINT->', 6700)
+('CUT->', 4700)
+('DELETE->', 6700)
+COMP.TIME [seg6700] = 785.234 s
+
+('LOAD->', 6800)
+('PRINT->', 4700)
+('DELETE->', 4700)
+COMP.TIME [seg4700] = 874.921 s
+
+('LOAD->', 4800)
+('CUT->', 800)
+('CUT->', 2800)
+('PRINT->', 800)
+('DELETE->', 800)
+COMP.TIME [seg800] = 739.930 s
+
+('LOAD->', 900)
+('PRINT->', 2800)
+('DELETE->', 2800)
+COMP.TIME [seg2800] = 760.365 s
+
+('LOAD->', 2900)
+('CUT->', 6800)
+('CUT->', 4800)
+('PRINT->', 6800)
+('DELETE->', 6800)
+('PRINT->', 4800)
+COMP.TIME [seg6800] = 830.914 s
+
+('LOAD->', 6900)
+('DELETE->', 4800)
+COMP.TIME [seg4800] = 807.695 s
+
+('LOAD->', 4900)
+('CUT->', 900)
+('PRINT->', 900)
+('CUT->', 2900)
+('DELETE->', 900)
+COMP.TIME [seg900] = 745.055 s
+
+('LOAD->', 1000)
+('PRINT->', 2900)
+('DELETE->', 2900)
+COMP.TIME [seg2900] = 771.152 s
+
+('LOAD->', 3000)
+('CUT->', 6900)
+('CUT->', 4900)
+('PRINT->', 6900)
+('DELETE->', 6900)
+COMP.TIME [seg6900] = 770.286 s
+
+('LOAD->', 7000)
+('PRINT->', 4900)
+('DELETE->', 4900)
+COMP.TIME [seg4900] = 772.529 s
+
+('LOAD->', 5000)
