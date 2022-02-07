@@ -4,13 +4,18 @@ from mpl_toolkits.mplot3d import axes3d, Axes3D
 import numpy as np
 import sys
 
-file_path = './'
-file_name = 'Mariner-flyby-1st_full-dataset.txt'
 data_path = sys.argv[1]
+output_path = sys.argv[2]
 Plot_patch= True
-XLEN = 16
-YLEN = 16
-ZLEN = 16
+iplot=1
+if sys.argv[3]=='Mariner' :
+    file_path = '../trajectory_files/Mariner-flyby-1st_MSO-trajectory1.txt'
+elif sys.argv[3]=='Bepi' :
+    file_path = '../trajectory_files/Bepi-flyby-1st_MSO-trajectory1.txt'
+elif sys.argv[3]=='nose' :
+    file_path='../trajectory_files/noseMP_trajectory1.txt'
+elif sys.argv[3]=='tail' :
+    file_path='../trajectory_files/tailXline_trajectory1.txt'
 
 
 # return the trajectory inside the simulation box
@@ -22,7 +27,7 @@ def trajectory_inside(from_VTK):
     z = from_VTK.meta['z']
 
     # open the trajectory file (MSO coord.)
-    tt,bbX,bxX,byX,bzX,xx,yy,zz,n1X,n2X,n3X,T1X,T2X,T3X = np.loadtxt(file_path+file_name,unpack=True)
+    tt,xx,yy,zz = np.loadtxt(file_path,unpack=True)
 
     # distance from the planet center
     d = np.sqrt(xx**2+yy**2+zz**2)
@@ -37,17 +42,12 @@ def trajectory_inside(from_VTK):
     xx = -xx + from_VTK.meta['xc']
     yy = -yy + from_VTK.meta['yc']
     zz = +zz + from_VTK.meta['zc'] + from_VTK.meta['Doff']
-    bxX = -bxX
-    byX = -byX
  
     enter=0
     ip=0
      # loop on the trajectory file downloaded from amda
     for ii in range(len(xx)):
         if((xx[ii]>0)*(yy[ii]>0)*(zz[ii]>0)*(xx[ii]<max(x))*(yy[ii]<max(y))*(zz[ii]<max(z))):
-            ix = np.where(abs(x-xx[ii])==min(abs(x-xx[ii])))
-            iy = np.where(abs(y-yy[ii])==min(abs(y-yy[ii])))
-            iz = np.where(abs(z-zz[ii])==min(abs(z-zz[ii])))
             if(enter==0):
                 imin=ii
             enter=1
@@ -55,8 +55,10 @@ def trajectory_inside(from_VTK):
             imax=ii
             break
 
-    return np.array([xx[imin:imax],yy[imin:imax],zz[imin:imax]])
-
+    if ((sys.argv[3]=='Mariner') or (sys.argv[3]=='Bepi')):
+        return np.array([xx[imin:imax],yy[imin:imax],zz[imin:imax]])
+    else:
+        return np.array([xx,yy,zz])
 
 # return and print the good patche in .txt and plot them 
 def pcl_patch(from_VTK,traj):
@@ -66,13 +68,12 @@ def pcl_patch(from_VTK,traj):
     y = from_VTK.meta['y']
     z = from_VTK.meta['z']
 
-    Nx_ = int(from_VTK.meta['nx']/XLEN)
-    Ny_ = int(from_VTK.meta['ny']/YLEN)
-    Nz_ = int(from_VTK.meta['nz']/ZLEN)
+    Nx_ = int(from_VTK.meta['nx']/from_VTK.meta['XLEN'])
+    Ny_ = int(from_VTK.meta['ny']/from_VTK.meta['YLEN'])
+    Nz_ = int(from_VTK.meta['nz']/from_VTK.meta['ZLEN'])
 
     # open file for output
-    output = open('./output_dataP.txt','w')
-    output.write('# '+file_path+file_name+'\n# '+data_path+'\n')
+    output = open(output_path+'/texts/output_dataP_'+sys.argv[3]+'.txt','w')
 
     # array to plot
     patch_list_x = []
@@ -83,15 +84,15 @@ def pcl_patch(from_VTK,traj):
     # loop on the processes
     ip=0
     ic=0
-    for ipx in range(0,XLEN):
+    for ipx in range(0,from_VTK.meta['XLEN']):
         ix1 = ipx*(Nx_-1)
-        ix2 = ix1+Nx_+1
-        for ipy in range(0,YLEN):
+        ix2 = ix1+Nx_
+        for ipy in range(0,from_VTK.meta['YLEN']):
             iy1 = ipy*(Ny_-1)
-            iy2 = iy1+Ny_+1
-            for ipz in range(0,ZLEN):
+            iy2 = iy1+Ny_
+            for ipz in range(0,from_VTK.meta['ZLEN']):
                 iz1 = ipz*(Nz_-1)
-                iz2 = iz1+Nz_+1
+                iz2 = iz1+Nz_
 
                 # look if any of the trajectory points are in this patch
                 igoodx = (traj[0]>x[ix1])*(traj[0]<x[ix2])
@@ -101,7 +102,7 @@ def pcl_patch(from_VTK,traj):
 
                 # write output
                 if(booll.any()):
-                    output.write('%d\n'%ip)
+                    output.write('%i\n'%ip)
                     ic=ic+1
                     color_list.append('red')
                 else:
@@ -111,9 +112,9 @@ def pcl_patch(from_VTK,traj):
                 ip=ip+1
 
                 # plot a sort of grid
-                patch_list_x.append(x[ix1])
-                patch_list_y.append(y[iy1])
-                patch_list_z.append(z[iz1])
+                patch_list_x.append((x[ix1]+x[ix2])/2.)
+                patch_list_y.append((y[iy1]+y[iy2])/2.)
+                patch_list_z.append((z[iz1]+z[iz2])/2.)
 
     # 3d plot
     if Plot_patch :
@@ -121,15 +122,18 @@ def pcl_patch(from_VTK,traj):
         ax = Axes3D(fig)
         plt.title('MPI processes + flyby Ncross/Nproc=%d/%d'%(ic,ip))
         for i in range(len(patch_list_x)):
-            if(i%2==0):
-                ax.scatter(patch_list_x[i],patch_list_y[i],patch_list_z[i],marker='o',color=color_list[i],alpha=0.4)
+            if(i%iplot==0):
+                ax.scatter(patch_list_x[i],patch_list_y[i],patch_list_z[i],marker='s',s=300,color=color_list[i],alpha=0.4)
+        
+        ax.plot(traj[0],traj[1],traj[2],color='grey')
+        ax.set_xlabel('x[di]',fontsize=16)
+        ax.set_ylabel('y[di]',fontsize=16)
+        ax.set_zlabel('z[di]',fontsize=16)
 
-        ax.set_xlabel('x[Rm]',fontsize=16)
-        ax.set_ylabel('y[Rm]',fontsize=16)
-        ax.set_zlabel('z[Rm]',fontsize=16)
-
-        plt.show()
-        #plt.savefig('./images/3d_plot_patches_1.png',format='png')
+        plt.xlim(min(x),max(x))
+        plt.ylim(min(y),max(y))
+        #plt.show()
+        plt.savefig(output_path+'/images/3d_plot_patches_'+sys.argv[3]+'.png',format='png')
         plt.close()
                 
 

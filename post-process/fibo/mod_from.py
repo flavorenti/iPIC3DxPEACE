@@ -156,6 +156,10 @@ class from_VTK (object):
     self.meta['nz'] = int(infos.readline().split('=')[-1])
     if not old_vers :
       infos.readline() #---------------------------
+      self.meta['XLEN'] = int(infos.readline().split('=')[-1]) # MPI procs grid
+      self.meta['YLEN'] = int(infos.readline().split('=')[-1])
+      self.meta['ZLEN'] = int(infos.readline().split('=')[-1])
+      infos.readline() #---------------------------
       self.meta['xc'] = float(infos.readline().split('=')[-1]) #planet position
       self.meta['yc'] = float(infos.readline().split('=')[-1])
       self.meta['zc'] = float(infos.readline().split('=')[-1])

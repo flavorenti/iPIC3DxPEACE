@@ -1312,6 +1312,10 @@ void Collective::save() {
   my_file << "Number of cells (y)      = " << nyc << endl;
   my_file << "Number of cells (z)      = " << nzc << endl;
   my_file << "---------------------------" << endl;
+  my_file << "MPI processes (x)      = " << XLEN << endl;
+  my_file << "MPI processes (y)      = " << YLEN << endl;
+  my_file << "MPI processes (z)      = " << ZLEN << endl;
+  my_file << "---------------------------" << endl;
   my_file << "x-center                 = " << x_center << endl;
   my_file << "y-center                 = " << y_center << endl;
   my_file << "z-center                 = " << z_center << endl;

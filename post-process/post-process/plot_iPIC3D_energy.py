@@ -1,5 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
+import glob
+import os
 
 ## Plot of the scalars output (energy, momentum, charge etc.) of an iPIC3D simulations ##
 
@@ -9,8 +12,9 @@ import matplotlib.pyplot as plt
 #	   3 = background ions
 
 # path to data
-simu_path = '/ccc/scratch/cont005/gen12428/lavorenf/Mercury_SaeInit/PR1/Normal-newbox'
-nrun=5
+simu_path = sys.argv[1] #'/ccc/scratch/cont005/gen12428/lavorenf/Mercury_SaeInit/PR1/Normal-newbox'
+runs = glob.glob( os.path.join(simu_path,'run*') )
+nrun = len(runs)
 
 Ncycle = []
 TotEnergy = []
@@ -52,13 +56,13 @@ for irun in range(0,nrun):
 
 # plot evolution conserved quantities
 plt.subplot(211)
-plt.title(simu_path,fontsize=13)
 plt.plot(Ncycle,TotEnergy/TotEnergy[0],label='Total E/E[0]')
-plt.plot(Ncycle,TotMomentum/TotMomentum[0],label='Total Mom/Mom[0]')
+plt.plot(Ncycle,TotMomentum/TotMomentum[0],label='Mom/Mom[0]')
 plt.plot(Ncycle,Chargee/Chargee[0],label=r'$\rho_e/\rho_e$[0]')
 plt.plot(Ncycle,Chargei/Chargei[0],label=r'$\rho_i/\rho_i$[0]')
-plt.legend(loc=0,fontsize=14)
-plt.yticks(fontsize=14)
+plt.legend(loc=0,fontsize=11)
+plt.yticks(fontsize=13)
+plt.xticks([])
 
 plt.subplot(212)
 plt.plot(Ncycle,EleEnergy/EleEnergy[0],label=r'$E^2/E^2(0)$')
@@ -68,9 +72,11 @@ plt.plot(Ncycle,KinEnergy0/KinEnergy0[0],label=r'$P_e/P_e(0)$')
 plt.plot(Ncycle,KinEnergy1/KinEnergy1[0],label=r'$P_i/P_i(0)$')
 plt.plot(Ncycle,BulEnergy0/BulEnergy0[0],label=r'$K_e/K_e(0)$')
 plt.plot(Ncycle,BulEnergy1/BulEnergy1[0],label=r'$K_i/K_i(0)$')
-plt.legend(loc=0,fontsize=14)
-plt.xticks(fontsize=14)
-plt.yticks(fontsize=14)
+plt.legend(loc=0,fontsize=11)
+plt.xticks(fontsize=13)
+plt.yticks(fontsize=13)
 plt.xlabel('Ncycle',fontsize=14)
 
-plt.show()
+plt.tight_layout()
+plt.savefig(sys.argv[2]+'/plot_scalars.png',format='png')
+plt.close()

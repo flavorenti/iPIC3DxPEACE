@@ -19,7 +19,7 @@
 ######################################################################################
 #======regulate=parameters=============================================================
 inp_tars = ['Je','Ji','PXX','PXY','PXZ','PYY','PYZ','PZZ','rho']
-out_tars = ['Ve','Vi','TXX','TXY','TXZ','TYY','TYZ','TZZ','den']
+out_tars = ['Ve','Vi','TXX','TXY','TXZ','TYY','TYZ','TZZ']
 cuts = ['eq','dp']
 cycle_min = 0
 cycle_max  = 2000000
@@ -34,6 +34,7 @@ import fibo as fb
 import time
 import sys
 import numpy as np
+from scipy.ndimage.filters import gaussian_filter as gf
 
 #----path-to-run-------------------
 data_address = sys.argv[1]
@@ -67,11 +68,17 @@ for cut in cuts:
         else :
           for sp in alldata.meta['species']:
             from_VTK.get_scal(alldata.meta['name']+'_'+tar+sp+cut+'_'+str(seg),seg,fibo_obj=alldata,tar_var=tar+sp,silent=True)
-
+            
       print(alldata.data.keys())
 
-#----change-units------------------------------
+#----change-units-&-smooth---------------------------
       alldata.calc_units('iPIC', fibo_obj=alldata, silent=False)
+      for tar in inp_tars:
+        for sp in alldata.meta['species']:
+          if 'rho' in tar :
+            alldata.data[tar+sp+'%.8i'%seg]=gf(alldata.data[tar+sp+'%.8i'%seg],1)
+            i_null = np.where(alldata.data[tar+sp+'%.8i'%seg]==0.0)
+            alldata.data[tar+sp+'%.8i'%seg][i_null]=1.e-5
 
 #----compute-derived-fields------------------
       print('COMPUTE->',seg)
@@ -83,9 +90,6 @@ for cut in cuts:
         if 'T' in tar :
           for sp in alldata.meta['species']:
             alldata.calc_temp(tar.replace('T','P')+sp,new_tar=tar+sp,seg=seg)
-        if tar=='den' :
-          for isp,sp in enumerate(alldata.meta['species']):
-            alldata.data[tar+sp+'%.8i'%int(seg)] = alldata.data['rho'+sp+'%.8i'%int(seg)] / np.sign(alldata.meta['sQOM'][isp])
     
       print(alldata.data.keys())
 
@@ -100,12 +104,8 @@ for cut in cuts:
 
 #----del-3D-fields----------------------------
       print('DELETE->',seg)
-      for tar in (inp_tars+out_tars):
-        if len(tar)<3 :
-          del alldata.data[tar+'_x'+'%.8i'%int(seg)], alldata.data[tar+'_y'+'%.8i'%int(seg)], alldata.data[tar+'_z'+'%.8i'%int(seg)]
-        else :
-          for sp in alldata.meta['species']:
-            del alldata.data[tar+sp+'%.8i'%int(seg)]
+      for key in alldata.data.keys():
+        del alldata.data[key]
 
 #----print-comp-time--------------------
       print('COMP.TIME [seg%i] = %.3f s\n'%(seg,time.time()-t0))
