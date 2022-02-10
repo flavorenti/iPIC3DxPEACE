@@ -278,7 +278,7 @@ void Particles3D::pitch_angle_energy(Field * EMf) {
 
     /* initialize random generator with different seed on different processor */
     srand(vct->getCartesian_rank() + 3 + ns);
-    assert_eq(_pcls.size(),0);
+    //assert_eq(_pcls.size(),0);
 
     double  FourPI =16*atan(1.0);
 

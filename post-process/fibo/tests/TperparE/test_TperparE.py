@@ -20,8 +20,8 @@
 
 ######################################################################################
 #======regulate=parameters=============================================================
-inp_tars = ['B','E','Je','Ji','Ve','Vi','TXX','TXY','TXZ','TYY','TYZ','TZZ']
-out_tars = ['Eper','Epar','Eprimei','Eprimee','Jper','Jpar','Tiso','Tper','Tpar']
+inp_tars = ['B','TXX','TXY','TXZ','TYY','TYZ','TZZ']#['B','E','Je','Ji','Ve','Vi','TXX','TXY','TXZ','TYY','TYZ','TZZ']
+out_tars = ['Tiso','Tper','Tpar']#['Eper','Epar','Eprimei','Eprimee','Jper','Jpar','Tiso','Tper','Tpar']
 cuts = ['eq','dp']
 cycle_min = 0
 cycle_max  = 2000000
@@ -95,7 +95,7 @@ for cut in cuts:
           alldata.data['J_y%.8i'%seg]=alldata.data['Je_y%.8i'%seg]+alldata.data['Ji_y%.8i'%seg]
           alldata.data['J_z%.8i'%seg]=alldata.data['Je_z%.8i'%seg]+alldata.data['Ji_z%.8i'%seg]
           alldata.calc_par_per('J_x','B_x','J_y','B_y','J_z','B_z',seg=seg)
-         for sp in alldata.meta['species']:
+        for sp in alldata.meta['species']:
           if tar=='Tiso' :
             alldata.data[tar+sp+'%.8i'%int(seg)] = (alldata.data['TXX'+sp+'%.8i'%int(seg)]+alldata.data['TYY'+sp+'%.8i'%int(seg)]+alldata.data['TZZ'+sp+'%.8i'%int(seg)])/3.
           if tar=='Tper' :

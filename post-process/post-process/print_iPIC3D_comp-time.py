@@ -16,7 +16,7 @@ moments_comp = []
 moments_comm = []
 
 for i in range(0,nrun):
-    ff = open( glob.glob(os.path.join(runs[i],'RUN*'))[0] ,'r')
+    ff = open( glob.glob(os.path.join(runs[i],'RUN*.out'))[0] ,'r')
     for line in ff.readlines():
         if (len(line.split('======= '))>1):
             cycle.append( int(line.split(' ')[3]) )

@@ -173,7 +173,7 @@ int c_Solver::Init(int argc, char **argv) {
 
   //allocate test particles if any
   nstestpart = col->getNsTestPart();
-  if(nstestpart>0){
+  if(nstestpart>0 && restart_status==0){
 	  testpart = (Particles3D*) malloc(sizeof(Particles3D)*nstestpart);
 	  for (int i = 0; i < nstestpart; i++)
 	  {

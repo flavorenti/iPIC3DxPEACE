@@ -1,6 +1,8 @@
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 import fibo as fb
 import sys
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import colors
 from matplotlib.patches import Wedge

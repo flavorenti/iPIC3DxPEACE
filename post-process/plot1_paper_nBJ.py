@@ -8,8 +8,8 @@ from scipy.ndimage.filters import gaussian_filter as gf
 
 # define path to simu and cycle to plot
 data_address = sys.argv[1]
-cycle_min = 11300
-cycle_max = 12000
+cycle_min = 6000
+cycle_max = 6700
 d_cycle = 100
 xlim=[4.1,-6.1]
 ylim=[4.1,-4.1]
@@ -85,7 +85,7 @@ for cycle in range(cycle_min,cycle_max,d_cycle):
     # plot the figure
     fig = plt.figure(figsize=(17,10))
     plt.axis('off')
-    plt.title('North IMF (RunN)',fontsize=25)
+    plt.title('South IMF (RunS)',fontsize=25)
     #density
     ax = fig.add_subplot(231)
     im1 = plt.imshow(np.transpose(Ndp[ix[0]:ix[1],0,iz[0]:iz[1]]), cmap='jet', origin='lower', norm=colors.LogNorm(vmin=1., vmax=120.), extent=(max(x),min(x),min(z),max(z)), aspect=1)
@@ -212,5 +212,5 @@ for cycle in range(cycle_min,cycle_max,d_cycle):
 
     #reduce spacing subplots
     plt.subplots_adjust(wspace=0.1, hspace=0.01)
-    plt.savefig('./images/plot1_paper_nBJ_7N_%i.png'%cycle,format='png')
+    plt.savefig('./images/plot1_paper_nBJ_7S_%i.png'%cycle,format='png')
     plt.close()

@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import fibo as fb
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
