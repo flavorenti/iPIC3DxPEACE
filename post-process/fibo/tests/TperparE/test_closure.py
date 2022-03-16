@@ -18,8 +18,8 @@
 
 ######################################################################################
 #======regulate=parameters=============================================================
-inp_tars = ['Tiso','Tpar','Tper','den']
-limits = [[22.5,24.],[19.25,20.75],[0.,0.]]
+inp_tars = ['E','Tiso','Tpar','Tper']
+limits = [[41,46],[30,36],[0.0,0.0]]
 cuts = ['eq']
 cycle_min = 0
 cycle_max  = 2000000
@@ -70,27 +70,45 @@ for cut in cuts:
     if cycle_min<=seg<=cycle_max :
       print('LOAD->',seg)
       for tar in inp_tars:
-        for sp in alldata.meta['species']:
-          from_VTK.get_scal(alldata.meta['name']+'_'+tar+sp+cut+'_'+str(seg),seg,fibo_obj=alldata,tar_var=tar+sp,silent=True)
+        if len(tar)<3 :
+          from_VTK.get_vect(alldata.meta['name']+'_'+tar+cut+'_'+str(seg),seg,fibo_obj=alldata,tar_var=tar,silent=True)
+        else:
+          for sp in alldata.meta['species']:
+            from_VTK.get_scal(alldata.meta['name']+'_'+tar+sp+cut+'_'+str(seg),seg,fibo_obj=alldata,tar_var=tar+sp,silent=True)
 
       print(alldata.data.keys())
 
 #----compute-derived-fields------------------
       print('SELECT+PRINT->',seg)
       for tar in inp_tars:
-        for sp in alldata.meta['species']:
-          file_out = open('closure_files/closure_'+tar+sp+cut+'.txt','a')
-          if int(seg)==0 : file_out.write('#seg\t value\n')
-          if ix1>=ix2 :
+        if len(tar)<3 :
+            file_out = open('closure_files/closure_'+tar+cut+'.txt','a')
+            if int(seg)==0 : file_out.write('#seg\t value\n')
+            if ix1>=ix2 :
+              out = np.ravel(alldata.data[tar+'_y%.8i'%int(seg)][:,iy1:iy2,iz1:iz2])
+            if iy1>=iy2 :
+              out = np.ravel(alldata.data[tar+'_y%.8i'%int(seg)][ix1:ix2,:,iz1:iz2])
+            if iz1>=iz2 :
+              out = np.ravel(alldata.data[tar+'_y%.8i'%int(seg)][ix1:ix2,iy1:iy2,:])
+            out = out[~np.isnan(out)]
+            out = out[~np.isinf(out)]
+            file_out.write('%i\t%.9f\n'%(int(seg),np.mean(out)))
+            file_out.close()
+
+        else:
+          for sp in alldata.meta['species']:
+            file_out = open('closure_files/closure_'+tar+sp+cut+'.txt','a')
+            if int(seg)==0 : file_out.write('#seg\t value\n')
+            if ix1>=ix2 :
               out = np.ravel(alldata.data[tar+sp+'%.8i'%int(seg)][:,iy1:iy2,iz1:iz2])
-          if iy1>=iy2 :
-            out = np.ravel(alldata.data[tar+sp+'%.8i'%int(seg)][ix1:ix2,:,iz1:iz2])
-          if iz1>=iz2 :
-            out = np.ravel(alldata.data[tar+sp+'%.8i'%int(seg)][ix1:ix2,iy1:iy2,:])
-          out = out[~np.isnan(out)]
-          out = out[~np.isinf(out)]
-          file_out.write('%i\t%.9f\n'%(int(seg),np.mean(out)))
-          file_out.close()
+            if iy1>=iy2 :
+              out = np.ravel(alldata.data[tar+sp+'%.8i'%int(seg)][ix1:ix2,:,iz1:iz2])
+            if iz1>=iz2 :
+              out = np.ravel(alldata.data[tar+sp+'%.8i'%int(seg)][ix1:ix2,iy1:iy2,:])
+            out = out[~np.isnan(out)]
+            out = out[~np.isinf(out)]
+            file_out.write('%i\t%.9f\n'%(int(seg),np.mean(out)))
+            file_out.close()
 
 #----del-3D-fields----------------------------
       print('DELETE->',seg)
