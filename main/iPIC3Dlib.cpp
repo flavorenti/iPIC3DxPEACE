@@ -362,13 +362,19 @@ bool c_Solver::ParticlesMover(int cycle)
 
       // Injection particles from ionized exosphere ./Job
       // inject hydrogen
-      if ( (i==2 or i==3) and col->getAddExosphere()){	 
-         Qexo[i] = part[i].AddIonizedExosphere(R,col->getx_center(),col->gety_center(),col->getz_center(),Nexo_H,fexo_H,hexo_H,w_fact);
-      }
+//      if ( (i==2 or i==3) and col->getAddExosphere()){
+//         Qexo[i] = part[i].AddIonizedExosphere(R,col->getx_center(),col->gety_center(),col->getz_center(),Nexo_H,fexo_H,hexo_H,w_fact);
+//      }
       // inject sodium
-      if ( (i==4 or i==5) and col->getAddExosphere()){	 
-         Qexo[i] = part[i].AddIonizedExosphere(R,col->getx_center(),col->gety_center(),col->getz_center(),Nexo_Na,fexo_Na,hexo_Na,w_fact);
-      }
+//      if ( (i==4 or i==5) and col->getAddExosphere()){
+//         Qexo[i] = part[i].AddIonizedExosphere(R,col->getx_center(),col->gety_center(),col->getz_center(),Nexo_Na,fexo_Na,hexo_Na,w_fact);
+//      }
+    
+        // inject cometary particles
+        if (i==2 or i==3){
+            part[i].AddCometaryParticles();
+        }
+        
 
       // External boundary conditions particles     ./Job
       Qrep[i] = part[i].repopulate_particles(EMf); 

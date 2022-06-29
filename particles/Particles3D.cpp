@@ -2802,3 +2802,63 @@ double Particles3D::AddIonizedExosphere(double R, double x_center, double y_cent
       }
   return Qinject;
 }
+
+/** Implementation of cometary particles */
+void Particles3D::AddCometaryParticles()
+{
+    double Qinject=0.0;
+    double xplanet = 3.6*2;
+    double yplanet = 2.7*2;
+    double zplanet = 2.7*2;
+    
+    double x,y,z,u,v,w;
+    double  FourPI =16*atan(1.0);
+    double q = (qom/fabs(qom))*(1.0/FourPI/npcel)*(1.0/grid->getInvVOL());
+    
+    if (col->getVerbose() and vct->getCartesian_rank()==0)  cout << "*** Species " << ns << "-" << " Injecting cometary particles ****" << endl;
+        
+    double dist_sq = -1.0;
+    double Ninject = -1.0;
+    int Ninject_int = -1;
+    double randx,randy,randz,randu,randv,randw;
+        
+    for (int i=1; i<grid->getNXC()-1;i++)
+        for (int j=1; j<grid->getNYC()-1;j++)
+            for (int k=1; k<grid->getNZC()-1;k++)
+            {
+                dist_sq = (grid->getXC(i,j,k) - xplanet)*(grid->getXC(i,j,k) - xplanet) + (grid->getYC(i,j,k) - yplanet)*(grid->getYC(i,j,k) - yplanet)+(grid->getZC(i,j,k) - zplanet)*(grid->getZC(i,j,k) - zplanet);
+                    
+                if (dist_sq < (2.0*2.0) )
+                {
+                    if(dist_sq<(0.05*0.05)) Ninject = 0.66;
+                    else Ninject = 3*0.00055/dist_sq;
+                    
+                    double rand2 = rand()/(double)RAND_MAX;
+                    double residual = Ninject-floor(Ninject);
+                    if(rand2<residual)
+                    {
+                        Ninject_int = floor(Ninject)+1;
+                    } else {
+                        Ninject_int = floor(Ninject);
+                    }
+                    
+                    for (int jj=0; jj<Ninject_int; jj++)
+                    {
+                        // Assign random position in the cell
+                        randx = rand()/(double)RAND_MAX;
+                        randy = rand()/(double)RAND_MAX;
+                        randz = rand()/(double)RAND_MAX;
+                        x = grid->getXC(i,j,k)+(randx-0.5)*dx;
+                        y = grid->getYC(i,j,k)+(randy-0.5)*dy;
+                        z = grid->getZC(i,j,k)+(randz-0.5)*dz;
+                        //Assign velocities
+                        sample_maxwellian(u, v, w, uth, vth, wth, u0, v0, w0);
+                        // create particle
+                        create_new_particle(u,v,w,q,x,y,z);
+                        Qinject += q;
+                    }
+                }
+            }
+        
+    //return Qinject;
+}

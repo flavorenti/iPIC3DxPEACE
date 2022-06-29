@@ -18,11 +18,11 @@
  * limitations under the License.
  */
 
-
-#include "MPIdata.h"
-#include "iPic3D.h"
-#include "debug.h"
-#include "TimeTasks.h"
+#include <mpi.h>
+#include "include/MPIdata.h"
+#include "include/iPic3D.h"
+#include "include/debug.h"
+#include "include/TimeTasks.h"
 #include <stdio.h>
 #include <sys/time.h>
 

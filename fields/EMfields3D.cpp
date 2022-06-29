@@ -4530,7 +4530,7 @@ void EMfields3D::initDipole()
         double r2_planet = ((x-xc)*(x-xc)) + ((y-yc)*(y-yc)) + ((z-zc-PlanetOffset)*(z-zc-PlanetOffset));
 
         for (int is=0; is < ns; is++){
-          rhons[is][i][j][k] = rhoINIT[is]/FourPI;
+          rhons[is][i][j][k] = 0.05*rhoINIT[is]/FourPI;
 	}
 
         // electric field values 
