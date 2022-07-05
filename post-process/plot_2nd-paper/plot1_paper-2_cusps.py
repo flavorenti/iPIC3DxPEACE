@@ -13,12 +13,13 @@ from scipy.interpolate import RegularGridInterpolator
 
 # define path to simu and cycle to plot
 data_address = sys.argv[1]
-cycle = 6500
-radius = 5.501
-Nbinx = 100
-Nbiny = 50
-ds = 0.15 #di
-Nmax = 1500
+name_simu = 'PR1-plusBz'
+cycle = 6000
+radius = 5.51
+Nbinx = 200
+Nbiny = 101
+ds = 0.2#0.15 #di
+Nmax = 500
 
 # miscellaneous
 from_VTK = fb.from_VTK(data_address)
@@ -55,10 +56,8 @@ def integrator(r,ds):
         for ipy in range(0,Nbiny):
 
             phi=float(ipx)/float(Nbinx)*2.*np.pi
-            print('point phi=%.3f'%phi)
             theta=float(ipy)/float(Nbiny)*np.pi
-            print('point theta=%.3f'%theta)
-            
+
             rho = radius*np.sin(theta)
             x00 = xc+rho*np.cos(phi)
             y00 = yc+rho*np.sin(phi)
@@ -91,13 +90,16 @@ def integrator(r,ds):
                     z0 += Bzval/Bval*ds
 
                     if np.sqrt((x0-xc)**2+(y0-yc)**2+(z0-zc)**2)<from_VTK.meta['R']:
+                        print('Point (phi,theta)=(%.2f,%.2f) DONE --> CLOSED'%(phi,theta))
                         ibreak[ipx,ipy,il]=n
                         break
 
                     elif (x0>np.max(x) or x0<0 or y0>np.max(y) or y0<0 or z0>np.max(z) or z0<0):
+                        print('Point (phi,theta)=(%.2f,%.2f) DONE --> OPEN'%(phi,theta))
                         ibreak[ipx,ipy,il]=-n
                         break
                 ds=-ds
+                print('Point (phi,theta)=(%.2f,%.2f) DONE --> CYCLE NMAX'%(phi,theta))
 
     return Bline, traj, ibreak
 
@@ -106,7 +108,7 @@ def integrator(r,ds):
 Bline,traj,ibreak = integrator(radius,ds)
 
 # print in txt file
-out = open('output_cusps_PR1-minusBz_%i.txt'%cycle,'w')
+out = open('texts/output_cusps_'+name_simu+'_%i.txt'%cycle,'w')
 out.write('#phi\t theta\t comment\n')
 
 # plot data
@@ -143,7 +145,8 @@ ax.set_zlabel('z[di]',fontsize=16)
 plt.xlim(xc-10,xc+10)
 plt.ylim(yc-10,yc+10)
 ax.set_zlim(zc-10,zc+10)
-plt.savefig('./images/plot1_paper2_3D-Blines_PR1-minusBz_%i.png'%cycle,format='png')
+plt.savefig('./images/plot1_paper2_3D-Blines_'+name_simu+'_%i.png'%cycle,format='png')
+plt.show()
 plt.close()
 out.close()
 

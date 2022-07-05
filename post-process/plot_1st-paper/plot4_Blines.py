@@ -124,7 +124,7 @@ line1 = []
 line2 = []
 pl.title('Radius=1.1R',fontsize=18)
 for ip in range(Npoints):
-    theta_lim = np.arcsin( np.sqrt( Bline1[ip,0,0]/200. ) )*180./3.14
+    theta_lim = np.arcsin( np.sqrt( Bline1[ip,0,0]/np.max(Bline1[ip,:ibreak1[ip,0],1]) ) )*180./3.14
     l1, =pl.plot(np.arange(ibreak1[ip,0])*ds/5.5,Bline1[ip,:ibreak1[ip,0],0],label=r'$|\theta_0|$<%.0f'%theta_lim,color=colors[ip])
     line1.append(l1)
 
@@ -149,7 +149,7 @@ line1 = []
 line2 = []
 pl.title('Radius=1.3R',fontsize=18)
 for ip in range(Npoints):
-    theta_lim = np.arcsin( np.sqrt( Bline2[ip,0,0]/200. ) )*180./3.14
+    theta_lim = np.arcsin( np.sqrt( Bline2[ip,0,0]/np.max(Bline2[ip,:ibreak2[ip,0],1]) ) )*180./3.14
     l1, = pl.plot(np.arange(ibreak2[ip,0])*ds/5.5,Bline2[ip,:ibreak2[ip,0],0],label=r'$|\theta_0|$<%.0f'%theta_lim,color=colors[ip])
     l2, = pl.plot(-np.arange(ibreak2[ip,1])*ds/5.5,Bline2[ip,:ibreak2[ip,1],1],color=colors[ip])
     line1.append(l1)
@@ -167,7 +167,7 @@ line1 = []
 line2 = []
 pl.title('Radius=1.5R',fontsize=18)
 for ip in range(Npoints):
-    theta_lim = np.arcsin( np.sqrt( Bline3[ip,0,0]/200. ) )*180./3.14
+    theta_lim = np.arcsin( np.sqrt( Bline3[ip,0,0]/np.max(Bline3[ip,:ibreak3[ip,0],1]) ) )*180./3.14
     l1, = pl.plot(np.arange(ibreak3[ip,0])*ds/5.5,Bline3[ip,:ibreak3[ip,0],0],label=r'$|\theta_0|$<%.0f'%theta_lim,color=colors[ip])
     l2, = pl.plot(-np.arange(ibreak3[ip,1])*ds/5.5,Bline3[ip,:ibreak3[ip,1],1],color=colors[ip])
     line1.append(l1)
@@ -197,5 +197,5 @@ pl.ylabel(r'$d^2B/ds^2$ [nT/$d_i^2$]')
 pl.xlabel('B-line length [di]')
 '''
 pl.subplots_adjust(wspace=0.08)
-pl.savefig('./images/plot4_paper_Blines_6_%i.png'%cycle,format='png')
+pl.savefig('./images/plot4_paper_Blines_new7_%i.png'%cycle,format='png')
 plt.close()

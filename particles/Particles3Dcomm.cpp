@@ -257,7 +257,9 @@ if( !isTestParticle ){
   double dNpmax = dNp * col->getNpMaxNpRatio();
   // ensure that particle index will not overflow 32-bit
   // representation as long as dmaxnop is respected.
+  //cout << dNpmax <<endl;
   assert_le(dNpmax,double(INT_MAX));
+  //cout << dNpmax <<endl;
   const int nop = dNp;
   // initialize particle ID generator based on number of particles
   // that will initially be produced.

@@ -24,11 +24,9 @@ TotMomentum = []
 EleEnergy = []
 MagEnergy = []
 KinEnergy = []
-KinEnergy0 = []
-KinEnergy1 = []
-BulEnergy0 = []
-BulEnergy1 = []
-Chargee = []
+KinEnergy = [[],[],[]]
+BulEnergy = [[],[],[]]
+Charge = [[],[],[]]
 Chargei = []
 
 for irun in range(0,nrun):
@@ -38,14 +36,17 @@ for irun in range(0,nrun):
     else :        
         sr=0
 
-    Ncycle_1, TotEnergy_1, TotMomentum_1, EleEnergy_1, MagEnergy_1, KinEnergy_1, KinEnergy0_1, KinEnergy1_1, BulEnergy0_1, BulEnergy1_1, Chargee_1, Chargei_1 = np.loadtxt(simu_path+'/run%i/data/ConservedQuantities.txt'%irun,unpack='True',skiprows=sr)
+    data = np.loadtxt(simu_path+'/run%i/data/ConservedQuantities.txt'%irun,skiprows=sr)
 
-    Ncycle = np.concatenate((Ncycle,Ncycle_1))
-    TotEnergy = np.concatenate((TotEnergy,TotEnergy_1))
-    TotMomentum = np.concatenate((TotMomentum,TotMomentum_1))
-    EleEnergy = np.concatenate((EleEnergy,EleEnergy_1))
-    MagEnergy = np.concatenate((MagEnergy,MagEnergy_1))
-    KinEnergy = np.concatenate((KinEnergy,KinEnergy_1))
+    ns = (len(data)-6)/3
+
+    Ncycle_1 = data[0] 
+    TotEnergy_1 = data[1]
+    TotMomentum_1 = data[2]
+    EleEnergy_1 = data[3] 
+    MagEnergy_1 = data[4]
+    KinEnergy_1 = data[5]
+    for i in range(0,ns):
     KinEnergy0 = np.concatenate((KinEnergy0,KinEnergy0_1))
     KinEnergy1 = np.concatenate((KinEnergy1,KinEnergy1_1))
     BulEnergy0 = np.concatenate((BulEnergy0,BulEnergy0_1))
