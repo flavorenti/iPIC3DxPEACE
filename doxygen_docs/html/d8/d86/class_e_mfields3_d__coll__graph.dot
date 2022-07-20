@@ -1,0 +1,57 @@
+digraph "EMfields3D"
+{
+ // INTERACTIVE_SVG=YES
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="EMfields3D",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node2 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _col" ,fontname="Helvetica"];
+  Node2 [label="Collective",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$db/dfb/class_collective.html",tooltip=" "];
+  Node3 -> Node2 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" Case\nFieldOutputTag\nMomentsOutputTag\nParticlesOutputTag\nPoissonCorrection\nRestartDirName\nSaveDirName\nSimName\ninputfile\nwmethod\n..." ,fontname="Helvetica"];
+  Node3 [label="string",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",tooltip=" "];
+  Node4 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _grid" ,fontname="Helvetica"];
+  Node4 [label="Grid3DCU",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d2/dd3/class_grid3_d_c_u.html",tooltip="Uniform cartesian local grid 3D."];
+  Node5 -> Node4 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _vct" ,fontname="Helvetica"];
+  Node5 [label="VCtopology3D",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d0/dd1/class_v_ctopology3_d.html",tooltip=" "];
+  Node5 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _vct" ,fontname="Helvetica"];
+  Node6 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" Bx_ext\nBx_tot\nBxc\nBxn\nBy_ext\nBy_tot\nByc\nByn\nBz_ext\nBz_tot\n..." ,fontname="Helvetica"];
+  Node6 [label="iPic3D::array3\< double \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d4/d57/structi_pic3_d_1_1array3.html",tooltip=" "];
+  Node7 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="iPic3D::array_ref3\l\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$da/d5a/classi_pic3_d_1_1array__ref3.html",tooltip=" "];
+  Node8 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="iPic3D::const_array\l_ref3\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d6/d3b/classi_pic3_d_1_1const__array__ref3.html",tooltip=" "];
+  Node9 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="iPic3D::base_arr\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d6/d95/classi_pic3_d_1_1base__arr.html",tooltip=" "];
+  Node10 -> Node6 [dir="back",color="orange",fontsize="10",style="dashed",label=" \< double \>" ,fontname="Helvetica"];
+  Node10 [label="iPic3D::array3\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d4/d57/structi_pic3_d_1_1array3.html",tooltip=" "];
+  Node11 -> Node10 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node11 [label="iPic3D::array_ref3\l\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$da/d5a/classi_pic3_d_1_1array__ref3.html",tooltip=" "];
+  Node8 -> Node11 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node12 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" fieldForPcls" ,fontname="Helvetica"];
+  Node12 [label="iPic3D::array4\< pfloat \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$dd/d8c/structi_pic3_d_1_1array4.html",tooltip=" "];
+  Node13 -> Node12 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node13 [label="iPic3D::array_ref4\l\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$dc/d69/classi_pic3_d_1_1array__ref4.html",tooltip=" "];
+  Node14 -> Node13 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node14 [label="iPic3D::const_array\l_ref4\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d5/df4/classi_pic3_d_1_1const__array__ref4.html",tooltip=" "];
+  Node9 -> Node14 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node15 -> Node12 [dir="back",color="orange",fontsize="10",style="dashed",label=" \< pfloat \>" ,fontname="Helvetica"];
+  Node15 [label="iPic3D::array4\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$dd/d8c/structi_pic3_d_1_1array4.html",tooltip=" "];
+  Node16 -> Node15 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node16 [label="iPic3D::array_ref4\l\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$dc/d69/classi_pic3_d_1_1array__ref4.html",tooltip=" "];
+  Node14 -> Node16 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node17 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" moments10Array" ,fontname="Helvetica"];
+  Node17 [label="Moments10",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d1/d1c/class_moments10.html",tooltip=" "];
+  Node18 -> Node17 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" arr" ,fontname="Helvetica"];
+  Node18 [label="iPic3D::array_ref4\l\< double \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$dc/d69/classi_pic3_d_1_1array__ref4.html",tooltip=" "];
+  Node19 -> Node18 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node19 [label="iPic3D::const_array\l_ref4\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d5/df4/classi_pic3_d_1_1const__array__ref4.html",tooltip=" "];
+  Node9 -> Node19 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node20 -> Node18 [dir="back",color="orange",fontsize="10",style="dashed",label=" \< double \>" ,fontname="Helvetica"];
+  Node20 [label="iPic3D::array_ref4\l\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$dc/d69/classi_pic3_d_1_1array__ref4.html",tooltip=" "];
+  Node14 -> Node20 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node21 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" Jxs\nJys\nJzs\npXXsn\npXYsn\npXZsn\npYYsn\npYZsn\npZZsn\nrhocs\n..." ,fontname="Helvetica"];
+  Node21 [label="iPic3D::array4\< double \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$dd/d8c/structi_pic3_d_1_1array4.html",tooltip=" "];
+  Node18 -> Node21 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node15 -> Node21 [dir="back",color="orange",fontsize="10",style="dashed",label=" \< double \>" ,fontname="Helvetica"];
+}

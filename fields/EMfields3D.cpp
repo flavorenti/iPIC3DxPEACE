@@ -4479,7 +4479,6 @@ void EMfields3D::initBEAM(double x_center, double y_center, double z_center,
   }
 }
 
-/*! Initialise a combination of magnetic dipoles */
 void EMfields3D::initDipole()
 {
   const Collective *col = &get_col();
@@ -4505,8 +4504,10 @@ void EMfields3D::initDipole()
       cout << "Solar Wind drift velocity        = " << ue0 << endl;
   }
 
-  double distance;
-  double x_displ, y_displ, z_displ, fac1;
+  double distance; /**< Distance center planet to grid point (in code units)*/
+  double x_displ, y_displ, z_displ; /**< Grid points coordinate w.r.t planet center*/
+  double fac1;  /**< Dummy variable*/
+
 
   double ebc[3];
   cross_product(ue0,ve0,we0,B0x,B0y,B0z,ebc);
@@ -4581,7 +4582,6 @@ void EMfields3D::initDipole()
 }
 
 
-/*! Initialise a 2D magnetic dipoles according to paper L.K.S Two-way coupling of a global Hall ....*/
 void EMfields3D::initDipole2D()
 {
   const Collective *col = &get_col();

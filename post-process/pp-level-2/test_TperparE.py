@@ -21,7 +21,7 @@
 ######################################################################################
 #======regulate=parameters=============================================================
 inp_tars = ['B','E','Je','Ji','Ve','Vi','TXX','TXY','TXZ','TYY','TYZ','TZZ']
-out_tars = ['Jper','Jpar','Eper','Epar','Eprimei','Eprimee','JdotE','JdotEe','JdotEi','Tiso','Tper','Tpar']
+out_tars = ['Eper','Epar','Eprimei','Eprimee','Jper','Jpar','JdotE','JdotEe','JdotEi','Tiso','Tper','Tpar']
 cuts = ['eq','dp']
 cycle_min = 0
 cycle_max  = 2000000

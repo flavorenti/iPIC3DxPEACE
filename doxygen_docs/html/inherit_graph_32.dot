@@ -1,0 +1,35 @@
+digraph "Graphical Class Hierarchy"
+{
+ // INTERACTIVE_SVG=YES
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node0 [label="iPic3D::base_arr\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d6/d95/classi_pic3_d_1_1base__arr.html",tooltip=" "];
+  Node0 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 [label="iPic3D::const_array\l_ref2\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$dd/d25/classi_pic3_d_1_1const__array__ref2.html",tooltip=" "];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="iPic3D::array_ref2\l\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$de/dc3/classi_pic3_d_1_1array__ref2.html",tooltip=" "];
+  Node2 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="iPic3D::array2\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d2/d6f/structi_pic3_d_1_1array2.html",tooltip=" "];
+  Node0 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="iPic3D::const_array\l_ref3\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d6/d3b/classi_pic3_d_1_1const__array__ref3.html",tooltip=" "];
+  Node4 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="iPic3D::array_ref3\l\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$da/d5a/classi_pic3_d_1_1array__ref3.html",tooltip=" "];
+  Node5 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="iPic3D::array3\< double \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d4/d57/structi_pic3_d_1_1array3.html",tooltip=" "];
+  Node5 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="iPic3D::array3\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d4/d57/structi_pic3_d_1_1array3.html",tooltip=" "];
+  Node0 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="iPic3D::const_array\l_ref4\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d5/df4/classi_pic3_d_1_1const__array__ref4.html",tooltip=" "];
+  Node8 -> Node9 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="iPic3D::array_ref4\l\< double \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$dc/d69/classi_pic3_d_1_1array__ref4.html",tooltip=" "];
+  Node9 -> Node10 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node10 [label="iPic3D::array4\< double \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$dd/d8c/structi_pic3_d_1_1array4.html",tooltip=" "];
+  Node8 -> Node11 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node11 [label="iPic3D::array_ref4\l\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$dc/d69/classi_pic3_d_1_1array__ref4.html",tooltip=" "];
+  Node11 -> Node12 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node12 [label="iPic3D::array4\< pfloat \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$dd/d8c/structi_pic3_d_1_1array4.html",tooltip=" "];
+  Node11 -> Node13 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node13 [label="iPic3D::array4\< type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$dd/d8c/structi_pic3_d_1_1array4.html",tooltip=" "];
+}
