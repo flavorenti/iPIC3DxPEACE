@@ -5,17 +5,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>iPIC3DxPEACE: Main Page</title>
+<title>iPIC3DxPEACE: iPIC3DxPEACE</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
-<link href="navtree.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="resize.js"></script>
-<script type="text/javascript" src="navtreedata.js"></script>
-<script type="text/javascript" src="navtree.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
-<link rel="search" href="search_opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="iPIC3DxPEACE"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -45,42 +41,66 @@ var searchBox = new SearchBox("searchBox", "search",'Search','.html');
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
 $(function() {
-  initMenu('',true,true,'search.php','Search');
-  $(document).ready(function() {
-    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
-  });
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
 });
 /* @license-end */
 </script>
 <div id="main-nav"></div>
 </div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
-  <div id="nav-tree">
-    <div id="nav-tree-contents">
-      <div id="nav-sync" class="sync"></div>
-    </div>
-  </div>
-  <div id="splitbar" style="-moz-user-select:none;" 
-       class="ui-resizable-handle">
-  </div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
 </div>
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(document).ready(function(){initNavTree('index.html',''); initResizable(); });
-/* @license-end */
-</script>
-<div id="doc-content">
-<div class="header">
-  <div class="headertitle"><div class="title">iPIC3DxPEACE Documentation</div></div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div><div class="header">
+  <div class="headertitle"><div class="title">iPIC3DxPEACE </div></div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><h1><a class="anchor" id="intro_sec"></a>
+Introduction</h1>
+<p >This code was initially conceived by S. Markidis and G. Lapenta in 2010 under the name iPIC3D. This new version iPIC3DxPEACE (Planets, Exoplanets, Asteroids, Comets and Emissions) targets global simulations of the interaction between the solar wind and an obstacle. iPIC3DxPEACE is developed and maintained by F. Lavorenti with contributions from J. Deca. This code is specifically designed to simulate induced ionospheres and small magnetospheres across the solar system. Specific boundary conditions have been conceived for this purpose. The core of the solver for both particles and fields remains the one of iPIC3D.</p>
+<h1><a class="anchor" id="install_sec"></a>
+Installation</h1>
+<h2><a class="anchor" id="step1"></a>
+Downloading the code</h2>
+<p >iPIC3DxPEACE is available under-request to the autors. Once you have been granted access to the github page of the code, you can download it by launching the following terminal command </p><div class="fragment"><div class="line">git clone git@github.com:flavorenti/iPIC3D-OCA.git</div>
+</div><!-- fragment --><p> This command will create a directory iPIC3D-OCA on your computer with a clone copy of the master branch of the code. Note that since the master branch is secured you can't commit it directly. Instead, you have to create your own branch if you want to modify the code, and then ask for a pull request to merge your own modified branch with the master.</p>
+<h2><a class="anchor" id="step2"></a>
+Compiling the code</h2>
+<p >To compile the code you need to install MPI and HDF5 modules. You also need to have a working version of cmake (at least version 2.8), but this can be easily installed with apt-get on Linux systems. Doesn't need sudo or root permissions, everything can be installed locally.</p>
+<ol type="1">
+<li>Install HDF5 library The current version working properly with iPIC3D is 1.8.9 <a href="http://www.hdfgroup.org/ftp/HDF5/releases/">http://www.hdfgroup.org/ftp/HDF5/releases/</a> List of commands to install HDF5: <div class="fragment"><div class="line">cd &lt;top HDF5 source code directory&gt;</div>
+<div class="line">./configure --prefix=&lt;location for HDF5 software&gt;</div>
+<div class="line">make</div>
+<div class="line">make check</div>
+<div class="line">make install</div>
+</div><!-- fragment --></li>
+<li>Install MPICH2 Install a version that supports -lmpe library. For example, this one: <a href="http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3.2p1/mpich2-1.3.2p1.tar.gz">http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3.2p1/mpich2-1.3.2p1.tar.gz</a> During the installation of MPICH follow all the instructions in the README file. Newer versions of OpenMPI should be fine by default in a linux distro.</li>
+</ol>
+<p >Set environment variables </p><div class="fragment"><div class="line">PATH=mpich2_install_path/bin/:$PATH</div>
+<div class="line">PATH=hdf5_install_path/lib/:$PATH</div>
+<div class="line">LD_LIBRARY_PATH=hdf5_install_path/lib/:$LD_LIBRARY_PATH</div>
+</div><!-- fragment --><p> where mpich2_install_path is the path to the installed MPICH2, and hdf5_install_path is the path to the installed HDF5.</p>
+<h2><a class="anchor" id="step3"></a>
+Running the code</h2>
+<p >Create a build directory and move into it. </p><div class="fragment"><div class="line">cmake ..</div>
+<div class="line">make</div>
+</div><!-- fragment --><p> If successful, you will find an executable named iPIC3D in build directory. This executable is system-dependent but it can be moved around your system to run simulations wherever you want. To run a simulation test case: copy an inputfile named as testXXX.inp from /inputfiles to build directory make sure you create an folder for output as specified in the input file make sure no_of_proc = XLEN x YLEN x ZLEN as specified in the input file </p><div class="fragment"><div class="line">mpiexec -n no_of_proc ./iPIC3D  inputfilename.inp</div>
+</div><!-- fragment --> </div></div><!-- PageDoc -->
 </div><!-- contents -->
-</div><!-- doc-content -->
 <!-- start footer part -->
-<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-  <ul>
-    <li class="footer">Generated on Wed Jul 20 2022 12:25:13 for iPIC3DxPEACE by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.3 </li>
-  </ul>
-</div>
+<hr class="footer"/><address class="footer"><small>
+Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.3
+</small></address>
 </body>
 </html>

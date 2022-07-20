@@ -1,9 +1,0 @@
-digraph "Graphical Class Hierarchy"
-{
- // INTERACTIVE_SVG=YES
- // LATEX_PDF_SIZE
-  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
-  node [fontname="Helvetica",fontsize="10",shape=record];
-  rankdir="LR";
-  Node0 [label="TimeTasks_caller_to\l_set_communication_mode\l_for_scope",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$d2/d76/class_time_tasks__caller__to__set__communication__mode__for__scope.html",tooltip=" "];
-}
