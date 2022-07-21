@@ -76,7 +76,7 @@ $(function() {
 <code>#include &quot;ipicfwd.h&quot;</code><br />
 <code>#include &quot;mpi.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="BcFields3D_8h_source.html">BcFields3D.h</a>&quot;</code><br />
-<code>#include &quot;VCtopology3D.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="VCtopology3D_8h_source.html">VCtopology3D.h</a>&quot;</code><br />
 <code>#include &quot;ipicdefs.h&quot;</code><br />
 <code>#include &quot;Alloc.h&quot;</code><br />
 <code>#include &quot;debug.h&quot;</code><br />
@@ -86,37 +86,37 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:afdc187404975ca3cfe8f1e6ac1782682"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#afdc187404975ca3cfe8f1e6ac1782682">NBDerivedHaloComm</a> (int nx, int ny, int nz, double ***vector, const VirtualTopology3D *vct, EMfields3D *EMf, bool isCenterFlag, bool isFaceOnlyFlag, bool needInterp, bool isParticle)</td></tr>
+<tr class="memitem:afdc187404975ca3cfe8f1e6ac1782682"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#afdc187404975ca3cfe8f1e6ac1782682">NBDerivedHaloComm</a> (int nx, int ny, int nz, double ***vector, const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *vct, EMfields3D *EMf, bool isCenterFlag, bool isFaceOnlyFlag, bool needInterp, bool isParticle)</td></tr>
 <tr class="memdesc:afdc187404975ca3cfe8f1e6ac1782682"><td class="mdescLeft">&#160;</td><td class="mdescRight">Non-Blocking (NB) derived Halo values communication among neighbour MPI procs.  <a href="Com3DNonblk_8h.html#afdc187404975ca3cfe8f1e6ac1782682">More...</a><br /></td></tr>
 <tr class="separator:afdc187404975ca3cfe8f1e6ac1782682"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad169b29d72d715d88bc6a5fbf52df47c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#ad169b29d72d715d88bc6a5fbf52df47c">communicateCenterBC</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const VirtualTopology3D *vct, EMfields3D *EMf)</td></tr>
+<tr class="memitem:ad169b29d72d715d88bc6a5fbf52df47c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#ad169b29d72d715d88bc6a5fbf52df47c">communicateCenterBC</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *vct, EMfields3D *EMf)</td></tr>
 <tr class="memdesc:ad169b29d72d715d88bc6a5fbf52df47c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Communicate values in ghost cells among MPI procs (centers of the mesh).  <a href="Com3DNonblk_8h.html#ad169b29d72d715d88bc6a5fbf52df47c">More...</a><br /></td></tr>
 <tr class="separator:ad169b29d72d715d88bc6a5fbf52df47c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a96d74c16600fcd41920e043607c19b69"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a96d74c16600fcd41920e043607c19b69">communicateCenterBC_P</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const VirtualTopology3D *vct, EMfields3D *EMf)</td></tr>
+<tr class="memitem:a96d74c16600fcd41920e043607c19b69"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a96d74c16600fcd41920e043607c19b69">communicateCenterBC_P</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *vct, EMfields3D *EMf)</td></tr>
 <tr class="memdesc:a96d74c16600fcd41920e043607c19b69"><td class="mdescLeft">&#160;</td><td class="mdescRight">Communicate values in ghost cells among MPI procs (centers of the mesh) for pcls.  <a href="Com3DNonblk_8h.html#a96d74c16600fcd41920e043607c19b69">More...</a><br /></td></tr>
 <tr class="separator:a96d74c16600fcd41920e043607c19b69"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a323e04ef3b765e5a53e51a73a4b0ff0e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a323e04ef3b765e5a53e51a73a4b0ff0e">communicateCenterBoxStencilBC</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const VirtualTopology3D *vct, EMfields3D *EMf)</td></tr>
+<tr class="memitem:a323e04ef3b765e5a53e51a73a4b0ff0e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a323e04ef3b765e5a53e51a73a4b0ff0e">communicateCenterBoxStencilBC</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *vct, EMfields3D *EMf)</td></tr>
 <tr class="memdesc:a323e04ef3b765e5a53e51a73a4b0ff0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Communicate values in ghost cells among MPI procs (centers of the mesh) using stencil.  <a href="Com3DNonblk_8h.html#a323e04ef3b765e5a53e51a73a4b0ff0e">More...</a><br /></td></tr>
 <tr class="separator:a323e04ef3b765e5a53e51a73a4b0ff0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a008b2d4aca86d80dbec5e44db18ef08b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a008b2d4aca86d80dbec5e44db18ef08b">communicateNodeBoxStencilBC_P</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const VirtualTopology3D *vct, EMfields3D *EMf)</td></tr>
+<tr class="memitem:a008b2d4aca86d80dbec5e44db18ef08b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a008b2d4aca86d80dbec5e44db18ef08b">communicateNodeBoxStencilBC_P</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *vct, EMfields3D *EMf)</td></tr>
 <tr class="memdesc:a008b2d4aca86d80dbec5e44db18ef08b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Communicate values in ghost cells among MPI procs (nodes of the mesh) using stencil for pcls.  <a href="Com3DNonblk_8h.html#a008b2d4aca86d80dbec5e44db18ef08b">More...</a><br /></td></tr>
 <tr class="separator:a008b2d4aca86d80dbec5e44db18ef08b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aee68609a60de11356fdcca1f046083a8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#aee68609a60de11356fdcca1f046083a8">communicateInterp</a> (int nx, int ny, int nz, double ***vector, const VirtualTopology3D *vct, EMfields3D *EMf)</td></tr>
+<tr class="memitem:aee68609a60de11356fdcca1f046083a8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#aee68609a60de11356fdcca1f046083a8">communicateInterp</a> (int nx, int ny, int nz, double ***vector, const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *vct, EMfields3D *EMf)</td></tr>
 <tr class="memdesc:aee68609a60de11356fdcca1f046083a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Communicate values in ghost cells among MPI procs with interpolation.  <a href="Com3DNonblk_8h.html#aee68609a60de11356fdcca1f046083a8">More...</a><br /></td></tr>
 <tr class="separator:aee68609a60de11356fdcca1f046083a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5ccec818b669a99e2281c9c75bc854e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a5ccec818b669a99e2281c9c75bc854e0">communicateNode_P</a> (int nx, int ny, int nz, double ***vector, const VirtualTopology3D *vct, EMfields3D *EMf)</td></tr>
+<tr class="memitem:a5ccec818b669a99e2281c9c75bc854e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a5ccec818b669a99e2281c9c75bc854e0">communicateNode_P</a> (int nx, int ny, int nz, double ***vector, const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *vct, EMfields3D *EMf)</td></tr>
 <tr class="memdesc:a5ccec818b669a99e2281c9c75bc854e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Communicate values in ghost cells among MPI procs (nodes of the mesh) for pcls.  <a href="Com3DNonblk_8h.html#a5ccec818b669a99e2281c9c75bc854e0">More...</a><br /></td></tr>
 <tr class="separator:a5ccec818b669a99e2281c9c75bc854e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a60578232faf29cb0ec51662f435a0b9f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a60578232faf29cb0ec51662f435a0b9f">communicateNodeBC</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const VirtualTopology3D *vct, EMfields3D *EMf)</td></tr>
+<tr class="memitem:a60578232faf29cb0ec51662f435a0b9f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a60578232faf29cb0ec51662f435a0b9f">communicateNodeBC</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *vct, EMfields3D *EMf)</td></tr>
 <tr class="memdesc:a60578232faf29cb0ec51662f435a0b9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Communicate values in ghost cells among MPI procs (nodes of the mesh).  <a href="Com3DNonblk_8h.html#a60578232faf29cb0ec51662f435a0b9f">More...</a><br /></td></tr>
 <tr class="separator:a60578232faf29cb0ec51662f435a0b9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a33efa51efcef278f3a4f272fe2b6b571"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a33efa51efcef278f3a4f272fe2b6b571">communicateNodeBC_P</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const VirtualTopology3D *vct, EMfields3D *EMf)</td></tr>
+<tr class="memitem:a33efa51efcef278f3a4f272fe2b6b571"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a33efa51efcef278f3a4f272fe2b6b571">communicateNodeBC_P</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *vct, EMfields3D *EMf)</td></tr>
 <tr class="memdesc:a33efa51efcef278f3a4f272fe2b6b571"><td class="mdescLeft">&#160;</td><td class="mdescRight">Communicate values in ghost cells among MPI procs (nodes of the mesh) for pcls.  <a href="Com3DNonblk_8h.html#a33efa51efcef278f3a4f272fe2b6b571">More...</a><br /></td></tr>
 <tr class="separator:a33efa51efcef278f3a4f272fe2b6b571"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8251a14685d92adcedf88e87334179bf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a8251a14685d92adcedf88e87334179bf">communicateNodeBoxStencilBC</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const VirtualTopology3D *vct, EMfields3D *EMf)</td></tr>
+<tr class="memitem:a8251a14685d92adcedf88e87334179bf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a8251a14685d92adcedf88e87334179bf">communicateNodeBoxStencilBC</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *vct, EMfields3D *EMf)</td></tr>
 <tr class="memdesc:a8251a14685d92adcedf88e87334179bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Communicate values in ghost cells among MPI procs (nodes of the mesh) using stencil.  <a href="Com3DNonblk_8h.html#a8251a14685d92adcedf88e87334179bf">More...</a><br /></td></tr>
 <tr class="separator:a8251a14685d92adcedf88e87334179bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a593ddd9be35d5b7490884c1dcd16678e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a593ddd9be35d5b7490884c1dcd16678e">communicateCenterBoxStencilBC_P</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const VirtualTopology3D *vct, EMfields3D *EMf)</td></tr>
+<tr class="memitem:a593ddd9be35d5b7490884c1dcd16678e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Com3DNonblk_8h.html#a593ddd9be35d5b7490884c1dcd16678e">communicateCenterBoxStencilBC_P</a> (int nx, int ny, int nz, arr3_double vector, int bcFaceXright, int bcFaceXleft, int bcFaceYright, int bcFaceYleft, int bcFaceZright, int bcFaceZleft, const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *vct, EMfields3D *EMf)</td></tr>
 <tr class="memdesc:a593ddd9be35d5b7490884c1dcd16678e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Communicate values in ghost cells among MPI procs (centers of the mesh) using stencil for pcls.  <a href="Com3DNonblk_8h.html#a593ddd9be35d5b7490884c1dcd16678e">More...</a><br /></td></tr>
 <tr class="separator:a593ddd9be35d5b7490884c1dcd16678e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -192,7 +192,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const VirtualTopology3D *&#160;</td>
+          <td class="paramtype">const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *&#160;</td>
           <td class="paramname"><em>vct</em>, </td>
         </tr>
         <tr>
@@ -300,7 +300,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const VirtualTopology3D *&#160;</td>
+          <td class="paramtype">const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *&#160;</td>
           <td class="paramname"><em>vct</em>, </td>
         </tr>
         <tr>
@@ -408,7 +408,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const VirtualTopology3D *&#160;</td>
+          <td class="paramtype">const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *&#160;</td>
           <td class="paramname"><em>vct</em>, </td>
         </tr>
         <tr>
@@ -516,7 +516,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const VirtualTopology3D *&#160;</td>
+          <td class="paramtype">const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *&#160;</td>
           <td class="paramname"><em>vct</em>, </td>
         </tr>
         <tr>
@@ -588,7 +588,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const VirtualTopology3D *&#160;</td>
+          <td class="paramtype">const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *&#160;</td>
           <td class="paramname"><em>vct</em>, </td>
         </tr>
         <tr>
@@ -654,7 +654,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const VirtualTopology3D *&#160;</td>
+          <td class="paramtype">const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *&#160;</td>
           <td class="paramname"><em>vct</em>, </td>
         </tr>
         <tr>
@@ -756,7 +756,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const VirtualTopology3D *&#160;</td>
+          <td class="paramtype">const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *&#160;</td>
           <td class="paramname"><em>vct</em>, </td>
         </tr>
         <tr>
@@ -864,7 +864,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const VirtualTopology3D *&#160;</td>
+          <td class="paramtype">const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *&#160;</td>
           <td class="paramname"><em>vct</em>, </td>
         </tr>
         <tr>
@@ -972,7 +972,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const VirtualTopology3D *&#160;</td>
+          <td class="paramtype">const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *&#160;</td>
           <td class="paramname"><em>vct</em>, </td>
         </tr>
         <tr>
@@ -1080,7 +1080,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const VirtualTopology3D *&#160;</td>
+          <td class="paramtype">const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *&#160;</td>
           <td class="paramname"><em>vct</em>, </td>
         </tr>
         <tr>
@@ -1152,7 +1152,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const VirtualTopology3D *&#160;</td>
+          <td class="paramtype">const <a class="el" href="VCtopology3D_8h.html#ace41d71571ef7118ee1f046b7ee072a5">VirtualTopology3D</a> *&#160;</td>
           <td class="paramname"><em>vct</em>, </td>
         </tr>
         <tr>
@@ -1216,7 +1216,7 @@ Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jul 21 2022 10:35:54 for iPIC3DxPEACE by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.3
+Generated on Thu Jul 21 2022 12:31:07 for iPIC3DxPEACE by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.3
 </small></address>
 </body>
 </html>
