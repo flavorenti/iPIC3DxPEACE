@@ -213,6 +213,25 @@ void Collective::ReadInput(string inputfile) {
   z_center = config.read < double >("z_center",5.0);
   L_square = config.read < double >("L_square",5.0);
 
+  collisionProcesses = config.read < bool >("collisionProcesses", 0);
+  xSec = config.read < double >("xSec", 8.82e-10);
+  iSecElec = config.read < int >("iSecElec", 2);
+  iSecIon = config.read < int >("iSecIon", 2);
+  nCollProcesses = config.read < int >("nCollProcesses", 3);
+  nIoniColls = config.read < int >("nIoniColls", 1);
+  collStepSkip = config.read< int >("collStepSkip", 1);
+  // Threshold energies for collisional processes.
+  E_th_el = new double[nCollProcesses];
+  array_double E_th_el0 = config.read < array_double > ("E_th_el");
+  E_th_el[0] = E_th_el0.a;
+  if (nCollProcesses > 1)
+    E_th_el[1] = E_th_el0.b;
+  if (nCollProcesses > 2)
+    E_th_el[2] = E_th_el0.c;
+  if (nCollProcesses > 3)
+    E_th_el[3] = E_th_el0.d;
+
+  
   yes_sal = config.read < int >("yes_sal",0);
   n_layers_sal = config.read < int >("n_layers_sal",3);
 
@@ -407,7 +426,13 @@ void Collective::ReadInput(string inputfile) {
     npcelz[11] = npcelz0.l;
     qom[11] 	 = qom0.l;
   }
-
+  cout << "\n---------------------------\n";
+  cout << "\n QOM Initialised from Input: ";
+  for (int iSpecies = 0; iSpecies <ns+nstestpart; iSpecies++)
+  { 
+    cout << qom[iSpecies] << " ";
+  }
+  cout << "\n---------------------------\n";
   verbose = config.read < bool > ("verbose",false);
 
   // PHI Electrostatic Potential
@@ -529,6 +554,7 @@ int Collective::ReadRestart(string inputfile) {
   hid_t file_id;
   hid_t dataset_id;
   herr_t status;
+  printf("\n Commencing restart with H5F commands. In collective.cpp. \n");
   // Open the setting file for the restart.
   file_id = H5Fopen((inputfile + "/settings.hdf").c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
   if (file_id < 0) {
@@ -1250,6 +1276,13 @@ void Collective::Print() {
   cout << "Case type         : " << Case << endl;
   cout << "Simulation name   : " << SimName << endl;
   cout << "Poisson correction: " << PoissonCorrection << endl;
+  cout << endl << "---------------------" << endl;
+  cout << "Collision Parameters" << endl;
+  cout << "---------------------" << endl;
+  cout << "Include Collisions option: " << collisionProcesses << endl;
+  cout << "Collision Cross Section  = " << xSec << endl;
+  cout << "Species index for secondary electrons: " << iSecElec << endl;
+  cout << "Species index for secondary ions:      " << iSecIon << endl << endl;
   cout << "---------------------" << endl;
   cout << "Check Simulation Constraints" << endl;
   cout << "---------------------" << endl;
@@ -1282,6 +1315,13 @@ void Collective::Print() {
       cout << "WARNING. v_th*dt/dy (species " << is << ") = " << vth[is] * dt / dy << " < .1"  << endl;
 
   }
+
+  
+
+  cout << "\n" << "n_layers_sal: " << n_layers_sal << "\n";
+  cout << "\n" << "Nx/XLEN: " << nxc/XLEN << "\n";
+  cout << "\n" << "Ny/YLEN: " << nyc/YLEN << "\n";
+  cout << "\n" << "Nz/ZLEN: " << nzc/ZLEN << "\n";
 
   if (yes_sal){
     cout << "REQUIRE SAL_length/(Vthi*dt)>>1 = " << n_layers_sal*dz/dt/vth[1] << endl;

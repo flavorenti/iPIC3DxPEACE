@@ -50,6 +50,7 @@ namespace iPic3D {
       grid(0),
       EMf(0),
       part(0),
+      colls(0),
 #ifndef NO_HDF5
       outputWrapperFPP(0),
 #endif
@@ -99,7 +100,9 @@ namespace iPic3D {
     Grid3DCU      *grid;
     EMfields3D    *EMf;
     Particles3D   *part;
+    // Particles3D   *
     Particles3D   *testpart;
+    Collisions    *colls;
     double        *Ke;
     double        *rho;
     double        *BulkEnergy;

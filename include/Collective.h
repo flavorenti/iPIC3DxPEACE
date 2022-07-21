@@ -140,6 +140,15 @@ class Collective
     double getZmin()const{ return (zmin); }
     double getZmax()const{ return (zmax); }
 
+    bool   getcollisionProcesses()const{ return (collisionProcesses); }
+    double getxSec()const{ return (xSec); }
+    int    getiSecElec()const{ return (iSecElec); }
+    int    getiSecIon()const{ return (iSecIon); }
+    int    getnCollProcesses()const{ return (nCollProcesses); }
+    double getE_th_el(int nColl)const{ return (E_th_el[nColl]); }
+    int    getnIoniColls()const{ return (nIoniColls); }
+    int    getcollStepSkip()const{ return (collStepSkip); }
+
     int getYes_sal()const{ return (yes_sal); }
     int getN_layers_sal()const{ return (n_layers_sal); }
 
@@ -315,6 +324,23 @@ class Collective
     double *pitch_angle;
     /*! Energy for Test Particles */
     double *energy;
+
+    /* bool value for including collisional processes */
+    bool collisionProcesses;
+    /*! Cross Section of collisional processes */
+    double xSec;
+    /*! Species index for secondary electrons */
+    int iSecElec;
+    /*! Species index for secondary ions */
+    int iSecIon;
+    /*! Number of collisional processes */
+    int nCollProcesses;
+    /*! Threshold energies for prpcesses*/
+    double *E_th_el;
+    /*! Number of ionization processes */
+    int nIoniColls;
+    /*! Number of skipped steps for collisional processes */
+    int collStepSkip;
 
     /* bool value for applying SAL BC fields */
     int yes_sal;

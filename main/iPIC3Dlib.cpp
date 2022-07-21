@@ -35,6 +35,7 @@
 #include "Particles3Dcomm.h"
 #include "Timing.h"
 #include "ParallelIO.h"
+#include "Collisions.h"
 //
 #ifndef NO_HDF5
 #include "WriteOutputParallel.h"
@@ -56,6 +57,7 @@ c_Solver::~c_Solver()
   delete vct; // process topology
   delete grid; // grid
   delete EMf; // field
+  delete colls; // Collisions
 #ifndef NO_HDF5
   delete outputWrapperFPP;
 #endif
@@ -93,10 +95,14 @@ int c_Solver::Init(int argc, char **argv) {
   // initialized MPI environment
   // nprocs = number of processors
   // myrank = rank of tha process*/
+  // printf("\n Initialising the simulation parameters \n");
   Parameters::init_parameters();
+  // printf("\n Done initialising the simulation parameters \n");
   //mpi = &MPIdata::instance();
+  // printf("\n Getting MPI processes and ranks. \n");
   nprocs = MPIdata::get_nprocs();
   myrank = MPIdata::get_rank();
+  // printf("\n Completed getting MPI processes and ranks. \n");
 
   col = new Collective(argc, argv); // Every proc loads the parameters of simulation from class Collective
   restart_cycle = col->getRestartOutputCycle();
@@ -122,15 +128,24 @@ int c_Solver::Init(int argc, char **argv) {
 
   // Print the initial settings to stdout and a file
   if (myrank == 0) {
+    // printf("\n Printing initial settings \n");
     MPIdata::instance().Print();
     vct->Print();
     col->Print();
     col->save();
+    // printf("\n Done printing initial settings \n");
   }
   // Create the local grid
+  // printf("\n Creating local grid. \n");
   grid = new Grid3DCU(col, vct);  // Create the local grid
+  // printf("\n Done with local grid. Make EM field object. \n");
   EMf = new EMfields3D(col, grid, vct);  // Create Electromagnetic Fields Object
+  // printf("\n Done with EM field object. \n");
 
+  if (col->getcollisionProcesses()){ // If Collisional processes
+    colls = new Collisions(col, vct, grid); //Create Collision object
+  }
+  
   if      (col->getCase()=="GEMnoPert") 		EMf->initGEMnoPert();
   else if (col->getCase()=="ForceFree") 		EMf->initForceFree();
   else if (col->getCase()=="GEM")       		EMf->initGEM();
@@ -148,14 +163,14 @@ int c_Solver::Init(int argc, char **argv) {
     }
     EMf->init();
   }
-
+  // printf("\n Beginning allocation of particles. \n");
   // Allocation of particles
   part = (Particles3D*) malloc(sizeof(Particles3D)*ns);
   for (int i = 0; i < ns; i++)
   {
     new(&part[i]) Particles3D(i,col,vct,grid);
   }
-
+  // printf("\n Completing allocation of particles. \n");
   // Initial Condition for PARTICLES if you are not starting from RESTART
   if (restart_status == 0) {
     for (int i = 0; i < ns; i++)
@@ -170,6 +185,8 @@ int c_Solver::Init(int argc, char **argv) {
       part[i].reserve_remaining_particle_IDs();
     }
   }
+// printf("\n PArticle initial conditions complete \n");
+// cout << "Rank " << myrank << "\n";
 
   //allocate test particles if any
   nstestpart = col->getNsTestPart();
@@ -182,7 +199,11 @@ int c_Solver::Init(int argc, char **argv) {
 	   }
   }
 
+  // printf("\n Any test pl allocations completed \n");
+  // cout << "Rank " << myrank << "\n";
+  
   if ( Parameters::get_doWriteOutput()){
+    // printf("\n Writing outputs. \n");
 		#ifndef NO_HDF5
 	  	if(col->getWriteMethod() == "shdf5" || col->getCallFinalize() || restart_cycle>0 ||
 			  (col->getWriteMethod()=="pvtk" && !col->particle_output_is_off()) )
@@ -191,6 +212,7 @@ int c_Solver::Init(int argc, char **argv) {
 			  fetch_outputWrapperFPP().init_output_files(col,vct,grid,EMf,part,ns,testpart,nstestpart);
 		}
 		#endif
+    // printf("\n Success writing outputs. \n");
 	  if(!col->field_output_is_off()){
 		  if(col->getWriteMethod()=="pvtk"){
 			  if(!(col->getFieldOutputTag()).empty())
@@ -207,7 +229,9 @@ int c_Solver::Init(int argc, char **argv) {
 				  momentwritebuffer=newArr3(float,(grid->getNZN()-3)*14, grid->getNYN()-3, grid->getNXN()-3);
 		  }
 	  }
+    // printf("\n Success writing feild outputs. \n");
   }
+  // printf("\n Almost done with init. \n");
   rho = new double[ns];
   Ke = new double[ns];
   BulkEnergy = new double[ns];
@@ -217,7 +241,7 @@ int c_Solver::Init(int argc, char **argv) {
     ofstream my_file(cq.c_str());
     my_file.close();
   }
-  
+  // printf("\n Closed file. \n");
   Qdel = new double[ns];
   Count = new double[ns];
   Qrep = new double[ns];
@@ -333,7 +357,7 @@ bool c_Solver::ParticlesMover(int cycle)
     const double fexo_Na = 1e-7;
     const double hexo_Na = 0.025*R;
     const double w_fact  = 8e3;   // factor weight_exo / weight_sw
-
+    bool applyCollisions = (col->getcollisionProcesses()) && (cycle % col->getcollStepSkip() == 0);
     for (int i = 0; i < ns; i++)  // move each species
     {
      // #pragma omp task inout(part[i]) in(grid) target_device(booster)
@@ -359,7 +383,8 @@ bool c_Solver::ParticlesMover(int cycle)
         default:
           unsupported_value_error(Parameters::get_MOVER_TYPE());
       }
-
+      // Particles undergo collisions.
+      if ( applyCollisions )  colls->Collide(i, part, col);
       // Injection particles from ionized exosphere ./Job
       // inject hydrogen
       if ( (i==2 or i==3) and col->getAddExosphere()){	 
@@ -373,7 +398,10 @@ bool c_Solver::ParticlesMover(int cycle)
       // External boundary conditions particles     ./Job
       Qrep[i] = part[i].repopulate_particles(EMf); 
     }
-
+    
+    // Inject particles produced through impact ioni
+    if (applyCollisions) colls->createIonizedParticles(part);
+    
     // Internal boundary conditions particles.                 ./Job
     // case with re-inejction of pcls to keep net charge zero  ./Job
     double Qrm, Count_plus=0., Count_mins=0.;
