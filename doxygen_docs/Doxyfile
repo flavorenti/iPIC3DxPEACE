@@ -873,7 +873,9 @@ WARN_LOGFILE           =
 
 INPUT                  = /home/flavorenti/Desktop/Sources/ipic3d-klm_Irene/bc/BcFields3D.cpp \
                          /home/flavorenti/Desktop/Sources/ipic3d-klm_Irene/include/BcFields3D.h \
-                         ./mainpage.txt
+                         /home/flavorenti/Desktop/Sources/ipic3d-klm_Irene/communication/Com3DNonblk.cpp \
+                         /home/flavorenti/Desktop/Sources/ipic3d-klm_Irene/include/Com3DNonblk.h \
+                         /home/flavorenti/Desktop/Sources/ipic3d-klm_Irene/README.md
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -1072,7 +1074,7 @@ FILTER_SOURCE_PATTERNS =
 # (index.html). This can be useful if you have a project on for instance GitHub
 # and want to reuse the introduction page also for the doxygen output.
 
-USE_MDFILE_AS_MAINPAGE = 
+USE_MDFILE_AS_MAINPAGE = YES
 
 #---------------------------------------------------------------------------
 # Configuration options related to source browsing
@@ -1305,7 +1307,7 @@ HTML_COLORSTYLE_GAMMA  = 80
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_TIMESTAMP         = NO
+HTML_TIMESTAMP         = YES
 
 # If the HTML_DYNAMIC_MENUS tag is set to YES then the generated HTML
 # documentation will contain a main index with vertical navigation menus that

@@ -66,41 +66,98 @@ $(function() {
   <div class="headertitle"><div class="title">iPIC3DxPEACE </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="intro_sec"></a>
+<div class="textblock"><ul>
+<li></li>
+<li></li>
+</ul>
+<h1><a class="anchor" id="intro_sec"></a>
 Introduction</h1>
-<p >This code was initially conceived by S. Markidis and G. Lapenta in 2010 under the name iPIC3D. This new version iPIC3DxPEACE (Planets, Exoplanets, Asteroids, Comets and Emissions) targets global simulations of the interaction between the solar wind and an obstacle. iPIC3DxPEACE is developed and maintained by F. Lavorenti with contributions from J. Deca. This code is specifically designed to simulate induced ionospheres and small magnetospheres across the solar system. Specific boundary conditions have been conceived for this purpose. The core of the solver for both particles and fields remains the one of iPIC3D.</p>
+<ul>
+<li></li>
+<li>This code was initially conceived by S. Markidis and G. Lapenta in 2010 under the name iPIC3D.</li>
+<li>This new version iPIC3DxPEACE (Planets, Exoplanets, Asteroids, Comets and Emissions) targets global simulations of the interaction between the solar wind and an obstacle.</li>
+<li>iPIC3DxPEACE is developed and maintained by F. Lavorenti with contributions from J. Deca.</li>
+<li>This code is specifically designed to simulate induced ionospheres and small magnetospheres across the solar system. Specific boundary conditions have been conceived for this purpose.</li>
+<li>The core of the solver for both particles and fields remains the one of iPIC3D.</li>
+<li></li>
+<li></li>
+</ul>
 <h1><a class="anchor" id="install_sec"></a>
 Installation</h1>
+<ul>
+<li></li>
+<li></li>
+</ul>
 <h2><a class="anchor" id="step1"></a>
 Downloading the code</h2>
-<p >iPIC3DxPEACE is available under-request to the autors. Once you have been granted access to the github page of the code, you can download it by launching the following terminal command </p><div class="fragment"><div class="line">git clone git@github.com:flavorenti/iPIC3D-OCA.git</div>
-</div><!-- fragment --><p> This command will create a directory iPIC3D-OCA on your computer with a clone copy of the master branch of the code. Note that since the master branch is secured you can't commit it directly. Instead, you have to create your own branch if you want to modify the code, and then ask for a pull request to merge your own modified branch with the master.</p>
+<ul>
+<li></li>
+<li>iPIC3DxPEACE is available under-request to the autors. Once you have been granted access to the github page of the code, you can download it by launching the following terminal command</li>
+<li><div class="fragment"><div class="line">* git clone git@github.com:flavorenti/iPIC3D-OCA.git</div>
+<div class="line">* </div>
+</div><!-- fragment --></li>
+<li>This command will create a directory iPIC3D-OCA on your computer with a clone copy of the master branch of the code.</li>
+<li>Note that since the master branch is secured you can't commit it directly.</li>
+<li>Instead, you have to create your own branch if you want to modify the code, and then ask for a pull request to merge your own modified branch with the master.</li>
+<li></li>
+<li></li>
+</ul>
 <h2><a class="anchor" id="step2"></a>
 Compiling the code</h2>
-<p >To compile the code you need to install MPI and HDF5 modules. You also need to have a working version of cmake (at least version 2.8), but this can be easily installed with apt-get on Linux systems. Doesn't need sudo or root permissions, everything can be installed locally.</p>
-<ol type="1">
-<li>Install HDF5 library The current version working properly with iPIC3D is 1.8.9 <a href="http://www.hdfgroup.org/ftp/HDF5/releases/">http://www.hdfgroup.org/ftp/HDF5/releases/</a> List of commands to install HDF5: <div class="fragment"><div class="line">cd &lt;top HDF5 source code directory&gt;</div>
-<div class="line">./configure --prefix=&lt;location for HDF5 software&gt;</div>
-<div class="line">make</div>
-<div class="line">make check</div>
-<div class="line">make install</div>
+<ul>
+<li></li>
+<li>To compile the code you need to install MPI and HDF5 modules. You also need to have a working version of cmake (at least version 2.8), but this can be easily installed with apt-get on Linux systems.</li>
+<li>Doesn't need sudo or root permissions, everything can be installed locally.</li>
+<li></li>
+<li>1. Install HDF5 library</li>
+<li>The current version working properly with iPIC3D is 1.8.9 <a href="http://www.hdfgroup.org/ftp/HDF5/releases/">http://www.hdfgroup.org/ftp/HDF5/releases/</a></li>
+<li>List of commands to install HDF5:</li>
+<li><div class="fragment"><div class="line">* cd &lt;top HDF5 source code directory&gt;</div>
+<div class="line">* ./configure --prefix=&lt;location for HDF5 software&gt;</div>
+<div class="line">* make</div>
+<div class="line">* make check</div>
+<div class="line">* make install</div>
+<div class="line">* </div>
 </div><!-- fragment --></li>
-<li>Install MPICH2 Install a version that supports -lmpe library. For example, this one: <a href="http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3.2p1/mpich2-1.3.2p1.tar.gz">http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3.2p1/mpich2-1.3.2p1.tar.gz</a> During the installation of MPICH follow all the instructions in the README file. Newer versions of OpenMPI should be fine by default in a linux distro.</li>
-</ol>
-<p >Set environment variables </p><div class="fragment"><div class="line">PATH=mpich2_install_path/bin/:$PATH</div>
-<div class="line">PATH=hdf5_install_path/lib/:$PATH</div>
-<div class="line">LD_LIBRARY_PATH=hdf5_install_path/lib/:$LD_LIBRARY_PATH</div>
-</div><!-- fragment --><p> where mpich2_install_path is the path to the installed MPICH2, and hdf5_install_path is the path to the installed HDF5.</p>
+<li></li>
+<li>2. Install MPICH2</li>
+<li>Install a version that supports -lmpe library. For example, this one: <a href="http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3.2p1/mpich2-1.3.2p1.tar.gz">http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3.2p1/mpich2-1.3.2p1.tar.gz</a></li>
+<li>During the installation of MPICH follow all the instructions in the README file.</li>
+<li>Newer versions of OpenMPI should be fine by default in a linux distro.</li>
+<li></li>
+<li>Set environment variables</li>
+<li><div class="fragment"><div class="line">* PATH=mpich2_install_path/bin/:$PATH</div>
+<div class="line">* PATH=hdf5_install_path/lib/:$PATH</div>
+<div class="line">* LD_LIBRARY_PATH=hdf5_install_path/lib/:$LD_LIBRARY_PATH</div>
+<div class="line">* </div>
+</div><!-- fragment --></li>
+<li>where mpich2_install_path is the path to the installed MPICH2, and hdf5_install_path is the path to the installed HDF5.</li>
+<li></li>
+<li></li>
+</ul>
 <h2><a class="anchor" id="step3"></a>
 Running the code</h2>
-<p >Create a build directory and move into it. </p><div class="fragment"><div class="line">cmake ..</div>
-<div class="line">make</div>
-</div><!-- fragment --><p> If successful, you will find an executable named iPIC3D in build directory. This executable is system-dependent but it can be moved around your system to run simulations wherever you want. To run a simulation test case: copy an inputfile named as testXXX.inp from /inputfiles to build directory make sure you create an folder for output as specified in the input file make sure no_of_proc = XLEN x YLEN x ZLEN as specified in the input file </p><div class="fragment"><div class="line">mpiexec -n no_of_proc ./iPIC3D  inputfilename.inp</div>
-</div><!-- fragment --> </div></div><!-- PageDoc -->
+<ul>
+<li>Create a build directory and move into it.</li>
+<li><div class="fragment"><div class="line">* cmake ..</div>
+<div class="line">* make</div>
+<div class="line">* </div>
+</div><!-- fragment --></li>
+<li>If successful, you will find an executable named iPIC3D in build directory.</li>
+<li>This executable is system-dependent but it can be moved around your system to run simulations wherever you want.</li>
+<li>To run a simulation test case: copy an inputfile named as testXXX.inp from /inputfiles to build directory</li>
+<li>make sure you create an folder for output as specified in the input file</li>
+<li>make sure no_of_proc = XLEN x YLEN x ZLEN as specified in the input file</li>
+<li><div class="fragment"><div class="line">* mpiexec -n no_of_proc ./iPIC3D  inputfilename.inp</div>
+<div class="line">* </div>
+</div><!-- fragment --><br  />
+ */ </li>
+</ul>
+</div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.3
+Generated on Thu Jul 21 2022 10:35:54 for iPIC3DxPEACE by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.3
 </small></address>
 </body>
 </html>
