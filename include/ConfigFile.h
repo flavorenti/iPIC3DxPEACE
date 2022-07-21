@@ -1,10 +1,11 @@
 /* iPIC3D was originally developed by Stefano Markidis and Giovanni Lapenta. 
- * This release was contributed by Alec Johnson and Ivy Bo Peng.
- * Publications that use results from iPIC3D need to properly cite  
- * 'S. Markidis, G. Lapenta, and Rizwan-uddin. "Multi-scale simulations of 
+ * iPIC3DxPEACE was later developed by Federico Lavorenti for planet applications.
+ * Publications that use results from iPIC3DxPEACE need to properly cite these works: 
+ * (1) 'S. Markidis, G. Lapenta, and Rizwan-uddin. "Multi-scale simulations of 
  * plasma with iPIC3D." Mathematics and Computers in Simulation 80.7 (2010): 1509-1519.'
+ * (2) ' F. Lavorenti, P. Henri ... '
  *
- *        Copyright 2015 KTH Royal Institute of Technology
+ * Copyright 2022 Observatoire de la Cote d'Azur, Nice, France
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at 

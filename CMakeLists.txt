@@ -100,7 +100,7 @@ file(
 file(
         GLOB
         src_files
-        ConfigFile/src/*.cpp
+        ConfigFile/*.cpp
         PSKOutput3D/*.cpp
         bc/*.cpp
         communication/*.cpp
