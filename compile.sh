@@ -8,7 +8,7 @@ cmake ..
 
 make
 
-cp ../inputfiles/testMagnetosphere3D_small.inp 
+cp ../inputfiles/testMagnetosphere3D_small.inp . 
 
 mkdir data
 

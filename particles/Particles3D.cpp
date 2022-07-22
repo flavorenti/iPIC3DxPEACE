@@ -36,7 +36,7 @@ developers: Stefano Markidis, Giovanni Lapenta
 #include "Collective.h"
 #include "Basic.h"
 #include "Grid3DCU.h"
-#include "Field.h"
+#include "EMfields3D.h"
 #include "MPIdata.h"
 #include "ipicdefs.h"
 #include "TimeTasks.h"
