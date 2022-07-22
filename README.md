@@ -1,14 +1,33 @@
-/*! @mainpage
- *
- * @section intro_sec Introduction
- *
- * This code was initially conceived by S. Markidis and G. Lapenta in 2010 under the name iPIC3D. 
- * This new version iPIC3DxPEACE (Planets, Exoplanets, Asteroids, Comets and Emissions) targets global simulations of the interaction between the solar wind and an obstacle.
- * iPIC3DxPEACE is developed and maintained by F. Lavorenti with contributions from J. Deca.
- * This code is specifically designed to simulate induced ionospheres and small magnetospheres across the solar system. Specific boundary conditions have been conceived for this purpose.
- * The core of the solver for both particles and fields remains the one of iPIC3D. 
- *
- * @section install_sec Installation
+# Introduction
+
+### Purpose and goal of the code 
+This code was initially conceived by S. Markidis and G. Lapenta in 2010 under the name iPIC3D. 
+This new version iPIC3DxPEACE (Planets, Exoplanets, Asteroids, Comets and Emissions) uses iPIC3D to target simulations of the interaction solar/wind+obstacle.
+Typical case studies concerns small planetary magnetospheres (like Mercury or Ganymede), exoplanets, magnetized asteroids (like 16 Psyche) and comets (like comet 67P). With this code we can also study emissions (of photons or particles) as a consequence of the plasma-object interaction.
+
+### Structure of the code
+This code is built upon the state-of-the-art semi-implicit code iPIC3D (version KTH 2015) available [at this link](https://github.com/KTH-HPC/iPIC3D).
+The semi-implicit numerical scheme is the same as the native iPIC3D. This version uses hybrid parallelization MPI+OpenMP.
+The main new features of iPIC3DxPEACE are:
+1. external boundary conditions using an absorbing layer
+2. internal boundary conditions for the planet surface using a charge-conserving scheme (resistive mantle **TBD**)
+3. time-varying inflow boundary conditions (**TBD**)
+4. module to include exospheric neutral for neutral-electron collisions and ionization (**ongoing**)
+5. extensive documentation generated self-consistently by [doxygen](https://doxygen.nl) (**ongoing**)
+
+
+### Contact information
+iPIC3DxPEACE is developed and maintained by F. Lavorenti (federico.lavorenti@oca.eu) with contributions from J. Deca and P. Stephenson.
+This code was developed at Lagrange laboratory (Observatoire de la Cote d'Azur) and University of Pisa.
+Code available under request to the authors.
+
+
+# How to use the code?
+
+
+# How to develop the code? 
+
+Installation
  *
  * @subsection step1 Downloading the code
  *
