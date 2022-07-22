@@ -19,12 +19,12 @@ The main new features of `iPIC3DxPEACE` are:
 
 ### Contact information
 `iPIC3DxPEACE` is developed and maintained by F. Lavorenti (federico.lavorenti@oca.eu) with contributions from J. Deca and P. Stephenson.
-This code was developed at Lagrange laboratory (Observatoire de la Cote d'Azur) and University of Pisa under the PhD project "_Global modelling of Mercury’s outer environment to prepare BepiColombo _" granted by OCA and ESA.
+This code was developed at Lagrange laboratory (Observatoire de la Cote d'Azur) and University of Pisa under the PhD project "Global modelling of Mercury’s outer environment to prepare BepiColombo" granted by OCA and ESA.
 Code available upon request to the authors.
 
 # Installation and User guide
 
-## **Step1** Download the code
+## Step1: Download the code
 `iPIC3DxPEACE` is available upon request to the autors. 
 Once you have been granted access to our github [page](https://github.com/flavorenti/iPIC3DxPEACE), you can download the code from a local terminal with the command
 ```
@@ -34,7 +34,7 @@ This creates a directory `iPIC3DxPEACE` on your computer with a clone copy of th
 Note that since the master branch is secured you can't commit it directly. 
 To switch to other branches or create your own new branch you can use the commands `git branch -a` (to show all the branches) and `git branch checkout <name_branch>` (to move to a new or existing branch).
 
-## **Step2** Install dependencies
+## Step2: Install dependencies
 
 To compile `iPIC3DxPEACE` you have to have MPI and HDF5 modules on your machine. 
 You also need to have a working version of cmake (at least version 2.8), but this can be easily installed on Linux with the command
@@ -45,7 +45,7 @@ For the installation of the dependecies we suggest to follow the User guide deve
 To install these modules you don't need sudo or root permissions, everything can be installed locally.
 _The H5hut and PETSc modules are not needed for `iPIC3DxPEACE`._
 
-## **Step3** Compile the code
+## Step3: Compile the code
 
 Now that the modules are loaded you can build and run `iPIC3DxPEACE`.
 To compile the code run the commands:
