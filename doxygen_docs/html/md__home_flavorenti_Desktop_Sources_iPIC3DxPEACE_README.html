@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>iPIC3DxPEACE: iPIC3DxPEACE</title>
+<title>iPIC3DxPEACE: Introduction</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -47,7 +47,6 @@ $(function() {
 /* @license-end */
 </script>
 <div id="main-nav"></div>
-</div><!-- top -->
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -62,17 +61,16 @@ $(function() {
 </iframe>
 </div>
 
+</div><!-- top -->
 <div><div class="header">
-  <div class="headertitle"><div class="title">iPIC3DxPEACE </div></div>
+  <div class="headertitle"><div class="title">Introduction </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md0"></a>
-Introduction</h1>
-<h3><a class="anchor" id="autotoc_md1"></a>
-Purpose and goal of the code</h3>
+<div class="textblock"><h2><a class="anchor" id="autotoc_md1"></a>
+Purpose and goal of the code</h2>
 <p >This code was initially conceived by S. Markidis and G. Lapenta in 2010 under the name iPIC3D. This new version iPIC3DxPEACE (Planets, Exoplanets, Asteroids, Comets and Emissions) uses iPIC3D to target simulations of the interaction solar/wind+obstacle. Typical case studies concerns small planetary magnetospheres (like Mercury or Ganymede), exoplanets, magnetized asteroids (like 16 Psyche) and comets (like comet 67P). With this code we can also study emissions (of photons or particles) as a consequence of the plasma-object interaction.</p>
-<h3><a class="anchor" id="autotoc_md2"></a>
-Structure of the code</h3>
+<h2><a class="anchor" id="autotoc_md2"></a>
+Structure of the code</h2>
 <p >This code is built upon the state-of-the-art semi-implicit code iPIC3D (version KTH 2015) available <a href="https://github.com/KTH-HPC/iPIC3D">at this link</a>. The semi-implicit numerical scheme is the same as the native iPIC3D. This version uses hybrid parallelization MPI+OpenMP. The main new features of iPIC3DxPEACE are:</p><ol type="1">
 <li>external boundary conditions using an absorbing layer</li>
 <li>internal boundary conditions for the planet surface using a charge-conserving scheme (resistive mantle <b>TBD</b>)</li>
@@ -81,8 +79,8 @@ Structure of the code</h3>
 <li>new post-processing module <a href="https://www.paraview.org/in-situ/">catalyst</a> (<b>TBD</b>)</li>
 <li>extensive documentation generated self-consistently by <a href="https://doxygen.nl">doxygen</a> (<b>ongoing</b>)</li>
 </ol>
-<h3><a class="anchor" id="autotoc_md3"></a>
-Contact information</h3>
+<h2><a class="anchor" id="autotoc_md3"></a>
+Contact information</h2>
 <p >iPIC3DxPEACE is developed and maintained by F. Lavorenti (<a href="#" onclick="location.href='mai'+'lto:'+'fed'+'er'+'ico'+'.l'+'avo'+'re'+'nti'+'@o'+'ca.'+'eu'; return false;">feder<span style="display: none;">.nosp@m.</span>ico.<span style="display: none;">.nosp@m.</span>lavor<span style="display: none;">.nosp@m.</span>enti<span style="display: none;">.nosp@m.</span>@oca.<span style="display: none;">.nosp@m.</span>eu</a>) with contributions from J. Deca and P. Stephenson. This code was developed at Lagrange laboratory (Observatoire de la Cote d'Azur) and University of Pisa. Code available under request to the authors.</p>
 <h1><a class="anchor" id="autotoc_md4"></a>
 Installation and User guide</h1>
@@ -103,11 +101,11 @@ Installation and User guide</h1>
 <div class="line">mkdir data</div>
 <div class="line">mpirun -n 8 ./iPIC3D testMagnetosphere3D_small.inp &gt; RUN.out</div>
 </div><!-- fragment --><p> You will see the text output of the simulation in RUN.out and the data in the directory <code>data</code>. If simulation ended successfully: BRAVO! you have run your first iPIC3DxPEACE simulation. </p>
-</div></div><!-- PageDoc -->
-</div><!-- contents -->
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 22 2022 11:09:09 for iPIC3DxPEACE by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.3
+Generated on Fri Jul 22 2022 11:08:28 for iPIC3DxPEACE by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.3
 </small></address>
 </body>
 </html>

@@ -11,6 +11,5 @@ var searchData=
   ['communicatenodebc_8',['communicateNodeBC',['../Com3DNonblk_8h.html#a60578232faf29cb0ec51662f435a0b9f',1,'Com3DNonblk.cpp']]],
   ['communicatenodebc_5fp_9',['communicateNodeBC_P',['../Com3DNonblk_8h.html#a33efa51efcef278f3a4f272fe2b6b571',1,'Com3DNonblk.cpp']]],
   ['communicatenodeboxstencilbc_10',['communicateNodeBoxStencilBC',['../Com3DNonblk_8h.html#a8251a14685d92adcedf88e87334179bf',1,'Com3DNonblk.cpp']]],
-  ['communicatenodeboxstencilbc_5fp_11',['communicateNodeBoxStencilBC_P',['../Com3DNonblk_8h.html#a008b2d4aca86d80dbec5e44db18ef08b',1,'Com3DNonblk.cpp']]],
-  ['configfile_12',['ConfigFile',['../classConfigFile.html',1,'']]]
+  ['communicatenodeboxstencilbc_5fp_11',['communicateNodeBoxStencilBC_P',['../Com3DNonblk_8h.html#a008b2d4aca86d80dbec5e44db18ef08b',1,'Com3DNonblk.cpp']]]
 ];
