@@ -84,7 +84,7 @@ void Collective::ReadInput(string inputfile) {
   ConfigFile config(inputfile);
   // the following variables are ALWAYS taken from inputfile, even if restarting 
   {
-
+    cout << "Reading input file" << endl;
     dt = config.read < double >("dt");
     ncycles = config.read < int >("ncycles");
     th = config.read < double >("th",1.0);
@@ -213,6 +213,7 @@ void Collective::ReadInput(string inputfile) {
   z_center = config.read < double >("z_center",5.0);
   L_square = config.read < double >("L_square",5.0);
 
+  /* Read Collisional parameters */
   collisionProcesses = config.read < bool >("collisionProcesses", 0);
   xSec = config.read < double >("xSec", 8.82e-10);
   iSecElec = config.read < int >("iSecElec", 2);
@@ -231,7 +232,40 @@ void Collective::ReadInput(string inputfile) {
   if (nCollProcesses > 3)
     E_th_el[3] = E_th_el0.d;
 
-  
+   /* Read Neutral Gas parameters */
+  nNeutSpecies = config.read < int >("nNeutSpecies", 0);
+  nSurf = new double[nNeutSpecies];
+  hExo = new double[nNeutSpecies];
+  fExo = new double[nNeutSpecies];
+
+  array_double nSurf0 = config.read < array_double > ("nSurf");
+  array_double hExo0 = config.read < array_double > ("hExo");
+  array_double fExo0 = config.read < array_double > ("fExo");
+
+  nSurf[0] = nSurf0.a;
+  hExo[0] = hExo0.a;
+  fExo[0] = fExo0.a;
+  if (nNeutSpecies > 1)
+  {
+    nSurf[1] = nSurf0.b;
+    hExo[1]  = hExo0.b;
+    fExo[1] = fExo0.b;
+  }
+  if (nNeutSpecies > 2)
+  {
+    nSurf[2] = nSurf0.c;
+    hExo[2]  = hExo0.c;
+    fExo[2] = fExo0.c;
+  }
+  if (nNeutSpecies > 3)
+  {
+    nSurf[3] = nSurf0.d;
+    hExo[3]  = hExo0.d;
+    fExo[3] = fExo0.d;
+  }
+  // nSurf = config.read < double >("nSurf", 1e4);
+  // hExo  = config.read < double >("hExo" , 1e3);
+
   yes_sal = config.read < int >("yes_sal",0);
   n_layers_sal = config.read < int >("n_layers_sal",3);
 
@@ -241,7 +275,7 @@ void Collective::ReadInput(string inputfile) {
   ymax = config.read <double>("ymax",0);
   zmin = config.read <double>("zmin",0);
   zmax = config.read <double>("zmax",0);
-
+ 
   NewPclInit = config.read < int >("NewPclInit",1); 
   NonTrivialBCPlanet = config.read < int >("NonTrivialBCPlanet",1);
   AddExosphere = config.read < int >("AddExosphere",1);
@@ -345,7 +379,6 @@ void Collective::ReadInput(string inputfile) {
 			energy[7] 	   = energy0.h;
 		}
   }
-
 
   npcelx = new int[ns+nstestpart];
   npcely = new int[ns+nstestpart];
@@ -1284,6 +1317,21 @@ void Collective::Print() {
   cout << "Species index for secondary electrons: " << iSecElec << endl;
   cout << "Species index for secondary ions:      " << iSecIon << endl << endl;
   cout << "---------------------" << endl;
+
+  cout << endl << "---------------------" << endl;
+  cout << "Neutral Gas Parameters" << endl;
+  cout << "---------------------" << endl;
+  for (int i = 0; i < nNeutSpecies; i++)
+  {
+    cout << "nSurf[" << i << "] = " << nSurf[i] << ".   ";
+    cout << "hExo[" << i << "] = "  << hExo[i] <<  ".   ";
+    cout << "fExo[" << i << "] = "  << fExo[i] <<  ".   ";
+    cout << endl;
+  } 
+  // for (int i = 0; i < nNeutSpecies; i++) 
+    // cout << "hExo[" << i << "] = "  << hExo[i] << endl;
+  cout << "---------------------" << endl;
+    
   cout << "Check Simulation Constraints" << endl;
   cout << "---------------------" << endl;
   cout << "Accuracy Constraint:  " << endl;
@@ -1316,6 +1364,32 @@ void Collective::Print() {
 
   }
 
+  cout << endl;
+  cout << "Collision Probability Constraint:  ";
+  cout << endl;
+  // Need to account for multiple electron species
+  //  where qom < 0
+  // Need some parameter for the neutral density to be included to derive an expression for the mfp.
+  // For inhomogeneous simulation, where do we want to use for neutral density??
+  // Require that vth * dt << mfp = 1/(n * sigma) -> What if n varies by 2 orders of magnitude?
+  for (int is = 0; is < ns; is++) 
+  {
+    if (qom[is] < 0)
+    {
+      double vthMag2 = uth[is]*uth[is] + vth[is]*vth[is] + wth[is]*wth[is];
+      double vthMag = sqrt(vthMag2);
+      double totMfpInv = 0.0; // Inverse of the mean free path i.e Sum( n * xSec)
+
+      // Sum over collisional neutral species
+      for (int iNeut = 0; iNeut < nNeutSpecies; iNeut ++) 
+        totMfpInv += nSurf[iNeut] * xSec;
+  
+      if ((vthMag * dt * totMfpInv < .1)) // If collisions are unlikely to occur
+        cout << "OK |u_th| * dt / mfp (species " << is << ") = " << vthMag * dt * totMfpInv << " < .1" << endl;
+      else
+        cout << "WARNING. |u_th| * dt / mfp (species " << is << ") = " << vthMag * dt * totMfpInv << " > .1" << endl;
+    }
+  }
   
 
   cout << "\n" << "n_layers_sal: " << n_layers_sal << "\n";
@@ -1336,6 +1410,7 @@ void Collective::Print() {
 
 }
 /*! Print Simulation Parameters */
+/* WARNING: should add collisional and neutral gas parameters to save */
 void Collective::save() {
   string temp;
   temp = SaveDirName + "/SimulationData.txt";

@@ -41,6 +41,7 @@ developers: D. Burgess, June/July 2006
 #include "VCtopology3D.h"
 #include "MPIdata.h"
 #include "ipicdefs.h"
+// #include "Collisions.h"
 
 using std::string;
 using std::stringstream;
@@ -301,6 +302,7 @@ template < class Toa > class myOutputAgent:public PSK::OutputAgent < Toa > {
   Grid *_grid;
   VCtopology3D *_vct;
   Collective *_col;
+  // Collisions *_colls;
   int ns;
   std::vector < Particles * >_part;
 
@@ -313,6 +315,7 @@ public:
     _grid = grid;
     _vct = vct;
     _col = col;
+    // _colls = colls;
   }
 
   void set_simulation_pointers_part(Particles * part) {

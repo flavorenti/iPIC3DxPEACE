@@ -149,6 +149,10 @@ class Collective
     int    getnIoniColls()const{ return (nIoniColls); }
     int    getcollStepSkip()const{ return (collStepSkip); }
 
+    double getnSurf(int nNeutral)const{ return (nSurf[nNeutral]); }
+    double gethExo(int nNeutral) const{ return (hExo[nNeutral]); }
+    double getfExo(int nNeutral) const{ return (fExo[nNeutral]); }
+
     int getYes_sal()const{ return (yes_sal); }
     int getN_layers_sal()const{ return (n_layers_sal); }
 
@@ -341,6 +345,16 @@ class Collective
     int nIoniColls;
     /*! Number of skipped steps for collisional processes */
     int collStepSkip;
+
+    /* Neutral Gas parameters */
+    /*! Number of neutral species */
+    int nNeutSpecies;
+    /*! Neutral density at surface */
+    double *nSurf;
+    /*! Exospheric scale height */
+    double *hExo;
+    /*! Photoionization frequency of species*/
+    double *fExo;
 
     /* bool value for applying SAL BC fields */
     int yes_sal;

@@ -95,14 +95,12 @@ int c_Solver::Init(int argc, char **argv) {
   // initialized MPI environment
   // nprocs = number of processors
   // myrank = rank of tha process*/
-  // printf("\n Initialising the simulation parameters \n");
   Parameters::init_parameters();
-  // printf("\n Done initialising the simulation parameters \n");
+
   //mpi = &MPIdata::instance();
-  // printf("\n Getting MPI processes and ranks. \n");
   nprocs = MPIdata::get_nprocs();
   myrank = MPIdata::get_rank();
-  // printf("\n Completed getting MPI processes and ranks. \n");
+  
 
   col = new Collective(argc, argv); // Every proc loads the parameters of simulation from class Collective
   restart_cycle = col->getRestartOutputCycle();
@@ -128,19 +126,18 @@ int c_Solver::Init(int argc, char **argv) {
 
   // Print the initial settings to stdout and a file
   if (myrank == 0) {
-    // printf("\n Printing initial settings \n");
     MPIdata::instance().Print();
     vct->Print();
     col->Print();
     col->save();
-    // printf("\n Done printing initial settings \n");
+
   }
   // Create the local grid
-  // printf("\n Creating local grid. \n");
+
   grid = new Grid3DCU(col, vct);  // Create the local grid
   // printf("\n Done with local grid. Make EM field object. \n");
   EMf = new EMfields3D(col, grid, vct);  // Create Electromagnetic Fields Object
-  // printf("\n Done with EM field object. \n");
+
 
   if (col->getcollisionProcesses()){ // If Collisional processes
     colls = new Collisions(col, vct, grid); //Create Collision object
@@ -350,13 +347,22 @@ bool c_Solver::ParticlesMover(int cycle)
 
     // Varibles for Exosphere injection 
     const double R = col->getL_square();
-    const double Nexo_H  = 1e4;   // density of exosphere neutrals at the surface (in nsw units)
-    const double fexo_H  = 1e-9;  // ioniz. frequency in units of wpi
-    const double hexo_H  = 0.5*R; // scale length of exosphere
-    const double Nexo_Na = 1e3;
-    const double fexo_Na = 1e-7;
-    const double hexo_Na = 0.025*R;
+    const double Nexo_H  = col->getnSurf(0);   // density of exosphere neutrals at the surface (in nsw units)
+    const double fexo_H  = col->getfExo(0);  // ioniz. frequency in units of wpi
+    const double hexo_H  = col->gethExo(0); // scale length of exosphere
+    const double Nexo_Na = col->getnSurf(1);
+    const double fexo_Na = col->getfExo(1);
+    const double hexo_Na = col->gethExo(1);
     const double w_fact  = 8e3;   // factor weight_exo / weight_sw
+    
+    // const double Nexo_H  = 1e4;   // density of exosphere neutrals at the surface (in nsw units)
+    // const double fexo_H  = 1e-9;  // ioniz. frequency in units of wpi
+    // const double hexo_H  = 0.5*R; // scale length of exosphere
+    // const double Nexo_Na = 1e3;
+    // const double fexo_Na = 1e-7;
+    // const double hexo_Na = 0.025*R;
+    // const double w_fact  = 8e3;   // factor weight_exo / weight_sw
+    
     bool applyCollisions = (col->getcollisionProcesses()) && (cycle % col->getcollStepSkip() == 0);
     for (int i = 0; i < ns; i++)  // move each species
     {
