@@ -2806,7 +2806,9 @@ double Particles3D::AddIonizedExosphere(double R, double x_center, double y_cent
 /* Calculate neutral density at distance dist from planet*/
 double Particles3D::neutralDensity(double Nexo, double dist, double R, double hexo)
 {
-  double nDens = Nexo * exp(-(dist-R)/hexo);
+  double nDens;
+  if (dist>R)  nDens = Nexo * exp(-(dist-R)/hexo);
+  else nDens = 0.0; //Zero if inside planet
 
   return nDens; // In SW units
 

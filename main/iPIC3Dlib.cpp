@@ -345,7 +345,8 @@ bool c_Solver::ParticlesMover(int cycle)
 
     pad_particle_capacities();
 
-    // Varibles for Exosphere injection 
+    // Varibles for Exosphere injection
+    // NOTE: Could/Should load these in initialisation of particles object
     const double R = col->getL_square();
     const double Nexo_H  = col->getnSurf(0);   // density of exosphere neutrals at the surface (in nsw units)
     const double fexo_H  = col->getfExo(0);  // ioniz. frequency in units of wpi
@@ -353,7 +354,7 @@ bool c_Solver::ParticlesMover(int cycle)
     const double Nexo_Na = col->getnSurf(1);
     const double fexo_Na = col->getfExo(1);
     const double hexo_Na = col->gethExo(1);
-    const double w_fact  = 8e3;   // factor weight_exo / weight_sw
+    const double w_fact  = 8e3;   // factor weight_exo / weight_sw - Not currently set input file
     
     // const double Nexo_H  = 1e4;   // density of exosphere neutrals at the surface (in nsw units)
     // const double fexo_H  = 1e-9;  // ioniz. frequency in units of wpi

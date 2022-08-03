@@ -28,19 +28,46 @@ Collisions::Collisions(CollectiveIO * col, VirtualTopology3D *vct, Grid * grid, 
 Parameters::init_parameters();
 // Load cross sections for simulation
 xSec = col->getxSec();
+
+// Species where secondary particles created
 iSecElec = col->getiSecElec();
 iSecIon = col->getiSecIon();
+
+// No. of collisional processes
 nCollProcesses = col->getnCollProcesses();
+// Number of ionization collisions
 nIoniColls = col->getnIoniColls();
+// No of steps where colls skipped
 collStepSkip = col->getcollStepSkip();
+
+// Threshold energies
 E_th_el = new double[nCollProcesses];
 for (int i = 0; i < nCollProcesses; i++){
   E_th_el[i] = col->getE_th_el(i);
 }
 
 
+// Timestep
 dt = col->getDt();
+
+// Get Cell size
+dx = col->getDx();
+dy = col->getDy();
+dz = col->getDz();
+
+// No. of species
 ns = col->getNs();   
+
+// Get planet offset
+PlanetOffset = col->getPlanetOffset();
+x_center = col->getx_center();
+y_center = col->gety_center();
+z_center = col->getz_center();
+
+// Get exosphere properties - Only need while they aren't loaded in Particles3D
+R = col->getL_square(); // Mercury/planet radius
+Nexo_H  = col->getnSurf(0);   // density of exosphere neutrals at the surface (in nsw units)
+hexo_H  = col->gethExo(0); // scale length of exosphere
 
 // Set up ionized Pls object
 // Allocation of particles
@@ -79,8 +106,17 @@ void Collisions::Collide(int species, Particles3D *part, CollectiveIO * col, EMf
 
     for (int pidx = 0; pidx < nPls; pidx++) 
     {
+      // Find partilce position
+      xpl = part[species].getX(pidx);
+      ypl = part[species].getY(pidx);
+      zpl = part[species].getZ(pidx);
+      cout << "xpl: " << xpl << " " << ypl << " "<< zpl << endl;
+      // Find neutral density at particle
+      findneutDensity(species, part);
 
-      findBulkVelocity(species, Emf, part, col, pidx, u0, v0, w0);
+      // Find Bulk velocity at particle
+      findBulkVelocity(species, Emf, u0, v0, w0);
+      
       double vScaled = velMagnitude_wScale(species, part, pidx, u0, v0, w0);
       double pColl = ProbColl(vScaled);
 
@@ -415,36 +451,35 @@ double Collisions::velocityScale(Collective *col, int species, double qom)
   return vScale;
 }
 
-void Collisions::findBulkVelocity(int species, EMfields3D *Emf, Particles3D *part, Collective *col,
-  int pidx, double &u0, double &v0, double &w0)
+// void Collisions::findBulkVelocity(int species, EMfields3D *Emf, Particles3D *part, Collective *col,
+//   int pidx, double &u0, double &v0, double &w0)
+void Collisions::findBulkVelocity(int species, EMfields3D *Emf, double &u0, double &v0, double &w0)
 // Finds bulk velocity at the partilce position
 {
-
   // Retrieve partilce position
-  double x = part[species].getX(pidx);
-  double y = part[species].getY(pidx);
-  double z = part[species].getZ(pidx);
-  // cout << "Species" << species << ". Particle " << pidx << endl;
-  // cout << "pos: " << x << " " << y << " " << z << endl;
-  // Get Cell size
-  double dx = col->getDx();
-  double dy = col->getDy();
-  double dz = col->getDz();
-  // cout << "dxyz: " << dx << " " << dy << " " << dz << endl;
-  // cout << "dxyz: " << x/dx << " " << y/dy << " " << z/dz << endl;
+  // double x = part[species].getX(pidx);
+  // double y = part[species].getY(pidx);
+  // double z = part[species].getZ(pidx);
+
+  // // Get Cell size
+  // Now in the initalisation of Colls module
+  // double dx = col->getDx();
+  // double dy = col->getDy();
+  // double dz = col->getDz();
+
   // Find cell index closest to pl. 
-  int iX = int((x/dx) + 0.5);
-  int iY = int((y/dy) + 0.5);
-  int iZ = int((z/dz) + 0.5);
-  // cout << "inds: " << iX << " " << iY << " " << iZ << endl;
+  int iX = int((xpl/dx) + 0.5);
+  int iY = int((ypl/dy) + 0.5);
+  int iZ = int((zpl/dz) + 0.5);
+
 
   // Find Current and Density
   double Jx = Emf->getJxs(iX, iY, iZ, species);
   double Jy = Emf->getJys(iX, iY, iZ, species);
   double Jz = Emf->getJzs(iX, iY, iZ, species);
-  // cout << "Curr: " << Jx << " " << Jy << " " << Jz << endl;
+
   double rho = Emf->getRHOns(iX,iY,iZ,species);
-  // cout << "rho: " << rho << endl;
+
   // Find bulk velocity
   if (rho != 0)
   {
@@ -456,7 +491,21 @@ void Collisions::findBulkVelocity(int species, EMfields3D *Emf, Particles3D *par
   {
     u0 = 0.0; v0 = 0.0; w0 = 0.0;
   }
-  // cout << "vel: " << u0 << " " << v0 << " " << w0 << endl;
-  // cout << endl;
 
+}
+
+void Collisions::findneutDensity(int species, Particles3D *part)
+{
+  
+  // Find distance from planet centre
+  double xd = xpl - x_center; // x position relative to planet
+  double yd = ypl - y_center; // y position relative to planet
+  double zd = zpl - z_center-PlanetOffset; // z position relative to planet
+  
+  double dist_sq = xd*xd+yd*yd+zd*zd;
+  double dist    = sqrt(dist_sq);
+  
+  // Use neutral density function for exosphere
+  double nNeutral = part->neutralDensity(Nexo_H, dist, R, hexo_H);
+  
 }
