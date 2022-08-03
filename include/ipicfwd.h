@@ -33,6 +33,5 @@ class Particles3D;
 class Particles3Dcomm;
 typedef Particles3Dcomm Particles;
 class Collisions;
-// typedef Collisions ;
-// typedef Collis
+
 #endif

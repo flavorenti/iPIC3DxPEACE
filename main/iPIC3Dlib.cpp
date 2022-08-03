@@ -140,7 +140,7 @@ int c_Solver::Init(int argc, char **argv) {
 
 
   if (col->getcollisionProcesses()){ // If Collisional processes
-    colls = new Collisions(col, vct, grid); //Create Collision object
+    colls = new Collisions(col, vct, grid, EMf); //Create Collision object
   }
   
   if      (col->getCase()=="GEMnoPert") 		EMf->initGEMnoPert();
@@ -390,7 +390,7 @@ bool c_Solver::ParticlesMover(int cycle)
           unsupported_value_error(Parameters::get_MOVER_TYPE());
       }
       // Particles undergo collisions.
-      if ( applyCollisions )  colls->Collide(i, part, col);
+      if ( applyCollisions )  colls->Collide(i, part, col, EMf);
       // Injection particles from ionized exosphere ./Job
       // inject hydrogen
       if ( (i==2 or i==3) and col->getAddExosphere()){	 

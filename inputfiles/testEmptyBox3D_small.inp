@@ -39,7 +39,7 @@ PlanetOffset = -0.5   #negative for Mercury
 
 #  %%%%%%%%%%%%%%%%%%% TIME %%%%%%%%%%%%%%%%%%
 dt = 0.50                    # dt = time step  
-ncycles = 100		 #!!!    # cycles
+ncycles = 150		 #!!!      # cycles
 th = 1.0                     # th =   decentering parameter
 c = 1.0                      # c = light speed 
 
@@ -63,13 +63,13 @@ nzc =  16                  # nzc = number of cells - z direction
 
 # %%%%%%%%%%%%%% MPI TOPOLOGY %%%%%%%%%%%%%%
 # number of MPI subdomains in each direction
-XLEN = 4
-YLEN = 4
+XLEN = 2
+YLEN = 2
 ZLEN = 1
 # topology (1=true, 0=false): USE PERIODIC IN ALL DIRECTIONS
 PERIODICX = 0
-PERIODICY = 0
-PERIODICZ = 0
+PERIODICY = 1
+PERIODICZ = 1
 
 # %%%%%%%%%%%%%% PARTICLES %%%%%%%%%%%%%%%%%
 #    ns = number of species
@@ -143,6 +143,48 @@ w0 =  0.0  0.0  0.0  0.0
     bcPfaceZright = 2
     bcPfaceZleft =  2
 
+# %%%%%%%%%%%% COLLISIONAL PARAMETERS %%%%%%%%%%%%%%
+
+# Include collision option
+# 0 = no Collisions
+# 1 = Collisions
+   collisionProcesses = 1
+
+# Xsec - Collision Cross Section
+   xSec = 1.76e-8
+
+# Number of collisional processes
+   nCollProcesses = 3
+
+# Threshold energies of electron collisional processes
+# List from highest to lowest threshold energy
+   E_th_el = 5.76e-6  3.41e-6  1.71e-7 
+
+# Index of last ionization process
+# 0 = no ionization processes
+# 1 = one ionization process
+# 2 = two ionization processes
+   nIoniColls = 1
+
+# iSecElec - Species index in which secondary electrons are produced
+# iSecIon - Species index in which secondary ions are produced
+   iSecElec = 2
+   iSecIon = 3
+
+# Option to skip steps to increase speed of collision processes
+# 1 = apply collisions at each step
+# n = apply collisions every n steps
+   collStepSkip = 1
+
+# %%%%%%%%%% NEUTRAL GAS PARAMETERS %%%%%%%%%%%%
+# nNeutSpecies - Number of neutral species
+   nNeutSpecies = 1
+# nSurf - neutral gas density at surface [in SW units]
+   nSurf = 1e8
+# hExo - scale height of the exosphere [in dp]
+   hExo = 1000.0
+# fExo - Photoionization frequency of species [in Wpi]
+   fExo = 1e-9
 
 # %%%%%%%%%%%%%% OUTPUTS %%%%%%%%%%%%%%%%%
 # SAL external boundary conditions (1=True, 0=False)
