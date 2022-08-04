@@ -149,6 +149,7 @@ class Collective
     int    getnIoniColls()const{ return (nIoniColls); }
     int    getcollStepSkip()const{ return (collStepSkip); }
 
+    int    getnNeutSpecies()const{ return (nNeutSpecies); }
     double getnSurf(int nNeutral)const{ return (nSurf[nNeutral]); }
     double gethExo(int nNeutral) const{ return (hExo[nNeutral]); }
     double getfExo(int nNeutral) const{ return (fExo[nNeutral]); }

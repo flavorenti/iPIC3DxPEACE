@@ -6,8 +6,6 @@ developers: Peter Stephenson
 
 
 #include <iostream>
-// #include <fstream>
-// #include <sstream>
 #include <math.h>
 #include "Particles3D.h"
 #include "Collective.h"
@@ -110,7 +108,7 @@ void Collisions::Collide(int species, Particles3D *part, CollectiveIO * col, EMf
       xpl = part[species].getX(pidx);
       ypl = part[species].getY(pidx);
       zpl = part[species].getZ(pidx);
-      cout << "xpl: " << xpl << " " << ypl << " "<< zpl << endl;
+
       // Find neutral density at particle
       findneutDensity(species, part);
 
@@ -145,9 +143,9 @@ void Collisions::CollideElectron(int species, Particles3D *part, int pidx, Colle
   vpl = part[species].getV(pidx);
   wpl = part[species].getW(pidx);
 
-  Epl = 0.5 * (upl*upl + vpl*vpl + wpl*wpl) / abs(qom); // Change mass to abs(1/QOM)
+  Epl = 0.5 * (upl*upl + vpl*vpl + wpl*wpl) / abs(qom); // Pl energy 
   Eth = 0;
-  // E_th_el>0
+  
   // Run through collisions with decreasing threshold energy
   isIoni = false;
   for (int iColl = 0; iColl < nCollProcesses; iColl++)
@@ -163,15 +161,12 @@ void Collisions::CollideElectron(int species, Particles3D *part, int pidx, Colle
         Eth = Eth + 0.5 * (Epl - Eth);
         isIoni = true; 
       }
-      // cout << "iColl: " << iColl << ". Eth = " << Eth << ". isIoni = " << isIoni << endl;
       break;
       
     }
   }
 
-
-
-  //  // Could add continuous cooling processes for v low energies.
+  // Could add continuous cooling processes for v low energies.
 
   // Reduce particle energies 
   Epl_new = Epl - Eth;
@@ -226,34 +221,15 @@ double Collisions::ProbColl(double vMag)
   return pColl;
 }
 
-/* Returns the velocity magnitude for a particle */
-double Collisions::velMagnitude(int species, Particles3D *part, int pidx)
-{
-  // vMag = velMagnitude(part[species], pidx);
-        
-  // Find particle velocity
-  upl = part[species].getU(pidx);
-  vpl = part[species].getV(pidx);
-  wpl = part[species].getW(pidx);
-
-  // double vMag = sqrt(pow(upl,2) + pow(vpl,2) + pow(wpl,2));
-  double vMag_sq = upl*upl + vpl*vpl + wpl*wpl;
-  double vMag = sqrt(vMag_sq);
-  return vMag;
-}
-
 double Collisions::velMagnitude_wScale(int species, Particles3D *part, int pidx, double u0, 
   double v0, double w0)
 {
-  // vMag = velMagnitude(part[species], pidx);
   // Finds velocity magnitude, including a correction for the increased electron mass.
         
   // Find particle velocity
   upl = part[species].getU(pidx);
   vpl = part[species].getV(pidx);
   wpl = part[species].getW(pidx);
-  // double vMag_sq = upl*upl + vpl*vpl + wpl*wpl;
-  // double vMag = sqrt(vMag_sq);
   
   // Calculate scaled up velocities
   double uSC = (upl - u0) * elMassRat + u0;
@@ -261,9 +237,6 @@ double Collisions::velMagnitude_wScale(int species, Particles3D *part, int pidx,
   double wSC = (wpl - w0) * elMassRat + w0;
   double vScaled_sq = uSC*uSC + vSC*vSC + wSC*wSC;
   double vScaled = sqrt(vScaled_sq);
-  // double vMag = sqrt(pow(upl,2) + pow(vpl,2) + pow(wpl,2));
-  
-  // double vMag_sq = upl*upl + vpl*vpl + wpl*wpl + u0Mag2 ;
   
   return vScaled;
 }
@@ -277,8 +250,6 @@ void Collisions::recordIonizedParticles(int species, Particles3D *part, int pidx
   Position only for ions - created stationary?
   */
   // species - index of the ionizing species.
-  /* Get information about the ionizing particle*/
-  // cout << "\n Saving Ionized Pls Info \n";
 
   // Information input from primary electrons.
 
@@ -290,72 +261,28 @@ void Collisions::recordIonizedParticles(int species, Particles3D *part, int pidx
   double u = part[species].getU(pidx);
   double v = part[species].getV(pidx);
   double w = part[species].getW(pidx);
-  // cout << "x: " << x << " " << y << " " << z << "\n";
-  // cout << "v: " << u << " " << v << " " << w << "\n";
-  // cout << "Pl info retrieved \n";
-  
-
-  // Need to remove hard coding here. Retrieve from input file
-  // int iComEl = 0;
-  // int iComIon = 1;
-  /* Save ionospheric eletrons produced by collisions*/
-  // cout << "\n Retrieving charge from collective \n";
-  // cout << "iComEl: " << iComEl <<"\n"; 
-  // int ns = col->getNs();
-  // int nsTestPart = col->getNsTestPart();
-  // cout << "Col ns: " << ns << "\n";
-  // cout << "Col nsTestPart: " << nsTestPart << "\n";
   
 
   // record secondary electron
-  // double q = col->getQOM(iComEl);
-  // cout << "Electron. getQOM gives q: "<< q << endl;
+  // Get weight and sign of charge
   double q = part[species].getQ(pidx);
-  // cout << "Electron. getQgives q: "<< q << endl;
 
   /* Rotates the velocity of the secondary electron */
   secElecVelocity(u, v, w);
-  // cout << "New electron in species: " << iSecElec << endl;
+
 
   // Create electron
   eImpIoniPls[iSecElec].create_new_particle(u,v,w,q,x,y,z); 
   // Create Ion
-  q = -q;
+  q = -q; // Use same weight but opposite charge for ions
   eImpIoniPls[iSecIon].create_new_particle(0.,0.,0.,q,x,y,z);
 
-  // q Here is not QOM -> SHould be +-1 with normalisation in code. 
-  // See particles3D.cpp 
-
-  // IoniPls[iComEl].create_new_particle(0.,0.,0.,q,x,y,z);
-  // cout << "Completed creating new IoniPls \n";
-  // cout << "\n Retrieving info on new IoniPls\n";
-  
-  /* Save ionospheric ions produced by collisions */
-  // Currently ions produced stationary - could be altered.
-  // q = col->getQOM(iComIon);
-  // cout << "Ion. getQOM gives q: "<< q << endl;
-  // q = part[iComIon].getQ(0);
-  
-  // cout << "Ion. getQgives q: "<< q << endl;
-
-  // cout << "New ion in species: " << iSecIon << endl;
-  // Could be given low thermal energy ~0.1 eV
-  // COuld/should be done in same way as for photoionization
-
-  // int newidx = eImpIoniPls[iComEl].getNOP();
-  // x = eImpIoniPls[iComEl].getX(newidx);
-  // y = eImpIoniPls[iComEl].getY(newidx);
-  // z = eImpIoniPls[iComEl].getZ(newidx);
-  
-  // u = eImpIoniPls[iComEl].getU(newidx);
-  // v = eImpIoniPls[iComEl].getV(newidx);
-  // w = eImpIoniPls[iComEl].getW(newidx);
 }
 
 /* Create Ionized Particles from collisions */
 void Collisions::createIonizedParticles(Particles3D *part)
 {
-  // cout << "\n Creating new particles from Ioni \n";
+
   for (int i = 0; i < ns; i++)
   {
     // Create new particles in each of the relevant species
@@ -423,49 +350,10 @@ void Collisions::secElecVelocity(double &u, double &v, double &w)
 
 }
 
-/* Calculates required velocity scaling to correct for heavy electrons*/
-double Collisions::velocityScale(Collective *col, int species, double qom)
-{
-  /* Applies scaling only to thermal velocity. Not the SW velocity. 
-  Assuming that the ratio between thermal and SW velocity remains constant
-  throughout the simulation timescale */ 
-  /* If species has no bulk SW flow, only scaled using mass ratio */
-  double meRat = sqrt(qom_eReal / qom); // Ratio of Pic to realistic me
-  
-  double uth = col-> getUth(species);
-  double vth = col-> getVth(species);
-  double wth = col-> getWth(species);
-  double u0 = col-> getU0(species);
-  double v0 = col-> getV0(species);
-  double w0 = col-> getW0(species);
 
-  double vthMagsq = uth*uth + vth*vth + wth*wth;
-  double v0Magsq = u0*u0 + v0*v0 + w0*w0;
-
-  double vthMag = sqrt(vthMagsq);
-  double v0Mag  = sqrt(v0Magsq);
-
-  double vRat = v0Mag / vthMag;
-
-  double vScale = (meRat + vRat )/ (1 + vRat); 
-  return vScale;
-}
-
-// void Collisions::findBulkVelocity(int species, EMfields3D *Emf, Particles3D *part, Collective *col,
-//   int pidx, double &u0, double &v0, double &w0)
 void Collisions::findBulkVelocity(int species, EMfields3D *Emf, double &u0, double &v0, double &w0)
 // Finds bulk velocity at the partilce position
 {
-  // Retrieve partilce position
-  // double x = part[species].getX(pidx);
-  // double y = part[species].getY(pidx);
-  // double z = part[species].getZ(pidx);
-
-  // // Get Cell size
-  // Now in the initalisation of Colls module
-  // double dx = col->getDx();
-  // double dy = col->getDy();
-  // double dz = col->getDz();
 
   // Find cell index closest to pl. 
   int iX = int((xpl/dx) + 0.5);

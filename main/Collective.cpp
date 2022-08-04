@@ -187,7 +187,7 @@ void Collective::ReadInput(string inputfile) {
 
   //read everything from input file, if restart is true, overwrite the setting - bug fixing
 
-  restart_status = 0;
+  restart_status = 0; // Should this still be imposed?
   last_cycle = -1;
   c = config.read < double >("c",1.0);
 
@@ -525,11 +525,12 @@ void Collective::ReadInput(string inputfile) {
 #ifndef NO_HDF5 
   if (RESTART1) {               // you are restarting
     RestartDirName = config.read < string > ("RestartDirName","data");
-    //ReadRestart(RestartDirName);
+    // ReadRestart(RestartDirName);
     restart_status = 1;
+
     hid_t file_id = H5Fopen((RestartDirName + "/restart0.hdf").c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
     if (file_id < 0) {
-      cout << "couldn't open file: " << inputfile << endl;
+      cout << "couldn't open file: " << (RestartDirName + "/restart0.hdf").c_str() << endl;
       return;
     }
 
@@ -591,7 +592,7 @@ int Collective::ReadRestart(string inputfile) {
   // Open the setting file for the restart.
   file_id = H5Fopen((inputfile + "/settings.hdf").c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
   if (file_id < 0) {
-    cout << "couldn't open file: " << inputfile << endl;
+    cout << "couldn't open file: " << (inputfile + "/settings.hdf").c_str() << endl;
     return -1;
   }
 
@@ -834,6 +835,75 @@ int Collective::ReadRestart(string inputfile) {
   // verbose on
   //verbose = 1;
 
+  // read collisionProcesses
+  dataset_id = H5Dopen2(file_id, "/collective/colls/collisionProcesses", H5P_DEFAULT); // HDF 1.8.8
+  status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &collisionProcesses);
+  status = H5Dclose(dataset_id);
+  // read xSec
+  dataset_id = H5Dopen2(file_id, "/collective/colls/xSec", H5P_DEFAULT); // HDF 1.8.8
+  status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &xSec);
+  status = H5Dclose(dataset_id);
+  // read iSecElec
+  dataset_id = H5Dopen2(file_id, "/collective/colls/iSecElec", H5P_DEFAULT); // HDF 1.8.8
+  status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &iSecElec);
+  status = H5Dclose(dataset_id);
+  // read iSecIon
+  dataset_id = H5Dopen2(file_id, "/collective/colls/iSecIon", H5P_DEFAULT); // HDF 1.8.8
+  status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &iSecIon);
+  status = H5Dclose(dataset_id);
+  // read nCollProcesses
+  dataset_id = H5Dopen2(file_id, "/collective/colls/nCollProcesses", H5P_DEFAULT); // HDF 1.8.8
+  status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &nCollProcesses);
+  status = H5Dclose(dataset_id);
+  // allocate fields depending on nCollProcesses
+  E_th_el = new double[nCollProcesses];
+
+  // read data from E_th_el0, E_th_el1, E_th_el2,...
+  string *nameEth = new string[nCollProcesses];
+  stringstream *sColl = new stringstream[nCollProcesses];
+  // read E_th_el
+  for (int i = 0; i < ns; i++) {
+    sColl[i] << i;
+    nameEth[i] = "/collective/colls/E_th_el"+sColl[i].str();
+    dataset_id = H5Dopen2(file_id, (nameEth[i]).c_str(), H5P_DEFAULT); // HDF 1.8.8
+    status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &E_th_el[i]);
+    status = H5Dclose(dataset_id);
+  }
+  // read nIoniColls
+  dataset_id = H5Dopen2(file_id, "/collective/colls/nIoniColls", H5P_DEFAULT); // HDF 1.8.8
+  status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &nIoniColls);
+  status = H5Dclose(dataset_id);
+  // read collStepSkip
+  dataset_id = H5Dopen2(file_id, "/collective/colls/collStepSkip", H5P_DEFAULT); // HDF 1.8.8
+  status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &collStepSkip);
+  status = H5Dclose(dataset_id);
+  // read nNeutSpecies
+  dataset_id = H5Dopen2(file_id, "/collective/colls/nNeutSpecies", H5P_DEFAULT); // HDF 1.8.8
+  status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &nNeutSpecies);
+  status = H5Dclose(dataset_id);
+
+  // allocate fields depending on nNeutSpecies
+  nSurf = new double[nNeutSpecies];
+  hExo = new double[nNeutSpecies];
+  fExo = new double[nNeutSpecies];
+
+  stringstream *sNeut = new stringstream[nNeutSpecies];
+  for (int i = 0; i < nNeutSpecies; i++){
+    sNeut[i] << i;
+    // read nSurf
+    dataset_id = H5Dopen2(file_id, ("/collective/colls/nSurf" + sNeut[i].str()).c_str(), H5P_DEFAULT); // HDF 1.8.8
+    status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &nSurf[i]);
+    status = H5Dclose(dataset_id);
+    // read hExo
+    dataset_id = H5Dopen2(file_id, ("/collective/colls/hExo" + sNeut[i].str()).c_str(), H5P_DEFAULT); // HDF 1.8.8
+    status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &hExo[i]);
+    status = H5Dclose(dataset_id);
+    // read fExo
+    dataset_id = H5Dopen2(file_id, ("/collective/colls/fExo" + sNeut[i].str()).c_str(), H5P_DEFAULT); // HDF 1.8.8
+    status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &fExo[i]);
+    status = H5Dclose(dataset_id);
+  }
+
 
   // if RestartDirName == SaveDirName overwrite dt,Th,Smooth (append to old hdf files)
   if (RestartDirName == SaveDirName) {
@@ -874,6 +944,9 @@ int Collective::ReadRestart(string inputfile) {
   // deallocate
   delete[]name_species;
   delete[]ss;
+  delete[]sColl;
+  delete[]sNeut;
+  delete[]nameEth;
 #endif
   return (0);
 }
@@ -1309,16 +1382,14 @@ void Collective::Print() {
   cout << "Case type         : " << Case << endl;
   cout << "Simulation name   : " << SimName << endl;
   cout << "Poisson correction: " << PoissonCorrection << endl;
-  cout << endl << "---------------------" << endl;
+  cout << "---------------------" << endl;
   cout << "Collision Parameters" << endl;
   cout << "---------------------" << endl;
   cout << "Include Collisions option: " << collisionProcesses << endl;
   cout << "Collision Cross Section  = " << xSec << endl;
   cout << "Species index for secondary electrons: " << iSecElec << endl;
-  cout << "Species index for secondary ions:      " << iSecIon << endl << endl;
+  cout << "Species index for secondary ions:      " << iSecIon << endl;
   cout << "---------------------" << endl;
-
-  cout << endl << "---------------------" << endl;
   cout << "Neutral Gas Parameters" << endl;
   cout << "---------------------" << endl;
   for (int i = 0; i < nNeutSpecies; i++)
@@ -1328,10 +1399,7 @@ void Collective::Print() {
     cout << "fExo[" << i << "] = "  << fExo[i] <<  ".   ";
     cout << endl;
   } 
-  // for (int i = 0; i < nNeutSpecies; i++) 
-    // cout << "hExo[" << i << "] = "  << hExo[i] << endl;
   cout << "---------------------" << endl;
-    
   cout << "Check Simulation Constraints" << endl;
   cout << "---------------------" << endl;
   cout << "Accuracy Constraint:  " << endl;
@@ -1460,6 +1528,17 @@ void Collective::save() {
   my_file << "v0z                      = " << w0[0] << endl;
   for (int is = 0; is < ns; is++) 
   my_file << "vth["<<is<<"]            = " << uth[is] << endl;
+  my_file << "---------------------------" << endl;
+  my_file << "Include Collisions       = " << collisionProcesses << endl;
+  my_file << "Collision XSection       = " << xSec << endl;
+  my_file << "Secondary elec species   = " << iSecElec << endl;
+  my_file << "Secondary ion species    = " << iSecIon << endl;
+  my_file << "---------------------------" << endl;
+  for (int i = 0; i < nNeutSpecies; i++){
+    my_file << "nSurf["<<i<<"]           = " << nSurf[i] << endl;
+    my_file << "hExo["<<i<<"]            = " << hExo[i] << endl;
+    my_file << "fExo["<<i<<"]            = " << fExo[i] << endl;
+  }
   my_file << "---------------------------" << endl;
   my_file << "Smooth                   = " << Smooth << endl;
   my_file << "SmoothNiter              = " << SmoothNiter<< endl;
