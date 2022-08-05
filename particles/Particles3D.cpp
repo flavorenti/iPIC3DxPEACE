@@ -2771,16 +2771,17 @@ double Particles3D::AddIonizedExosphere(double R, double x_center, double y_cent
     for (int j=1; j<grid->getNYC()-1;j++)
       for (int k=1; k<grid->getNZC()-1;k++) {
               
-        xd = grid->getXC(i,j,k)-x_center;
-        yd = grid->getYC(i,j,k)-y_center;
-        zd = grid->getZC(i,j,k)-z_center-PlanetOffset;
+        xd = grid->getXC(i,j,k)-x_center; // x position relative to planet
+        yd = grid->getYC(i,j,k)-y_center; // y position relative to planet
+        zd = grid->getZC(i,j,k)-z_center-PlanetOffset; // z position relative to planet
         
-	dist_sq = xd*xd+yd*yd+zd*zd;
+      	dist_sq = xd*xd+yd*yd+zd*zd;
         dist    = sqrt(dist_sq);
-
+        // If in range of production distance
         if( (dist_sq>(R*R)) and (dist_sq<(Rmax*Rmax)) ){
-
-          Ninject = (npcel_sw*Nexo*w_fact)*(dt*fexo)*exp(-(dist-R)/hexo);
+          double nDens = neutralDensity(Nexo, dist, R, hexo);
+          // Ninject = (npcel_sw * Nexo * w_fact) * (dt*fexo)*exp(-(dist-R)/hexo);
+          Ninject = (npcel_sw * w_fact) * (dt*fexo)* nDens;
           Ninject_int = (int) Ninject;
 
           for (int jj=0; jj<Ninject_int; jj++){
@@ -2801,4 +2802,14 @@ double Particles3D::AddIonizedExosphere(double R, double x_center, double y_cent
         } 
       }
   return Qinject;
+}
+/* Calculate neutral density at distance dist from planet*/
+double Particles3D::neutralDensity(double Nexo, double dist, double R, double hexo)
+{
+  double nDens;
+  if (dist>R)  nDens = Nexo * exp(-(dist-R)/hexo);
+  else nDens = 0.0; //Zero if inside planet
+
+  return nDens; // In SW units
+
 }

@@ -53,6 +53,7 @@ class OutputWrapperFPP
     Grid3DCU      *grid,
     EMfields3D    *EMf,
     Particles3D   *part,
+    // Collisions    *colls,
     int 		  ns,
     Particles3D   *testpart,
     int 		  nstestpart);

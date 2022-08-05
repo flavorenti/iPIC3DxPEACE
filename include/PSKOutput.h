@@ -41,6 +41,7 @@ developers: D. Burgess, June/July 2006
 #include "VCtopology3D.h"
 #include "MPIdata.h"
 #include "ipicdefs.h"
+// #include "Collisions.h"
 
 using std::string;
 using std::stringstream;
@@ -301,7 +302,10 @@ template < class Toa > class myOutputAgent:public PSK::OutputAgent < Toa > {
   Grid *_grid;
   VCtopology3D *_vct;
   Collective *_col;
+  // Collisions *_colls;
   int ns;
+  int nCollProcesses;
+  int nNeutSpecies;
   std::vector < Particles * >_part;
 
 public:
@@ -313,6 +317,7 @@ public:
     _grid = grid;
     _vct = vct;
     _col = col;
+    // _colls = colls;
   }
 
   void set_simulation_pointers_part(Particles * part) {
@@ -357,6 +362,8 @@ public:
     ss << MPIdata::instance().get_rank();
     cc << cycle;
     const int ns = _col->getNs();
+    const int nCollProcesses = _col->getnCollProcesses();
+    const int nNeutSpecies = _col->getnNeutSpecies();
     if (tag.find("last_cycle", 0) != string::npos)
       this->output_adaptor.write("/last_cycle", cycle);
     if (tag.find("collective", 0) != string::npos) {
@@ -423,6 +430,7 @@ public:
         this->output_adaptor.write("/collective/species_" + ii.str() + "/w0", _col->getW0(i));
       };
 
+
       const int nstestpart = _col->getNsTestPart();
       for (int i = 0; i < nstestpart; ++i) {
         stringstream ii;
@@ -435,7 +443,31 @@ public:
         this->output_adaptor.write("/collective/testspecies_" + ii.str() + "/energy", 	   _col->getEnergy(i));
       };
 
+      this->output_adaptor.write("/collective/colls/collisionProcesses", _col->getcollisionProcesses());
+      this->output_adaptor.write("/collective/colls/xSec", _col->getxSec());
+      this->output_adaptor.write("/collective/colls/iSecElec", _col->getiSecElec());
+      this->output_adaptor.write("/collective/colls/iSecIon", _col->getiSecIon());
+      this->output_adaptor.write("/collective/colls/nCollProcesses", _col->getnCollProcesses());
+      for (int i = 0; i < nCollProcesses; i++){
+        stringstream ii;
+        ii << i;
+        this->output_adaptor.write("/collective/colls/E_th_el"+ii.str(), _col->getE_th_el(i));
+      }
+      this->output_adaptor.write("/collective/colls/nIoniColls", _col->getnIoniColls());
+      this->output_adaptor.write("/collective/colls/collStepSkip", _col->getcollStepSkip());
+
+      this->output_adaptor.write("/collective/neutrals/nNeutSpecies", _col->getnNeutSpecies());
+      for (int i = 0; i < nNeutSpecies; i++){
+        stringstream ii;
+        ii << i;
+        this->output_adaptor.write("/collective/neutrals/nSurf" + ii.str(), _col->getnSurf(i));
+        this->output_adaptor.write("/collective/neutrals/hExo" + ii.str(), _col->gethExo(i));
+        this->output_adaptor.write("/collective/neutrals/fExo" + ii.str(), _col->getfExo(i));
+      }
+
     }
+
+      
 
     if (tag.find("total_topology", 0) != string::npos) {
       this->output_adaptor.write("/topology/XLEN", _vct->getXLEN());
