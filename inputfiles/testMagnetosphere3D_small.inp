@@ -39,7 +39,7 @@ PlanetOffset = -0.5   #negative for Mercury
 
 #  %%%%%%%%%%%%%%%%%%% TIME %%%%%%%%%%%%%%%%%%
 dt = 0.5                    # dt = time step  
-ncycles = 302		 #!!!    # cycles
+ncycles = 25		 #!!!    # cycles
 th = 1.0                     # th =   decentering parameter
 c = 1.0                      # c = light speed 
 
@@ -63,9 +63,9 @@ nzc =  32                  # nzc = number of cells - z direction
 
 # %%%%%%%%%%%%%% MPI TOPOLOGY %%%%%%%%%%%%%%
 # number of MPI subdomains in each direction
-XLEN = 2
-YLEN = 1
-ZLEN = 2
+XLEN = 4
+YLEN = 4
+ZLEN = 4
 # topology (1=true, 0=false): USE PERIODIC IN ALL DIRECTIONS
 PERIODICX = 0
 PERIODICY = 0
@@ -75,34 +75,34 @@ PERIODICZ = 0
 #    ns = number of species
 #    0 = solar wind electrons
 #    1 = solar wind protons
-#    2 = exosphere electrons
+#    2 = exosphere elctrons
 #    3 = exosphere protons
-ns = 4
+ns = 2
 # Initial density (make sure you are neutral)
-rhoINIT =  1.0	1.0  1.0  1.0
+rhoINIT =  1.0	1.0  0  0
 # Injection density (make sure you are neutral)
-rhoINJECT =  1.0   1.0  1.0  1.0
+rhoINJECT =  1.0   1.0  0  0
 # TrackParticleID[species] = 1=true, 0=false --> Assign ID to particles
 TrackParticleID = 0  0  0  0
 
 # npcelx = number of particles per cell - Direction X 
-npcelx =  8  8  0  0	
+npcelx =  4  4  0  0	
 # npcely = number of particles per cell - Direction Y 
-npcely =  8  8  0  0		
+npcely =  4  4  0  0		
 # npcelz = number of particles per cell - Direction Z 
-npcelz =  8  8  0  0
+npcelz =  4  4  0  0
 
 # qom = charge to mass ratio for different species 
-qom =  -25.0	1.0  -25.0  1.0	
+qom =  -100.0	1.0  -25.0  1.0	
 # uth = thermal velocity for different species - Direction X  
-uth =  0.0155  0.0031  0.0155  0.0005
+uth =  0.031  0.0063  0.031  0.0005
 # vth = thermal velocity for different species - Direction Y 
-vth =  0.0155  0.0031  0.0155  0.0005
+vth =  0.031  0.0063  0.031  0.0005
 # wth = thermal velocity for different species - Direction Z 
-wth =  0.0155  0.0031  0.0155  0.0005
+wth =  0.031  0.0063  0.031  0.0005
 
 # u0 = drift velocity   - Direction X    
-u0 =  0.027  0.027  0.0  0.0
+u0 =  0.02  0.02  0.0  0.0
 # v0 = drift velocity   - Direction Y    
 v0 =  0.0  0.0  0.0  0.0
 # w0 = drift velocity   - Direction Z    
@@ -143,38 +143,6 @@ w0 =  0.0  0.0  0.0  0.0
     bcPfaceZright = 2
     bcPfaceZleft =  2
 
-# %%%%%%%%%%%% COLLISIONAL PARAMETERS %%%%%%%%%%%%%%
-
-# Include collision option
-# 0 = no Collisions
-# 1 = Collisions
-   collisionProcesses = 0
-
-# Xsec - Collision Cross Section
-   xSec = 8.82e-10
-
-# Number of collisional processes
-   nCollProcesses = 3
-# Threshold energies of electron collisional processes
-# List from highest to lowest threshold energy
-   E_th_el = 5.76e-6  3.41e-6  1.71e-7 
-
-# Index of last ionization process
-# 0 = no ionization processes
-# 1 = one ionization process
-# 2 = two ionization processes
-   nIoniColls = 1
-
-# iSecElec - Species index in which secondary electrons are produced
-# iSecIon - Species index in which secondary ions are produced
-   iSecElec = 2
-   iSecIon = 3
-
-# Option to skip steps to increase speed of collision processes
-# 1 = apply collisions at each step
-# n = apply collisions every n steps
-   collStepSkip = 1
-
 
 # %%%%%%%%%%%%%% OUTPUTS %%%%%%%%%%%%%%%%%
 # SAL external boundary conditions (1=True, 0=False)
@@ -183,7 +151,7 @@ w0 =  0.0  0.0  0.0  0.0
 # Dipole initialization for particles 
    NewPclInit = 1
 # Internal boundary conditions (Trivial=delete or NonTrivial=delete+reflection)
-   NonTrivialBCPlanet = 1
+   NonTrivialBCPlanet = 0
 # Add ionization of the exosphere
    AddExosphere = 0
 # Print to video results (deprecated)
@@ -195,13 +163,28 @@ w0 =  0.0  0.0  0.0  0.0
 # Mover predictor corrector iteration
    NiterMover = 8
 # Output for field
-   FieldOutputCycle = 100
+   FieldOutputCycle = 0
    FieldOutputTag   = B+E+Je+Ji
    MomentsOutputTag = rho+PXX+PXY+PXZ+PYY+PYZ+PZZ
+# Output for temperature
+   TemperatureOutputCycle = 0
+   TemperatureOutputTag = Tcart, Tperpar
+# Output for spectra
+   SpectraOutputCycle = 0
+   SpectraOutputTag = Stot, Spar, Sperp
+   DeltaX = 1
+   DeltaY = 1
+   DeltaZ = 1
+   Estarti = -6
+   Eendi = -1
+   dEi = 0.1
+   Estarte = -8
+   Eende = -1 
+   dEe = 0.1
 # Output for particles if 0 it doesnt save particles data
    ParticlesOutputCycle = 0
    ParticlesOutputTag = position+velocity+q 
 # Restart cycle
-   RestartOutputCycle = 25
+   RestartOutputCycle = 0
 # Output for particles removed from inside planet
    RemoveParticlesOutputCycle = 0

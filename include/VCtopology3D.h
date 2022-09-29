@@ -1,11 +1,10 @@
 /* iPIC3D was originally developed by Stefano Markidis and Giovanni Lapenta. 
- * iPIC3DxPEACE was later developed by Federico Lavorenti for planet applications.
- * Publications that use results from iPIC3DxPEACE need to properly cite these works: 
- * (1) 'S. Markidis, G. Lapenta, and Rizwan-uddin. "Multi-scale simulations of 
+ * This release was contributed by Alec Johnson and Ivy Bo Peng.
+ * Publications that use results from iPIC3D need to properly cite  
+ * 'S. Markidis, G. Lapenta, and Rizwan-uddin. "Multi-scale simulations of 
  * plasma with iPIC3D." Mathematics and Computers in Simulation 80.7 (2010): 1509-1519.'
- * (2) ' F. Lavorenti, P. Henri ... '
  *
- * Copyright 2022 Observatoire de la Cote d'Azur, Nice, France
+ *        Copyright 2015 KTH Royal Institute of Technology
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at 
@@ -19,65 +18,51 @@
  * limitations under the License.
  */
 
+/***************************************************************************
+  VCtopology3D.h  -  a 3D Virtual cartesian topology
+  A virtual topology is a mechanism for naming the processes
+  in a communicator in a way that fits the communication
+  pattern better. Since our processes will communicate mainly
+  with the nearest neighbours after the fashion of a two-dimensional
+  grid, we create a virtual topology to reflect this fact
+  -------------------
+begin                : May 2008
+copyright            : (C) 2008 KUL Luveun
+developers           : Stefano Markidis, Giovanni Lapenta
+ ***************************************************************************/
+
 #ifndef VCtopology3D_H
 #define VCtopology3D_H
 
 #include "mpi.h"
 
-/*! @file
- * file containing the VCtopology3D class. 
+/**
+ *  
+ * Virtual cartesian topology
  * A virtual topology is a mechanism for naming the processes
  * in a communicator in a way that fits the communication
  * pattern better. Since our processes will communicate mainly
  * with the nearest neighbours after the fashion of a two-dimensional
- * grid, we create a virtual topology to reflect this fact.
- * Developers: Stefano Markidis, Giovanni Lapenta (May 2008)
+ * grid, we create a virtual topology to reflect this fact
+ * @version 2.0
  */
 
-/*! @class Collective
- *
- * ...
- */
 class Collective;
 
-/*! @class VCtopology3D
- * A virtual topology is a mechanism for naming the processes
- * in a communicator in a way that fits the communication
- * pattern better. Since our processes will communicate mainly
- * with the nearest neighbours after the fashion of a two-dimensional
- * grid, we create a virtual topology to reflect this fact.
- */
-class VCtopology3D 
+class VCtopology3D //:public VirtualTopology3D
 {
 public:
-
-  /*! @brief constructor
-   * Define topology parameters: dimension, domain decomposition etc.
-   * @param[in] col ...?
-   */
+  /** constructor: Define topology parameters: dimension, domain decomposition,... */
   VCtopology3D(const Collective& col);
-
-  /*! @brief destructor 
-   */
+  /** destructor */
   ~VCtopology3D();
-
-  /*! @brief Find the neighbors in the new communicator  
-   *
-   * @param[in] old_comm MPI communicator 
-   */
+  /** Find the neighbors in the new communicator  */
   void setup_vctopology(MPI_Comm comm_old);
-
-  /*! @brief Print topology info 
-   */
+  /** Print topology info */
   void Print();
-
-  /*! @brief Print the mapping of topology 
-   */
+  /** Print the mapping of topology */
   void PrintMapping();
 
-  #ifndef DOXYGEN_SHOULD_SKIP_THIS
-
-  /* code that must be skipped by doxygen */
   int getXLEN()const{ return (XLEN); }
   int getYLEN()const{ return (YLEN); }
   int getZLEN()const{ return (ZLEN); }
@@ -85,9 +70,12 @@ public:
   bool getPERIODICX()const{ return (PERIODICX); }
   bool getPERIODICY()const{ return (PERIODICY); }
   bool getPERIODICZ()const{ return (PERIODICZ); }
+
   bool getPERIODICX_P()const{ return (PERIODICX_P); }
   bool getPERIODICY_P()const{ return (PERIODICY_P); }
   bool getPERIODICZ_P()const{ return (PERIODICZ_P); }
+
+  //the below is for field communicator
   int getCartesian_rank()const{ return (cartesian_rank); }
   int getXleft_neighbor()const{ return (xleft_neighbor); }
   int getXright_neighbor()const{ return (xright_neighbor); }
@@ -95,21 +83,25 @@ public:
   int getYright_neighbor()const{ return (yright_neighbor); }
   int getZleft_neighbor()const{ return (zleft_neighbor); }
   int getZright_neighbor()const{ return (zright_neighbor); }
+
+//  bool hasXleftNeighbor()const{ return !_noXleftNeighbor; }
+//  bool hasXrghtNeighbor()const{ return !_noXrghtNeighbor; }
+//  bool hasYleftNeighbor()const{ return !_noYleftNeighbor; }
+//  bool hasYrghtNeighbor()const{ return !_noYrghtNeighbor; }
+//  bool hasZleftNeighbor()const{ return !_noZleftNeighbor; }
+//  bool hasZrghtNeighbor()const{ return !_noZrghtNeighbor; }
+
+  bool isXupper()const{ return (coordinates[0]==dims[0]-1); }
+  bool isYupper()const{ return (coordinates[1]==dims[1]-1); }
+  bool isZupper()const{ return (coordinates[2]==dims[2]-1); }
+
+  //the below only called by particle
   int getXleft_neighbor_P()const{ return (xleft_neighbor_P); }
   int getXright_neighbor_P()const{ return (xright_neighbor_P); }
   int getYleft_neighbor_P()const{ return (yleft_neighbor_P); }
   int getYright_neighbor_P()const{ return (yright_neighbor_P); }
   int getZleft_neighbor_P()const{ return (zleft_neighbor_P); }
   int getZright_neighbor_P()const{ return (zright_neighbor_P); }
-  bool getcVERBOSE()const{ return (cVERBOSE); }
-  int getCoordinates(int dir)const{ return (coordinates[dir]); }
-  const int *getCoordinates()const{ return (coordinates); }
-  const int *getDims()const{ return dims; }
-  int getPeriods(int dir)const{ return (periods[dir]); }
-
-  bool isXupper()const{ return (coordinates[0]==dims[0]-1); }
-  bool isYupper()const{ return (coordinates[1]==dims[1]-1); }
-  bool isZupper()const{ return (coordinates[2]==dims[2]-1); }
 
   bool isPeriodicXlower_P()const{ return _isPeriodicXlower_P; }
   bool isPeriodicXupper_P()const{ return _isPeriodicXupper_P; }
@@ -134,10 +126,15 @@ public:
 
   bool isBoundaryProcess_P()const{ return _isBoundaryProcess_P; }
 
+
+  bool getcVERBOSE()const{ return (cVERBOSE); }
+  int getCoordinates(int dir)const{ return (coordinates[dir]); }
+  const int *getCoordinates()const{ return (coordinates); }
+  const int *getDims()const{ return dims; }
+  int getPeriods(int dir)const{ return (periods[dir]); }
   MPI_Comm getFieldComm()const{ return (CART_COMM); }
   MPI_Comm getParticleComm()const{ return (CART_COMM_P); }
 
-  #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 private:
   /** New communicator with virtual cartesian topology */
@@ -241,8 +238,6 @@ private:
   bool cVERBOSE;
 };
 
-/*! @brief New type definition associated to class VCtopology3D
- */
 typedef VCtopology3D VirtualTopology3D;
 
 #endif

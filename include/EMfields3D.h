@@ -70,20 +70,7 @@ class EMfields3D                // :public Field
     void AddPerturbationRho(double deltaBoB, double kx, double ky, double Bx_mod, double By_mod, double Bz_mod, double ne_mod, double ne_phase, double ni_mod, double ni_phase, double B0, Grid * grid);
     /*! add a perturbattion to the EM field */
     void AddPerturbation(double deltaBoB, double kx, double ky, double Ex_mod, double Ex_phase, double Ey_mod, double Ey_phase, double Ez_mod, double Ez_phase, double Bx_mod, double Bx_phase, double By_mod, double By_phase, double Bz_mod, double Bz_phase, double B0, Grid * grid);
-    /** Initialise a planet with dipole B field.
-    *   The dipole is initialized in three-dimensions using the formula B=... centered in point (xc,yc,zc) given as input.
-    *   This initialization can be with bodies having an intrinsic strong magnetic field, usually stronger than the SW.
-    *   Extension to multiple harmonics TBD.
-    */
-    /*! @brief Initialise a planet with dipole B field.
-    *
-    * The dipole is initialized in three-dimensions using the formula B=... centered in point (xc,yc,zc) given as input.
-    * This initialization can be with bodies having an intrinsic strong magnetic field, usually stronger than the SW.
-    * Extension to multiple harmonics TBD.
-    *
-    * @param[in] input parameters (if any)
-    * @param[out] output parameters (if any)
-    */
+    /*! Initialise a combination of magnetic dipoles */
     void initDipole();
     void initDipole2D();
     /*! Initialise magnetic nulls */
@@ -333,7 +320,9 @@ class EMfields3D                // :public Field
 
     MPI_Datatype getProcview(){return  procview;}
     MPI_Datatype getXYZeType(){return xyzcomp;}
+    MPI_Datatype getTensorType(){return tensorcomp;}
     MPI_Datatype getProcviewXYZ(){return  procviewXYZ;}
+    MPI_Datatype getProcviewTensor(){return procviewTensor;}
     MPI_Datatype getGhostType(){return  ghosttype;}
 
     void freeDataType();
@@ -602,7 +591,7 @@ class EMfields3D                // :public Field
     MPI_Datatype cornertypeN;
     
     //for VTK output
-    MPI_Datatype  procviewXYZ,xyzcomp,procview,ghosttype;
+    MPI_Datatype  procviewXYZ,xyzcomp,tensorcomp,procview,procviewTensor,ghosttype;
     bool lEndFlag;
     
     void OpenBoundaryInflowB(arr3_double vectorX, arr3_double vectorY, arr3_double vectorZ,

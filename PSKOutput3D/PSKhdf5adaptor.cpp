@@ -137,8 +137,7 @@ void HDF5OutputAdaptor::open(const std::string & name) {
 
   // use H5F_ACC_TRUNC to delete any existing file
   // or ACC_EXCL to fail if file exists
-  
-  
+
   _hdf5_file_id = H5Fcreate(name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
   if (_hdf5_file_id <= 0) {

@@ -129,6 +129,16 @@ class Collective
     double getV0(int nspecies)const{ return (v0[nspecies]); }
     double getW0(int nspecies)const{ return (w0[nspecies]); }
 
+    int getDeltaX(){ return (DeltaX); }
+    int getDeltaY(){ return (DeltaY); }
+    int getDeltaZ(){ return (DeltaZ); }
+    double getEstarti(){ return (Estarti); }
+    double getEendi(){ return (Eendi); }
+    double getdEi(){ return (dEi); }
+    double getEstarte(){ return (Estarte); }
+    double getEende(){ return (Eende); }
+    double getdEe(){ return (dEe); }
+
     double getPitchAngle(int nspecies)const{ return (pitch_angle[nspecies]); }
     double getEnergy(int nspecies)const{ return (energy[nspecies]); }
     int    getTestPartFlushCycle()const{ return (testPartFlushCycle); }
@@ -139,20 +149,6 @@ class Collective
     double getYmax()const{ return (ymax); }
     double getZmin()const{ return (zmin); }
     double getZmax()const{ return (zmax); }
-
-    bool   getcollisionProcesses()const{ return (collisionProcesses); }
-    double getxSec()const{ return (xSec); }
-    int    getiSecElec()const{ return (iSecElec); }
-    int    getiSecIon()const{ return (iSecIon); }
-    int    getnCollProcesses()const{ return (nCollProcesses); }
-    double getE_th_el(int nColl)const{ return (E_th_el[nColl]); }
-    int    getnIoniColls()const{ return (nIoniColls); }
-    int    getcollStepSkip()const{ return (collStepSkip); }
-
-    int    getnNeutSpecies()const{ return (nNeutSpecies); }
-    double getnSurf(int nNeutral)const{ return (nSurf[nNeutral]); }
-    double gethExo(int nNeutral) const{ return (hExo[nNeutral]); }
-    double getfExo(int nNeutral) const{ return (fExo[nNeutral]); }
 
     int getYes_sal()const{ return (yes_sal); }
     int getN_layers_sal()const{ return (n_layers_sal); }
@@ -198,6 +194,8 @@ class Collective
     string getWriteMethod()const{ return (wmethod); }
     string getFieldOutputTag()const{return FieldOutputTag;}
     string getMomentsOutputTag()const{return MomentsOutputTag;}
+    string getSpectraOutputTag()const{return SpectraOutputTag;}
+    string getTemperatureOutputTag()const{return TemperatureOutputTag;}
     string getPclOutputTag()const{return ParticlesOutputTag;}
     string getPoissonCorrection()const{ return (PoissonCorrection); }
     int getPoissonCorrectionCycle()const{ return (PoissonCorrectionCycle); }
@@ -207,6 +205,8 @@ class Collective
     double getGMREStol()const{ return (GMREStol); }
     int getNiterMover()const{ return (NiterMover); }
     int getFieldOutputCycle()const{ return (FieldOutputCycle); }
+    int getSpectraOutputCycle()const{ return (SpectraOutputCycle); }
+    int getTemperatureOutputCycle()const{ return (TemperatureOutputCycle); }
     int getParticlesOutputCycle()const{ return (ParticlesOutputCycle); }
     int getTestParticlesOutputCycle()const{ return (TestParticlesOutputCycle); }
     int getRestartOutputCycle()const{ return (RestartOutputCycle); }
@@ -216,6 +216,8 @@ class Collective
     bool particle_output_is_off()const;
     bool testparticle_output_is_off()const;
     bool field_output_is_off()const;
+    bool spectra_output_is_off()const;
+    bool temperature_output_is_off()const;
     
     /*! Boundary condition selection for BCFace for the electric field components */
     int bcEx[6], bcEy[6], bcEz[6];
@@ -289,6 +291,19 @@ class Collective
     bool PERIODICY_P;
     bool PERIODICZ_P;
 
+    /*! number of code cells in spectra cell in each direction */
+    int DeltaX;
+    int DeltaY;
+    int DeltaZ;
+    /*! Spectra's logarithmically spaced array's information */
+    double Estarti;
+    double Eendi;
+    double dEi;
+
+    double Estarte;
+    double Eende;
+    double dEe;
+
     /*! number of species */
     int ns;
     /*! number of test particle species */
@@ -329,33 +344,6 @@ class Collective
     double *pitch_angle;
     /*! Energy for Test Particles */
     double *energy;
-
-    /* bool value for including collisional processes */
-    bool collisionProcesses;
-    /*! Cross Section of collisional processes */
-    double xSec;
-    /*! Species index for secondary electrons */
-    int iSecElec;
-    /*! Species index for secondary ions */
-    int iSecIon;
-    /*! Number of collisional processes */
-    int nCollProcesses;
-    /*! Threshold energies for prpcesses*/
-    double *E_th_el;
-    /*! Number of ionization processes */
-    int nIoniColls;
-    /*! Number of skipped steps for collisional processes */
-    int collStepSkip;
-
-    /* Neutral Gas parameters */
-    /*! Number of neutral species */
-    int nNeutSpecies;
-    /*! Neutral density at surface */
-    double *nSurf;
-    /*! Exospheric scale height */
-    double *hExo;
-    /*! Photoionization frequency of species*/
-    double *fExo;
 
     /* bool value for applying SAL BC fields */
     int yes_sal;
@@ -471,6 +459,12 @@ class Collective
     int FieldOutputCycle;
     string  FieldOutputTag;
     string  MomentsOutputTag;
+    /* Output for spectra */
+    int SpectraOutputCycle;
+    string SpectraOutputTag;
+    /* Output for temperature */
+    int TemperatureOutputCycle;
+    string TemperatureOutputTag;
     /*! Output for particles */
     int ParticlesOutputCycle;
     string ParticlesOutputTag;

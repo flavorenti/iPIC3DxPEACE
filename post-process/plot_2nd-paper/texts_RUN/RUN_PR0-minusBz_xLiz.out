@@ -1,0 +1,70 @@
+('iPIC3D> cell number               :  ', (256, 208, 208))
+('iPIC3D> domain size               :  ', (25.0, 20.0, 20.0))
+('iPIC3D> mesh spacing              :  ', (0.09765625, 0.09615384615384616, 0.09615384615384616))
+('iPIC3D> periodicity               :  ', (False, False, False))
+('iPIC3D> time step                 :  ', 0.5)
+('iPIC3D> species                   :  ', ['e0', 'i1'])
+('          e0 charge-over-mass           :  ', -100.0)
+('          i1 charge-over-mass           :  ', 1.0)
+('MIN Cycles=', 5000.0)
+('MAX Cycles=', 5034.0)
+('LEN Cycles=', 18)
+('LEN Protons=', 167922)
+('LEN Electrons=', 121807)
+
+
+
+('latitude=', 3.6, 'conversion Flux=', 6426116.043109057)
+('latitude=', 18.0, 'conversion Flux=', 1305729.681140611)
+('latitude=', 32.4, 'conversion Flux=', 752999.2170028213)
+('latitude=', 46.8, 'conversion Flux=', 553455.6375517405)
+('latitude=', 61.2, 'conversion Flux=', 460358.2733974517)
+('latitude=', 75.6, 'conversion Flux=', 416447.71509870543)
+('latitude=', 90.0, 'conversion Flux=', 403295.00494611496)
+('latitude=', 104.4, 'conversion Flux=', 416277.54447285883)
+('latitude=', 118.80000000000001, 'conversion Flux=', 459955.6174463969)
+('latitude=', 133.2, 'conversion Flux=', 552629.139820379)
+('latitude=', 147.60000000000002, 'conversion Flux=', 751113.9644238085)
+('latitude=', 162.0, 'conversion Flux=', 1299358.8325360464)
+('latitude=', 176.4, 'conversion Flux=', 6267387.56727233)
+[  3.6  10.8  18.   25.2  32.4  39.6  46.8  54.   61.2  68.4  75.6  82.8
+  90.   97.2 104.4 111.6 118.8 126.  133.2 140.4 147.6 154.8 162.  169.2
+ 176.4 183.6 190.8 198.  205.2 212.4 219.6 226.8 234.  241.2 248.4 255.6
+ 262.8 270.  277.2 284.4 291.6 298.8 306.  313.2 320.4 327.6 334.8 342.
+ 349.2 356.4]
+[-86.4 -79.2 -72.  -64.8 -57.6 -50.4 -43.2 -36.  -28.8 -21.6 -14.4  -7.2
+   0.    7.2  14.4  21.6  28.8  36.   43.2  50.4  57.6  64.8  72.   79.2
+  86.4]
+Flux integrated species e  = 1.361e+24 1/s
+Mean Energy species e  = 4.225e+02 eV
+Mean Energy1 species e  = 5.372e+02 eV
+Mean Temperature species e  = 2.622e+02 eV
+Mean RAM Pressure species e  = 1.603e+02 eV
+Mean Radial Energy species e  = 1.344e+02 eV
+('latitude=', 3.6, 'conversion Flux=', 6426116.043109057)
+('latitude=', 18.0, 'conversion Flux=', 1305729.681140611)
+('latitude=', 32.4, 'conversion Flux=', 752999.2170028213)
+('latitude=', 46.8, 'conversion Flux=', 553455.6375517405)
+('latitude=', 61.2, 'conversion Flux=', 460358.2733974517)
+('latitude=', 75.6, 'conversion Flux=', 416447.71509870543)
+('latitude=', 90.0, 'conversion Flux=', 403295.00494611496)
+('latitude=', 104.4, 'conversion Flux=', 416277.54447285883)
+('latitude=', 118.80000000000001, 'conversion Flux=', 459955.6174463969)
+('latitude=', 133.2, 'conversion Flux=', 552629.139820379)
+('latitude=', 147.60000000000002, 'conversion Flux=', 751113.9644238085)
+('latitude=', 162.0, 'conversion Flux=', 1299358.8325360464)
+('latitude=', 176.4, 'conversion Flux=', 6267387.56727233)
+[  3.6  10.8  18.   25.2  32.4  39.6  46.8  54.   61.2  68.4  75.6  82.8
+  90.   97.2 104.4 111.6 118.8 126.  133.2 140.4 147.6 154.8 162.  169.2
+ 176.4 183.6 190.8 198.  205.2 212.4 219.6 226.8 234.  241.2 248.4 255.6
+ 262.8 270.  277.2 284.4 291.6 298.8 306.  313.2 320.4 327.6 334.8 342.
+ 349.2 356.4]
+[-86.4 -79.2 -72.  -64.8 -57.6 -50.4 -43.2 -36.  -28.8 -21.6 -14.4  -7.2
+   0.    7.2  14.4  21.6  28.8  36.   43.2  50.4  57.6  64.8  72.   79.2
+  86.4]
+Flux integrated species i  = 1.877e+24 1/s
+Mean Energy species i  = 2.135e+03 eV
+Mean Energy1 species i  = 2.358e+03 eV
+Mean Temperature species i  = 9.261e+02 eV
+Mean RAM Pressure species i  = 1.209e+03 eV
+Mean Radial Energy species i  = 6.632e+02 eV
