@@ -21,7 +21,6 @@
 #include "mpi.h"
 #include "ipicdefs.h"
 #include "Basic.h"
-#include "EllipticF.h"
 #include "Alloc.h"
 #include "TimeTasks.h"
 #include "errors.h"
@@ -449,7 +448,7 @@ void getRidGhost(double **out, double **in, int nx, int ny) {
     for (register int j = 1; j < ny - 1; j++)
       out[i - 1][j - 1] = in[i][j];
 }
-
+/*
 void loopX(double *b, double z, double x, double y, double a, double zc, double xc, double yc, double m){
 
   double r = sqrt((x-xc)*(x-xc)+(y-yc)*(y-yc)+(z-zc)*(z-zc));
@@ -483,11 +482,11 @@ void loopX(double *b, double z, double x, double y, double a, double zc, double 
   double By = BRho * sin(phi);
 
   //for debugging
-  /*cout << "\n\nAt (" << x << "," << y << "," << z << "), the field is :" << endl;
+    cout << "\n\nAt (" << x << "," << y << "," << z << "), the field is :" << endl;
     cout << "Bx: " << Bx << " T" << endl;
     cout << "By: " << By << " T" << endl;
     cout << "Bz: " << Bz << " T" << endl;
-    cout << "BRho: " << BRho << " T" << endl;*/
+    cout << "BRho: " << BRho << " T" << endl;
 
   b[1] = Bx;
   b[2] = By;
@@ -527,11 +526,11 @@ void loopY(double *b, double y, double z, double x, double a, double yc, double 
   double By = BRho * sin(phi);
 
   //for debugging
-  /*cout << "\n\nAt (" << x << "," << y << "," << z << "), the field is :" << endl;
+    cout << "\n\nAt (" << x << "," << y << "," << z << "), the field is :" << endl;
     cout << "Bx: " << Bx << " T" << endl;
     cout << "By: " << By << " T" << endl;
     cout << "Bz: " << Bz << " T" << endl;
-    cout << "BRho: " << BRho << " T" << endl;*/
+    cout << "BRho: " << BRho << " T" << endl;
 
   b[2] = Bx;
   b[0] = By;
@@ -574,4 +573,4 @@ void loopZ(double *b, double x, double y, double z, double a, double xc, double 
   b[1] = By;
   b[2] = Bz;
 }
-
+*/

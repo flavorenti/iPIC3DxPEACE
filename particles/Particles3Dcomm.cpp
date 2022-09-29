@@ -34,7 +34,7 @@ developers: Stefano Markidis, Giovanni Lapenta.
 #include "Collective.h"
 #include "Alloc.h"
 #include "Grid3DCU.h"
-#include "Field.h"
+#include "EMfields3D.h"
 #include "MPIdata.h"
 #include "ompdefs.h"
 #include "ipicmath.h"

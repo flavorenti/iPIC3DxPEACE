@@ -38,7 +38,6 @@
 #include "Collisions.h"
 //
 #ifndef NO_HDF5
-#include "WriteOutputParallel.h"
 #include "OutputWrapperFPP.h"
 #endif
 
@@ -553,43 +552,8 @@ void c_Solver::WriteOutput(int cycle) {
 	    WriteTestParticles(cycle);
 
   }else{
-
-		#ifdef NO_HDF5
-			eprintf("The selected output option must be compiled with HDF5");
-
-		#else
-			if (col->getWriteMethod() == "H5hut"){
-
-			  if (!col->field_output_is_off() && cycle%(col->getFieldOutputCycle())==0)
-				WriteFieldsH5hut(ns, grid, EMf, col, vct, cycle);
-			  if (!col->particle_output_is_off() && cycle%(col->getParticlesOutputCycle())==0)
-				WritePartclH5hut(ns, grid, part, col, vct, cycle);
-
-			}else if (col->getWriteMethod() == "phdf5"){
-
-			  if (!col->field_output_is_off() && cycle%(col->getFieldOutputCycle())==0)
-				WriteOutputParallel(grid, EMf, part, col, vct, cycle);
-
-			  if (!col->particle_output_is_off() && cycle%(col->getParticlesOutputCycle())==0)
-			  {
-				if(MPIdata::get_rank()==0)
-				  warning_printf("WriteParticlesParallel() is not yet implemented.");
-			  }
-
-			}else if (col->getWriteMethod() == "shdf5"){
-
-					WriteFields(cycle);
-
-					WriteParticles(cycle);
-
-					WriteTestParticles(cycle);
-
-			}else{
-			  warning_printf(
-				"Invalid output option. Options are: H5hut, phdf5, shdf5, pvtk");
-			  invalid_value_error(col->getWriteMethod().c_str());
-			}
-		#endif
+            warning_printf("Invalid output option. Options are: pvtk, nbvtk");
+	    invalid_value_error(col->getWriteMethod().c_str());
   	  }
 }
 
