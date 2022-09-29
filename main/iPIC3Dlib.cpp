@@ -35,9 +35,9 @@
 #include "Particles3Dcomm.h"
 #include "Timing.h"
 #include "ParallelIO.h"
-#include "Collisions.h"
 //
 #ifndef NO_HDF5
+#include "WriteOutputParallel.h"
 #include "OutputWrapperFPP.h"
 #endif
 
@@ -56,7 +56,6 @@ c_Solver::~c_Solver()
   delete vct; // process topology
   delete grid; // grid
   delete EMf; // field
-  delete colls; // Collisions
 #ifndef NO_HDF5
   delete outputWrapperFPP;
 #endif
@@ -95,11 +94,9 @@ int c_Solver::Init(int argc, char **argv) {
   // nprocs = number of processors
   // myrank = rank of tha process*/
   Parameters::init_parameters();
-
   //mpi = &MPIdata::instance();
   nprocs = MPIdata::get_nprocs();
   myrank = MPIdata::get_rank();
-  
 
   col = new Collective(argc, argv); // Every proc loads the parameters of simulation from class Collective
   restart_cycle = col->getRestartOutputCycle();
@@ -129,19 +126,11 @@ int c_Solver::Init(int argc, char **argv) {
     vct->Print();
     col->Print();
     col->save();
-
   }
   // Create the local grid
-
   grid = new Grid3DCU(col, vct);  // Create the local grid
-  // printf("\n Done with local grid. Make EM field object. \n");
   EMf = new EMfields3D(col, grid, vct);  // Create Electromagnetic Fields Object
 
-
-  if (col->getcollisionProcesses()){ // If Collisional processes
-    colls = new Collisions(col, vct, grid, EMf); //Create Collision object
-  }
-  
   if      (col->getCase()=="GEMnoPert") 		EMf->initGEMnoPert();
   else if (col->getCase()=="ForceFree") 		EMf->initForceFree();
   else if (col->getCase()=="GEM")       		EMf->initGEM();
@@ -159,14 +148,14 @@ int c_Solver::Init(int argc, char **argv) {
     }
     EMf->init();
   }
-  // printf("\n Beginning allocation of particles. \n");
+
   // Allocation of particles
   part = (Particles3D*) malloc(sizeof(Particles3D)*ns);
   for (int i = 0; i < ns; i++)
   {
     new(&part[i]) Particles3D(i,col,vct,grid);
   }
-  // printf("\n Completing allocation of particles. \n");
+
   // Initial Condition for PARTICLES if you are not starting from RESTART
   if (restart_status == 0) {
     for (int i = 0; i < ns; i++)
@@ -181,8 +170,6 @@ int c_Solver::Init(int argc, char **argv) {
       part[i].reserve_remaining_particle_IDs();
     }
   }
-// printf("\n PArticle initial conditions complete \n");
-// cout << "Rank " << myrank << "\n";
 
   //allocate test particles if any
   nstestpart = col->getNsTestPart();
@@ -195,11 +182,7 @@ int c_Solver::Init(int argc, char **argv) {
 	   }
   }
 
-  // printf("\n Any test pl allocations completed \n");
-  // cout << "Rank " << myrank << "\n";
-  
   if ( Parameters::get_doWriteOutput()){
-    // printf("\n Writing outputs. \n");
 		#ifndef NO_HDF5
 	  	if(col->getWriteMethod() == "shdf5" || col->getCallFinalize() || restart_cycle>0 ||
 			  (col->getWriteMethod()=="pvtk" && !col->particle_output_is_off()) )
@@ -208,7 +191,6 @@ int c_Solver::Init(int argc, char **argv) {
 			  fetch_outputWrapperFPP().init_output_files(col,vct,grid,EMf,part,ns,testpart,nstestpart);
 		}
 		#endif
-    // printf("\n Success writing outputs. \n");
 	  if(!col->field_output_is_off()){
 		  if(col->getWriteMethod()=="pvtk"){
 			  if(!(col->getFieldOutputTag()).empty())
@@ -225,9 +207,44 @@ int c_Solver::Init(int argc, char **argv) {
 				  momentwritebuffer=newArr3(float,(grid->getNZN()-3)*14, grid->getNYN()-3, grid->getNXN()-3);
 		  }
 	  }
-    // printf("\n Success writing feild outputs. \n");
+	  if(!col->spectra_output_is_off()){
+		  if(col->getWriteMethod()=="pvtk"){
+			 if(!(col->getSpectraOutputTag()).empty()){
+
+        int error = 0;
+        if (vct->getCartesian_rank()==0){
+          if ((grid->getNXN()-3)%col->getDeltaX() != 0 || (grid->getNYN()-3)%col->getDeltaY() != 0 || (grid->getNZN()-3)%col->getDeltaZ() != 0){
+            error = 1;
+          }
+        }
+
+        MPI_Bcast(&error, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        if (error != 0){
+          if (vct->getCartesian_rank()==0){
+            printf("----------\n");
+            printf("ERROR: Number of cells in MPI subdomain not a multiple of Delta (Energy Spectra).\n");
+            printf("Run terminated.\n");
+            printf("----------\n");
+          }
+          MPI_Barrier(MPI_COMM_WORLD);
+          MPI_Finalize();
+          exit(0);
+        }
+
+        int Nspece = (col->getEende() - col->getEstarte())/col->getdEe() + 1.001;
+        int Nspeci = (col->getEendi() - col->getEstarti())/col->getdEi() + 1.001;
+        spectrawritebuffere=newArr4(float,(grid->getNZN()-3)/(col->getDeltaZ()),(grid->getNYN()-3)/(col->getDeltaY()),(grid->getNXN()-3)/(col->getDeltaX()),Nspece+1);
+        spectrawritebufferi=newArr4(float,(grid->getNZN()-3)/(col->getDeltaZ()),(grid->getNYN()-3)/(col->getDeltaY()),(grid->getNXN()-3)/(col->getDeltaX()),Nspeci+1);
+        }
+		  }
+	  }
+    if(!col->temperature_output_is_off()){
+      if(col->getWriteMethod()=="pvtk"){
+       if(!(col->getTemperatureOutputTag()).empty())
+        temperaturewritebuffer=newArr4(float,grid->getNZN()-3, grid->getNYN()-3, grid->getNXN()-3,6);
+      }
+    }
   }
-  // printf("\n Almost done with init. \n");
   rho = new double[ns];
   Ke = new double[ns];
   BulkEnergy = new double[ns];
@@ -237,7 +254,7 @@ int c_Solver::Init(int argc, char **argv) {
     ofstream my_file(cq.c_str());
     my_file.close();
   }
-  // printf("\n Closed file. \n");
+  
   Qdel = new double[ns];
   Count = new double[ns];
   Qrep = new double[ns];
@@ -344,26 +361,16 @@ bool c_Solver::ParticlesMover(int cycle)
 
     pad_particle_capacities();
 
-    // Varibles for Exosphere injection
-    // NOTE: Could/Should load these in initialisation of particles object
+    // Varibles for Exosphere injection 
     const double R = col->getL_square();
-    const double Nexo_H  = col->getnSurf(0);   // density of exosphere neutrals at the surface (in nsw units)
-    const double fexo_H  = col->getfExo(0);  // ioniz. frequency in units of wpi
-    const double hexo_H  = col->gethExo(0); // scale length of exosphere
-    const double Nexo_Na = col->getnSurf(1);
-    const double fexo_Na = col->getfExo(1);
-    const double hexo_Na = col->gethExo(1);
-    const double w_fact  = 8e3;   // factor weight_exo / weight_sw - Not currently set input file
-    
-    // const double Nexo_H  = 1e4;   // density of exosphere neutrals at the surface (in nsw units)
-    // const double fexo_H  = 1e-9;  // ioniz. frequency in units of wpi
-    // const double hexo_H  = 0.5*R; // scale length of exosphere
-    // const double Nexo_Na = 1e3;
-    // const double fexo_Na = 1e-7;
-    // const double hexo_Na = 0.025*R;
-    // const double w_fact  = 8e3;   // factor weight_exo / weight_sw
-    
-    bool applyCollisions = (col->getcollisionProcesses()) && (cycle % col->getcollStepSkip() == 0);
+    const double Nexo_H  = 1e4;   // density of exosphere neutrals at the surface (in nsw units)
+    const double fexo_H  = 1e-9;  // ioniz. frequency in units of wpi
+    const double hexo_H  = 0.5*R; // scale length of exosphere
+    const double Nexo_Na = 1e3;
+    const double fexo_Na = 1e-7;
+    const double hexo_Na = 0.025*R;
+    const double w_fact  = 8e3;   // factor weight_exo / weight_sw
+
     for (int i = 0; i < ns; i++)  // move each species
     {
      // #pragma omp task inout(part[i]) in(grid) target_device(booster)
@@ -389,8 +396,7 @@ bool c_Solver::ParticlesMover(int cycle)
         default:
           unsupported_value_error(Parameters::get_MOVER_TYPE());
       }
-      // Particles undergo collisions.
-      if ( applyCollisions )  colls->Collide(i, part, col, EMf);
+
       // Injection particles from ionized exosphere ./Job
       // inject hydrogen
       if ( (i==2 or i==3) and col->getAddExosphere()){	 
@@ -404,10 +410,7 @@ bool c_Solver::ParticlesMover(int cycle)
       // External boundary conditions particles     ./Job
       Qrep[i] = part[i].repopulate_particles(EMf); 
     }
-    
-    // Inject particles produced through impact ioni
-    if (applyCollisions) colls->createIonizedParticles(part);
-    
+
     // Internal boundary conditions particles.                 ./Job
     // case with re-inejction of pcls to keep net charge zero  ./Job
     double Qrm, Count_plus=0., Count_mins=0.;
@@ -546,14 +549,61 @@ void c_Solver::WriteOutput(int cycle) {
 		  }
 	  }
 
+	  if(!col->spectra_output_is_off() && (cycle%(col->getSpectraOutputCycle()) == 0 || cycle == first_cycle) ){
+		  if(!(col->getSpectraOutputTag()).empty()){
+			  WriteSpectraVTK(grid, part, EMf, col, vct, col->getSpectraOutputTag(),cycle, spectrawritebuffere, spectrawritebufferi);
+		  }
+	  }
+
+    if(!col->temperature_output_is_off() && (cycle%(col->getTemperatureOutputCycle()) == 0 || cycle == first_cycle) ){
+      if(!(col->getTemperatureOutputTag()).empty()){
+        WriteTemperatureVTK(grid, EMf, col, vct, col->getTemperatureOutputTag() ,cycle, temperaturewritebuffer);
+      }
+    }
+
 	  //Particle information is still in hdf5
 	  	WriteParticles(cycle);
 	  //Test Particle information is still in hdf5
 	    WriteTestParticles(cycle);
 
   }else{
-            warning_printf("Invalid output option. Options are: pvtk, nbvtk");
-	    invalid_value_error(col->getWriteMethod().c_str());
+
+		#ifdef NO_HDF5
+			eprintf("The selected output option must be compiled with HDF5");
+
+		#else
+			if (col->getWriteMethod() == "H5hut"){
+
+			  if (!col->field_output_is_off() && cycle%(col->getFieldOutputCycle())==0)
+				WriteFieldsH5hut(ns, grid, EMf, col, vct, cycle);
+			  if (!col->particle_output_is_off() && cycle%(col->getParticlesOutputCycle())==0)
+				WritePartclH5hut(ns, grid, part, col, vct, cycle);
+
+			}else if (col->getWriteMethod() == "phdf5"){
+
+			  if (!col->field_output_is_off() && cycle%(col->getFieldOutputCycle())==0)
+				WriteOutputParallel(grid, EMf, part, col, vct, cycle);
+
+			  if (!col->particle_output_is_off() && cycle%(col->getParticlesOutputCycle())==0)
+			  {
+				if(MPIdata::get_rank()==0)
+				  warning_printf("WriteParticlesParallel() is not yet implemented.");
+			  }
+
+			}else if (col->getWriteMethod() == "shdf5"){
+
+					WriteFields(cycle);
+
+					WriteParticles(cycle);
+
+					WriteTestParticles(cycle);
+
+			}else{
+			  warning_printf(
+				"Invalid output option. Options are: H5hut, phdf5, shdf5, pvtk");
+			  invalid_value_error(col->getWriteMethod().c_str());
+			}
+		#endif
   	  }
 }
 

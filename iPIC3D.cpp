@@ -29,14 +29,11 @@
 using namespace iPic3D;
 
 int main(int argc, char **argv) {
-// printf("\n Initialising MPI:\n");
+
  MPIdata::init(&argc, &argv);
-//  printf("Succesfully Initialised MPI!\n");
  {
   iPic3D::c_Solver KCode;
-  // printf("Initialising Kcode!\n");
   KCode.Init(argc, argv);
-  // printf("Woop Kcode done!\n");
 
   timeTasks.resetCycle();
   KCode.CalculateMoments();

@@ -165,6 +165,21 @@ w0 =  0.0  0.0  0.0
    FieldOutputCycle = 10
    FieldOutputTag   = B+E+Je+Ji
    MomentsOutputTag = rho+PXX+PXY+PXZ+PYY+PYZ+PZZ
+# Output for temperature
+   TemperatureOutputCycle = 10
+   TemperatureOutputTag = Tcart, Tperpar
+# Output for spectra
+   SpectraOutputCycle = 10
+   SpectraOutputTag = Stot, Spar, Sperp
+   DeltaX = 1
+   DeltaY = 1
+   DeltaZ = 1
+   Estarti = -6
+   Eendi = -1
+   dEi = 0.1
+   Estarte = -8
+   Eende = -1 
+   dEe = 0.1
 # Output for particles if 0 it doesnt save particles data
    ParticlesOutputCycle = 0
    ParticlesOutputTag = position+velocity+q 

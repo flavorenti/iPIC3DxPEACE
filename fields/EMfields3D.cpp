@@ -361,6 +361,12 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid, VirtualTopology3D *vct) :
 		  MPI_Type_create_subarray(3, size, subsize, start,MPI_ORDER_C, MPI_FLOAT, &procview);
 		  MPI_Type_commit(&procview);
 
+      MPI_Type_contiguous(6,MPI_FLOAT, &tensorcomp);
+      MPI_Type_commit(&tensorcomp);
+
+      MPI_Type_create_subarray(3, size, subsize, start, MPI_ORDER_C, tensorcomp, &procviewTensor);
+      MPI_Type_commit(&procviewTensor);
+
 		  subsize[0] = nxc-2; subsize[1] =nyc-2; subsize[2] = nzc-2;
 		  size[0]    = nxc;	  size[1] 	 =nyc;	 size[2] 	= nzc;
 		  start[0]	 = 1;	  start[1]	 =1;	 start[2]	= 1;
@@ -394,7 +400,11 @@ void EMfields3D::freeDataType(){
     MPI_Type_free(&cornertypeN);
 
     MPI_Type_free(&procview);
+    MPI_Type_free(&procviewXYZ);
+    MPI_Type_free(&procviewTensor);
     MPI_Type_free(&xyzcomp);
+    MPI_Type_free(&tensorcomp);
+    MPI_Type_free(&ghosttype);
 }
 
 // This was Particles3Dcomm::interpP2G()
@@ -4479,6 +4489,7 @@ void EMfields3D::initBEAM(double x_center, double y_center, double z_center,
   }
 }
 
+/*! Initialise a combination of magnetic dipoles */
 void EMfields3D::initDipole()
 {
   const Collective *col = &get_col();
@@ -4504,10 +4515,8 @@ void EMfields3D::initDipole()
       cout << "Solar Wind drift velocity        = " << ue0 << endl;
   }
 
-  double distance; /**< Distance center planet to grid point (in code units)*/
-  double x_displ, y_displ, z_displ; /**< Grid points coordinate w.r.t planet center*/
-  double fac1;  /**< Dummy variable*/
-
+  double distance;
+  double x_displ, y_displ, z_displ, fac1;
 
   double ebc[3];
   cross_product(ue0,ve0,we0,B0x,B0y,B0z,ebc);
@@ -4582,6 +4591,7 @@ void EMfields3D::initDipole()
 }
 
 
+/*! Initialise a 2D magnetic dipoles according to paper L.K.S Two-way coupling of a global Hall ....*/
 void EMfields3D::initDipole2D()
 {
   const Collective *col = &get_col();

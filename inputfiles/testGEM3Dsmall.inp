@@ -33,7 +33,7 @@ delta = 0.5
     
 #  %%%%%%%%%%%%%%%%%%% TIME %%%%%%%%%%%%%%%%%%
 dt = 0.15          # dt = time step   
-ncycles = 5    # cycles
+ncycles = 51    # cycles
 th = 1.0          # th =   decentering parameter
 c = 1.0
 
@@ -51,7 +51,7 @@ nzc = 20  # nzc = number of cells - z direction
 # number of MPI subdomains in each direction
 XLEN = 2
 YLEN = 2
-ZLEN = 1
+ZLEN = 2
 # topology of subdomains in each dimension (1=true, 0=false)
 PERIODICX = 1
 PERIODICY = 0
@@ -146,6 +146,21 @@ bcPHIfaceZleft  = 1
    FieldOutputCycle = 25
    FieldOutputTag   = B+E+Je+Ji
    MomentsOutputTag = rho+PXX+PXY+PXZ+PYY+PYZ+PZZ
+# Output for temperature
+   TemperatureOutputCycle = 25
+   TemperatureOutputTag = Tcart, Tperpar
+# Output for spectra
+   SpectraOutputCycle = 25
+   SpectraOutputTag = Stot, Spar, Sperp
+   DeltaX = 1
+   DeltaY = 1
+   DeltaZ = 1
+   Estarti = -6
+   Eendi = -1
+   dEi = 0.1
+   Estarte = -8
+   Eende = -1 
+   dEe = 0.1
 # Output for particles if 0 it doesnt save particles data
    ParticlesOutputCycle = 45
    ParticlesOutputTag = position+velocity+q

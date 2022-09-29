@@ -100,15 +100,18 @@ file(
 file(
         GLOB
         src_files
-        ConfigFile/*.cpp
+        ConfigFile/src/*.cpp
         PSKOutput3D/*.cpp
         bc/*.cpp
         communication/*.cpp
         fields/*.cpp
         grids/*.cpp
         inputoutput/*.cpp
+        mathlib/*.cpp
+        mpidata/*.cpp
         particles/*.cpp
         performances/*.cpp
+        processtopology/*.cpp
         solvers/*.cpp
         utility/*.cpp
         main/*.cpp
