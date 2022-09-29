@@ -1,4 +1,0 @@
-/media/sf_shared_linux/iPIC3D-OCA/build/CMakeFiles/rebuild_cache.dir
-/media/sf_shared_linux/iPIC3D-OCA/build/CMakeFiles/edit_cache.dir
-/media/sf_shared_linux/iPIC3D-OCA/build/CMakeFiles/iPIC3Dlib.dir
-/media/sf_shared_linux/iPIC3D-OCA/build/CMakeFiles/iPIC3D.dir
