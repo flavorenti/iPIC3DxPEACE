@@ -373,7 +373,8 @@ bool c_Solver::ParticlesMover(int cycle)
 {
   // move all species of particles
   {
-    timeTasks_set_main_task(TimeTasks::PARTICLES);
+      
+     timeTasks_set_main_task(TimeTasks::PARTICLES);
     // Should change this to add background field
     EMf->set_fieldForPcls();
 
@@ -382,23 +383,16 @@ bool c_Solver::ParticlesMover(int cycle)
     // Varibles for Exosphere injection
     // NOTE: Could/Should load these in initialisation of particles object
     const double R = col->getL_square();
+
     const double Nexo_H  = col->getnSurf(0);   // density of exosphere neutrals at the surface (in nsw units)
-    const double fexo_H  = col->getfExo(0);  // ioniz. frequency in units of wpi
-    const double hexo_H  = col->gethExo(0); // scale length of exosphere
+    const double fexo_H  = col->getfExo(0);    // ioniz. frequency in units of wpi
+    const double hexo_H  = col->gethExo(0);    // scale length of exosphere
     const double Nexo_Na = col->getnSurf(1);
     const double fexo_Na = col->getfExo(1);
     const double hexo_Na = col->gethExo(1);
-    const double w_fact  = 8e3;   // factor weight_exo / weight_sw - Not currently set input file
-    
-    // const double Nexo_H  = 1e4;   // density of exosphere neutrals at the surface (in nsw units)
-    // const double fexo_H  = 1e-9;  // ioniz. frequency in units of wpi
-    // const double hexo_H  = 0.5*R; // scale length of exosphere
-    // const double Nexo_Na = 1e3;
-    // const double fexo_Na = 1e-7;
-    // const double hexo_Na = 0.025*R;
-    // const double w_fact  = 8e3;   // factor weight_exo / weight_sw
-    
+    const double w_fact  = 8e3;                // factor weight_exo / weight_sw - Not currently set input file
     bool applyCollisions = (col->getcollisionProcesses()) && (cycle % col->getcollStepSkip() == 0);
+
     for (int i = 0; i < ns; i++)  // move each species
     {
      // #pragma omp task inout(part[i]) in(grid) target_device(booster)
@@ -424,6 +418,7 @@ bool c_Solver::ParticlesMover(int cycle)
         default:
           unsupported_value_error(Parameters::get_MOVER_TYPE());
       }
+    
       // Particles undergo collisions.
       if ( applyCollisions )  colls->Collide(i, part, col, EMf);
       // Injection particles from ionized exosphere ./Job
@@ -435,14 +430,16 @@ bool c_Solver::ParticlesMover(int cycle)
       if ( (i==4 or i==5) and col->getAddExosphere()){	 
          Qexo[i] = part[i].AddIonizedExosphere(R,col->getx_center(),col->gety_center(),col->getz_center(),Nexo_Na,fexo_Na,hexo_Na,w_fact);
       }
-
+    
       // External boundary conditions particles     ./Job
       Qrep[i] = part[i].repopulate_particles(EMf); 
     }
     
-    // Inject particles produced through impact ioni
-    if (applyCollisions) colls->createIonizedParticles(part);
     
+      // Inject particles produced through impact ioni
+      if (applyCollisions) colls->createIonizedParticles(part);
+     
+
     // Internal boundary conditions particles.                 ./Job
     // case with re-inejction of pcls to keep net charge zero  ./Job
     double Qrm, Count_plus=0., Count_mins=0.;

@@ -84,7 +84,7 @@ void Collective::ReadInput(string inputfile) {
   ConfigFile config(inputfile);
   // the following variables are ALWAYS taken from inputfile, even if restarting 
   {
-    cout << "Reading input file" << endl;
+    //cout << "Reading input file" << endl;
     dt = config.read < double >("dt");
     ncycles = config.read < int >("ncycles");
     th = config.read < double >("th",1.0);
@@ -95,10 +95,11 @@ void Collective::ReadInput(string inputfile) {
     SaveDirName = config.read < string > ("SaveDirName","data");
     RestartDirName = config.read < string > ("RestartDirName","data");
     ns = config.read < int >("ns");
-    nstestpart = config.read < int >("nsTestPart", 0);
+    //nstestpart = config.read < int >("nsTestPart", 0);
     NpMaxNpRatio = config.read < double >("NpMaxNpRatio",1.5);
     assert_ge(NpMaxNpRatio, 1.);
     // mode parameters for second order in time
+    /*
     PushWithBatTime = config.read < double >("PushWithBatTime",0);
     PushWithEatTime = config.read < double >("PushWithEatTime",1);
     ImplSusceptTime = config.read < double >("ImplSusceptTime",0);
@@ -114,21 +115,18 @@ void Collective::ReadInput(string inputfile) {
       case initial:
         ;
     }
+    */
     // GEM Challenge 
     B0x = config.read <double>("B0x",0.0);
     B0y = config.read <double>("B0y",0.0);
     B0z = config.read <double>("B0z",0.0);
 
     // Earth parameters
-    B1x = 0.0;
-    B1y = 0.0;
-    B1z = 0.0;
     B1x = config.read <double>("B1x",0.0);
     B1y = config.read <double>("B1y",0.0);
     B1z = config.read <double>("B1z",0.0);
     PlanetOffset = config.read <double>("PlanetOffset",0.0);
-
-    delta = config.read < double >("delta",0.5);
+    //delta = config.read < double >("delta",0.5);
 
     Case              = config.read<string>("Case");
     wmethod           = config.read<string>("WriteMethod");
@@ -190,7 +188,7 @@ void Collective::ReadInput(string inputfile) {
     MomentsOutputTag   =   config.read <string>("MomentsOutputTag","");
     SpectraOutputTag   =   config.read <string>("SpectraOutputTag","");
     TemperatureOutputTag   =   config.read <string>("TemperatureOutputTag","");
-    TestParticlesOutputCycle = config.read < int >("TestPartOutputCycle",10);
+    //TestParticlesOutputCycle = config.read < int >("TestPartOutputCycle",10);
     testPartFlushCycle = config.read < int >("TestParticlesOutputCycle",10);
     RestartOutputCycle = config.read < int >("RestartOutputCycle",5000);
     RemoveParticlesOutputCycle = config.read < int >("RemoveParticlesOutputCycle",0);
@@ -228,56 +226,56 @@ void Collective::ReadInput(string inputfile) {
 
   /* Read Collisional parameters */
   collisionProcesses = config.read < bool >("collisionProcesses", 0);
-  xSec = config.read < double >("xSec", 8.82e-10);
-  iSecElec = config.read < int >("iSecElec", 2);
-  iSecIon = config.read < int >("iSecIon", 2);
-  nCollProcesses = config.read < int >("nCollProcesses", 3);
-  nIoniColls = config.read < int >("nIoniColls", 1);
-  collStepSkip = config.read< int >("collStepSkip", 1);
-  // Threshold energies for collisional processes.
-  E_th_el = new double[nCollProcesses];
-  array_double E_th_el0 = config.read < array_double > ("E_th_el");
-  E_th_el[0] = E_th_el0.a;
-  if (nCollProcesses > 1)
-    E_th_el[1] = E_th_el0.b;
-  if (nCollProcesses > 2)
-    E_th_el[2] = E_th_el0.c;
-  if (nCollProcesses > 3)
-    E_th_el[3] = E_th_el0.d;
+    xSec = config.read < double >("xSec", 8.82e-10);
+    iSecElec = config.read < int >("iSecElec", 2);
+    iSecIon = config.read < int >("iSecIon", 2);
+    nCollProcesses = config.read < int >("nCollProcesses", 3);
+    nIoniColls = config.read < int >("nIoniColls", 1);
+    collStepSkip = config.read< int >("collStepSkip", 1);
+    // Threshold energies for collisional processes.
+    if (collisionProcesses){
+    E_th_el = new double[nCollProcesses];
+    array_double E_th_el0 = config.read < array_double > ("E_th_el");
+    E_th_el[0] = E_th_el0.a;
+    if (nCollProcesses > 1)
+      E_th_el[1] = E_th_el0.b;
+    if (nCollProcesses > 2)
+      E_th_el[2] = E_th_el0.c;
+    if (nCollProcesses > 3)
+      E_th_el[3] = E_th_el0.d;
+    }
+  /* Read Neutral Gas parameters */
+  AddExosphere = config.read < int >("AddExosphere",0);
+    nNeutSpecies = config.read < int >("nNeutSpecies", 0);
+    nSurf = new double[nNeutSpecies];
+    hExo = new double[nNeutSpecies];
+    fExo = new double[nNeutSpecies];
 
-   /* Read Neutral Gas parameters */
-  nNeutSpecies = config.read < int >("nNeutSpecies", 0);
-  nSurf = new double[nNeutSpecies];
-  hExo = new double[nNeutSpecies];
-  fExo = new double[nNeutSpecies];
+    array_double nSurf0 = config.read < array_double > ("nSurf");
+    array_double hExo0 = config.read < array_double > ("hExo");
+    array_double fExo0 = config.read < array_double > ("fExo");
 
-  array_double nSurf0 = config.read < array_double > ("nSurf");
-  array_double hExo0 = config.read < array_double > ("hExo");
-  array_double fExo0 = config.read < array_double > ("fExo");
-
-  nSurf[0] = nSurf0.a;
-  hExo[0] = hExo0.a;
-  fExo[0] = fExo0.a;
-  if (nNeutSpecies > 1)
-  {
-    nSurf[1] = nSurf0.b;
-    hExo[1]  = hExo0.b;
-    fExo[1] = fExo0.b;
-  }
-  if (nNeutSpecies > 2)
-  {
-    nSurf[2] = nSurf0.c;
-    hExo[2]  = hExo0.c;
-    fExo[2] = fExo0.c;
-  }
-  if (nNeutSpecies > 3)
-  {
-    nSurf[3] = nSurf0.d;
-    hExo[3]  = hExo0.d;
-    fExo[3] = fExo0.d;
-  }
-  // nSurf = config.read < double >("nSurf", 1e4);
-  // hExo  = config.read < double >("hExo" , 1e3);
+    nSurf[0] = nSurf0.a;
+    hExo[0] = hExo0.a;
+    fExo[0] = fExo0.a;
+    if (nNeutSpecies > 1)
+    {
+      nSurf[1] = nSurf0.b;
+      hExo[1]  = hExo0.b;
+      fExo[1] = fExo0.b;
+    }
+    if (nNeutSpecies > 2)
+    {
+      nSurf[2] = nSurf0.c;
+      hExo[2]  = hExo0.c;
+      fExo[2] = fExo0.c;
+    }
+    if (nNeutSpecies > 3)
+    {
+      nSurf[3] = nSurf0.d;
+      hExo[3]  = hExo0.d;
+      fExo[3] = fExo0.d;
+    }
 
   yes_sal = config.read < int >("yes_sal",0);
   n_layers_sal = config.read < int >("n_layers_sal",3);
@@ -291,7 +289,6 @@ void Collective::ReadInput(string inputfile) {
  
   NewPclInit = config.read < int >("NewPclInit",1); 
   NonTrivialBCPlanet = config.read < int >("NonTrivialBCPlanet",1);
-  AddExosphere = config.read < int >("AddExosphere",1);
 
   uth = new double[ns];
   vth = new double[ns];

@@ -333,7 +333,9 @@ class EMfields3D                // :public Field
 
     MPI_Datatype getProcview(){return  procview;}
     MPI_Datatype getXYZeType(){return xyzcomp;}
+    MPI_Datatype getTensorType(){return tensorcomp;}
     MPI_Datatype getProcviewXYZ(){return  procviewXYZ;}
+    MPI_Datatype getProcviewTensor(){return procviewTensor;}
     MPI_Datatype getGhostType(){return  ghosttype;}
 
     void freeDataType();
@@ -602,7 +604,7 @@ class EMfields3D                // :public Field
     MPI_Datatype cornertypeN;
     
     //for VTK output
-    MPI_Datatype  procviewXYZ,xyzcomp,procview,ghosttype;
+    MPI_Datatype  procviewXYZ,xyzcomp,tensorcomp,procview,procviewTensor,ghosttype;
     bool lEndFlag;
     
     void OpenBoundaryInflowB(arr3_double vectorX, arr3_double vectorY, arr3_double vectorZ,
