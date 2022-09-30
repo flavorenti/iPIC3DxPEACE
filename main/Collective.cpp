@@ -173,10 +173,23 @@ void Collective::ReadInput(string inputfile) {
 
     // take the output cycles
     FieldOutputCycle = config.read < int >("FieldOutputCycle",100);
+    SpectraOutputCycle = config.read < int >("SpectraOutputCycle",0);
+    DeltaX = config.read < int >("DeltaX",1);
+    DeltaY = config.read < int >("DeltaY",1);
+    DeltaZ = config.read < int >("DeltaZ",1);
+    Estarti = config.read < double >("Estarti",-1);
+    Eendi = config.read < double >("Eendi",1);
+    dEi = config.read < double >("dEi",0.5);
+    Estarte = config.read < double >("Estarte",-1);
+    Eende = config.read < double >("Eende",1);
+    dEe = config.read < double >("dEe",0.5);
+    TemperatureOutputCycle = config.read < int >("TemperatureOutputCycle",0);     
     ParticlesOutputCycle = config.read < int >("ParticlesOutputCycle",0);
     FieldOutputTag     =   config.read <string>("FieldOutputTag","");
     ParticlesOutputTag =   config.read <string>("ParticlesOutputTag","");
     MomentsOutputTag   =   config.read <string>("MomentsOutputTag","");
+    SpectraOutputTag   =   config.read <string>("SpectraOutputTag","");
+    TemperatureOutputTag   =   config.read <string>("TemperatureOutputTag","");
     TestParticlesOutputCycle = config.read < int >("TestPartOutputCycle",10);
     testPartFlushCycle = config.read < int >("TestParticlesOutputCycle",10);
     RestartOutputCycle = config.read < int >("RestartOutputCycle",5000);
@@ -561,6 +574,16 @@ void Collective::ReadInput(string inputfile) {
 bool Collective::field_output_is_off()const
 {
   return (FieldOutputCycle <= 0);
+}
+
+bool Collective::spectra_output_is_off()const
+{
+  return (SpectraOutputCycle <= 0);
+}
+
+bool Collective::temperature_output_is_off()const
+{
+  return (TemperatureOutputCycle <= 0);
 }
 
 bool Collective::particle_output_is_off()const

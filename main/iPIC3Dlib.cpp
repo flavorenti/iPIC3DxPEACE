@@ -225,9 +225,44 @@ int c_Solver::Init(int argc, char **argv) {
 				  momentwritebuffer=newArr3(float,(grid->getNZN()-3)*14, grid->getNYN()-3, grid->getNXN()-3);
 		  }
 	  }
-    // printf("\n Success writing feild outputs. \n");
+	  if(!col->spectra_output_is_off()){
+		  if(col->getWriteMethod()=="pvtk"){
+			 if(!(col->getSpectraOutputTag()).empty()){
+
+        int error = 0;
+        if (vct->getCartesian_rank()==0){
+          if ((grid->getNXN()-3)%col->getDeltaX() != 0 || (grid->getNYN()-3)%col->getDeltaY() != 0 || (grid->getNZN()-3)%col->getDeltaZ() != 0){
+            error = 1;
+          }
+        }
+
+        MPI_Bcast(&error, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        if (error != 0){
+          if (vct->getCartesian_rank()==0){
+            printf("----------\n");
+            printf("ERROR: Number of cells in MPI subdomain not a multiple of Delta (Energy Spectra).\n");
+            printf("Run terminated.\n");
+            printf("----------\n");
+          }
+          MPI_Barrier(MPI_COMM_WORLD);
+          MPI_Finalize();
+          exit(0);
+        }
+
+        int Nspece = (col->getEende() - col->getEstarte())/col->getdEe() + 1.001;
+        int Nspeci = (col->getEendi() - col->getEstarti())/col->getdEi() + 1.001;
+        spectrawritebuffere=newArr4(float,(grid->getNZN()-3)/(col->getDeltaZ()),(grid->getNYN()-3)/(col->getDeltaY()),(grid->getNXN()-3)/(col->getDeltaX()),Nspece+1);
+        spectrawritebufferi=newArr4(float,(grid->getNZN()-3)/(col->getDeltaZ()),(grid->getNYN()-3)/(col->getDeltaY()),(grid->getNXN()-3)/(col->getDeltaX()),Nspeci+1);
+        }
+		  }
+	  }
+    if(!col->temperature_output_is_off()){
+      if(col->getWriteMethod()=="pvtk"){
+       if(!(col->getTemperatureOutputTag()).empty())
+        temperaturewritebuffer=newArr4(float,grid->getNZN()-3, grid->getNYN()-3, grid->getNXN()-3,6);
+      }
+    }
   }
-  // printf("\n Almost done with init. \n");
   rho = new double[ns];
   Ke = new double[ns];
   BulkEnergy = new double[ns];
@@ -546,6 +581,17 @@ void c_Solver::WriteOutput(int cycle) {
 		  }
 	  }
 
+	  if(!col->spectra_output_is_off() && (cycle%(col->getSpectraOutputCycle()) == 0 || cycle == first_cycle) ){
+		  if(!(col->getSpectraOutputTag()).empty()){
+			  WriteSpectraVTK(grid, part, EMf, col, vct, col->getSpectraOutputTag(),cycle, spectrawritebuffere, spectrawritebufferi);
+		  }
+	  }
+
+    if(!col->temperature_output_is_off() && (cycle%(col->getTemperatureOutputCycle()) == 0 || cycle == first_cycle) ){
+      if(!(col->getTemperatureOutputTag()).empty()){
+        WriteTemperatureVTK(grid, EMf, col, vct, col->getTemperatureOutputTag() ,cycle, temperaturewritebuffer);
+      }
+    }
 	  //Particle information is still in hdf5
 	  	WriteParticles(cycle);
 	  //Test Particle information is still in hdf5

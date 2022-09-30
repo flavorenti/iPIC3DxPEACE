@@ -149,18 +149,38 @@ namespace iPic3D {
     int    pclbuffersize;
     float *testpclVel;
     MPI_File fh;
-  	MPI_Status*  status;
-  	float**** fieldwritebuffer;
-	MPI_Request fieldreqArr[4];//E+B+Je+Ji
-	MPI_File    fieldfhArr[4];
-	MPI_Status  fieldstsArr[4];
-	int fieldreqcounter;
 
-  	float*** momentwritebuffer;
-	MPI_Request momentreqArr[14];//rho+PXX+PXY+PXZ++PYY+PYZ+PZZ for species0,1
-	MPI_File    momentfhArr[14];
-	MPI_Status  momentstsArr[14];
-	int momentreqcounter;
+    MPI_Status*  status;
+
+    float**** fieldwritebuffer;
+    MPI_Request fieldreqArr[4];//E+B+Je+Ji
+    MPI_File    fieldfhArr[4];
+    MPI_Status  fieldstsArr[4];
+    int fieldreqcounter;
+
+    float*** momentwritebuffer;
+    MPI_Request momentreqArr[14];//rho+PXX+PXY+PXZ++PYY+PYZ+PZZ for species0,1
+    MPI_File    momentfhArr[14];
+    MPI_Status  momentstsArr[14];
+    int momentreqcounter;
+
+    float**** spectrawritebuffere;
+    MPI_Request spectrareqArre[6];//Stot+Spar+Sperp for species0,1
+    MPI_File    spectrafhArre[6];
+    MPI_Status  spectrastsArre[6];
+    int spectrareqcountere;
+
+    float**** spectrawritebufferi;
+    MPI_Request spectrareqArri[6];//Stot+Spar+Sperp for species0,1
+    MPI_File    spectrafhArri[6];
+    MPI_Status  spectrastsArri[6];
+    int spectrareqcounteri;
+
+    float**** temperaturewritebuffer;
+    MPI_Request temperaturereqArr[4];//Tcart+Tperpar for species0,1
+    MPI_File    temperaturefhArr[4];
+    MPI_Status  temperaturestsArr[4];
+    int temperaturereqcounter;
 
   };
 
