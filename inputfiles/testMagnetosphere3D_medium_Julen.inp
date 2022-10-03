@@ -38,8 +38,8 @@ PlanetOffset = -0.5   #negative for Mercury
 
 
 #  %%%%%%%%%%%%%%%%%%% TIME %%%%%%%%%%%%%%%%%%
-dt = 0.5                    # dt = time step  
-ncycles = 82		 #!!!    # cycles
+dt = 0.5                   # dt = time step  
+ncycles = 2000		 #!!!    # cycles
 th = 1.0                     # th =   decentering parameter
 c = 1.0                      # c = light speed 
 
@@ -48,24 +48,24 @@ Smooth = 0.5                  # Smoothing value (5-points stencil)
 SmoothNiter = 2           # How many times the smoothing is applied, default is 6
 
 # %%%%%%%%%%%%%%%%%% BOX SIZE %%%%%%%%%%%%%%%
-Lx =   10.0                  # Lx = simulation box length - x direction   
-Ly =   10.0                  # Ly = simulation box length - y direction
-Lz =   10.0                  # Lz = simulation box length - z direction   
+Lx =   25.0                  # Lx = simulation box length - x direction   
+Ly =   20.0                  # Ly = simulation box length - y direction
+Lz =   20.0                  # Lz = simulation box length - z direction   
 
-x_center =   6.0             # center of the dipole - X
-y_center =   5.0             # center of the dipole - Y
-z_center =   5.0             # center of the dipole - Z  
-L_square =   0.5              # radius of the planet
+x_center =   10.0             # center of the dipole - X
+y_center =   10.0             # center of the dipole - Y
+z_center =   10.0             # center of the dipole - Z  
+L_square =   2.5              # radius of the planet
 
-nxc =  32                  # nxc = number of cells - x direction        
-nyc =  32                  # nyc = number of cells - y direction
-nzc =  32                  # nzc = number of cells - z direction        
+nxc =  256                  # nxc = number of cells - x direction        
+nyc =  208                  # nyc = number of cells - y direction
+nzc =  208                  # nzc = number of cells - z direction        
 
 # %%%%%%%%%%%%%% MPI TOPOLOGY %%%%%%%%%%%%%%
 # number of MPI subdomains in each direction
-XLEN = 2
-YLEN = 2
-ZLEN = 2
+XLEN = 16
+YLEN = 16
+ZLEN = 16
 # topology (1=true, 0=false): USE PERIODIC IN ALL DIRECTIONS
 PERIODICX = 0
 PERIODICY = 0
@@ -77,7 +77,7 @@ PERIODICZ = 0
 #    1 = solar wind protons
 #    2 = exosphere elctrons
 #    3 = exosphere protons
-ns = 2 
+ns = 4
 # Initial density (make sure you are neutral)
 rhoINIT =  1.0	1.0  1.0  1.0
 # Injection density (make sure you are neutral)
@@ -93,16 +93,16 @@ npcely =  4  4  0  0
 npcelz =  4  4  0  0
 
 # qom = charge to mass ratio for different species 
-qom =  -25.0	1.0  -25.0  1.0	
+qom =  -100.0	1.0  -100.0  1.0	
 # uth = thermal velocity for different species - Direction X  
-uth =  0.045  0.0063  0.031  0.0005
+uth =  0.031  0.0031  0.031  0.0001
 # vth = thermal velocity for different species - Direction Y 
-vth =  0.045  0.0063  0.031  0.0005
+vth =  0.031  0.0031  0.031  0.0001
 # wth = thermal velocity for different species - Direction Z 
-wth =  0.045  0.0063  0.031  0.0005
+wth =  0.031  0.0031  0.031  0.0001
 
 # u0 = drift velocity   - Direction X    
-u0 =  0.02  0.02  0.0  0.0
+u0 =  0.027  0.027  0.0  0.0
 # v0 = drift velocity   - Direction Y    
 v0 =  0.0  0.0  0.0  0.0
 # w0 = drift velocity   - Direction Z    
@@ -143,54 +143,12 @@ w0 =  0.0  0.0  0.0  0.0
     bcPfaceZright = 2
     bcPfaceZleft =  2
 
-# %%%%%%%%%%%% COLLISIONAL PARAMETERS %%%%%%%%%%%%%%
-
-# Include collision option
-# 0 = no Collisions
-# 1 = Collisions
-   collisionProcesses = 0 
-
-# Xsec - Collision Cross Section
-   xSec = 1.76e-9
-
-# Number of collisional processes
-   nCollProcesses = 3
-
-# Threshold energies of electron collisional processes
-# List from highest to lowest threshold energy
-   E_th_el = 5.76e-6  3.41e-6  1.71e-7
-
-# Index of last ionization process
-# 0 = no ionization processes
-# 1 = one ionization process
-# 2 = two ionization processes
-   nIoniColls = 1
-
-# iSecElec - Species index in which secondary electrons are produced
-# iSecIon - Species index in which secondary ions are produced
-   iSecElec = 2
-   iSecIon = 3
-
-# Option to skip steps to increase speed of collision processes
-# 1 = apply collisions at each step
-# n = apply collisions every n steps
-   collStepSkip = 1
-
-# %%%%%%%%%% NEUTRAL GAS PARAMETERS %%%%%%%%%%%%
-# nNeutSpecies - Number of neutral species
-   nNeutSpecies = 0
-# nSurf - neutral gas density at surface [in SW units]
-   nSurf = 1e8
-# hExo - scale height of the exosphere [in dp]
-   hExo = 1000.0
-# fExo - Photoionization frequency of species [in Wpi]
-   fExo = 1e-9
 
 # %%%%%%%%%%%%%% OUTPUTS %%%%%%%%%%%%%%%%%
 # SAL external boundary conditions (1=True, 0=False)
    yes_sal = 1
-   n_layers_sal = 3
-# Dipole initialization for particles 
+   n_layers_sal = 10
+# Dipole initialization for particles    
    NewPclInit = 1
 # Internal boundary conditions (Trivial=delete or NonTrivial=delete+reflection)
    NonTrivialBCPlanet = 0
@@ -205,13 +163,28 @@ w0 =  0.0  0.0  0.0  0.0
 # Mover predictor corrector iteration
    NiterMover = 8
 # Output for field
-   FieldOutputCycle = 10
+   FieldOutputCycle = 100
    FieldOutputTag   = B+E+Je+Ji
    MomentsOutputTag = rho+PXX+PXY+PXZ+PYY+PYZ+PZZ
+# Output for temperature
+   TemperatureOutputCycle = 100
+   TemperatureOutputTag = Tcart, Tperpar
+# Output for spectra
+   SpectraOutputCycle = 100
+   SpectraOutputTag = Stot, Spar, Sperp
+   DeltaX = 1
+   DeltaY = 1
+   DeltaZ = 1
+   Estarti = -6
+   Eendi = -1
+   dEi = 0.1
+   Estarte = -8
+   Eende = -1 
+   dEe = 0.1
 # Output for particles if 0 it doesnt save particles data
    ParticlesOutputCycle = 0
    ParticlesOutputTag = position+velocity+q 
 # Restart cycle
-   RestartOutputCycle = 25
+   RestartOutputCycle = 250000
 # Output for particles removed from inside planet
    RemoveParticlesOutputCycle = 0

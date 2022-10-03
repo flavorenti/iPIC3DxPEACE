@@ -451,7 +451,8 @@ public:
       for (int i = 0; i < nCollProcesses; i++){
         stringstream ii;
         ii << i;
-        this->output_adaptor.write("/collective/colls/E_th_el"+ii.str(), _col->getE_th_el(i));
+	if (_col->getcollisionProcesses())
+        	this->output_adaptor.write("/collective/colls/E_th_el"+ii.str(), _col->getE_th_el(i));
       }
       this->output_adaptor.write("/collective/colls/nIoniColls", _col->getnIoniColls());
       this->output_adaptor.write("/collective/colls/collStepSkip", _col->getcollStepSkip());

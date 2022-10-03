@@ -137,7 +137,6 @@ int c_Solver::Init(int argc, char **argv) {
   // printf("\n Done with local grid. Make EM field object. \n");
   EMf = new EMfields3D(col, grid, vct);  // Create Electromagnetic Fields Object
 
-
   if (col->getcollisionProcesses()){ // If Collisional processes
     colls = new Collisions(col, vct, grid, EMf); //Create Collision object
   }
@@ -196,10 +195,9 @@ int c_Solver::Init(int argc, char **argv) {
   }
 
   // printf("\n Any test pl allocations completed \n");
-  // cout << "Rank " << myrank << "\n";
-  
+
   if ( Parameters::get_doWriteOutput()){
-    // printf("\n Writing outputs. \n");
+    
 		#ifndef NO_HDF5
 	  	if(col->getWriteMethod() == "shdf5" || col->getCallFinalize() || restart_cycle>0 ||
 			  (col->getWriteMethod()=="pvtk" && !col->particle_output_is_off()) )
@@ -208,9 +206,12 @@ int c_Solver::Init(int argc, char **argv) {
 			  fetch_outputWrapperFPP().init_output_files(col,vct,grid,EMf,part,ns,testpart,nstestpart);
 		}
 		#endif
-    // printf("\n Success writing outputs. \n");
+  
+   if (vct->getCartesian_rank()==0) 
+	printf("\n Success writing outputs. \n");
+
 	  if(!col->field_output_is_off()){
-		  if(col->getWriteMethod()=="pvtk"){
+	  	if(col->getWriteMethod()=="pvtk"){
 			  if(!(col->getFieldOutputTag()).empty())
 				  fieldwritebuffer = newArr4(float,(grid->getNZN()-3),grid->getNYN()-3,grid->getNXN()-3,3);
 			  if(!(col->getMomentsOutputTag()).empty())
@@ -263,6 +264,10 @@ int c_Solver::Init(int argc, char **argv) {
       }
     }
   }
+
+   if (vct->getCartesian_rank()==0) 
+	cout << "done output Rank " << myrank << "\n";
+
   rho = new double[ns];
   Ke = new double[ns];
   BulkEnergy = new double[ns];
@@ -272,7 +277,7 @@ int c_Solver::Init(int argc, char **argv) {
     ofstream my_file(cq.c_str());
     my_file.close();
   }
-  // printf("\n Closed file. \n");
+
   Qdel = new double[ns];
   Count = new double[ns];
   Qrep = new double[ns];
@@ -373,8 +378,7 @@ bool c_Solver::ParticlesMover(int cycle)
 {
   // move all species of particles
   {
-      
-     timeTasks_set_main_task(TimeTasks::PARTICLES);
+    timeTasks_set_main_task(TimeTasks::PARTICLES);
     // Should change this to add background field
     EMf->set_fieldForPcls();
 

@@ -361,6 +361,12 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid, VirtualTopology3D *vct) :
 		  MPI_Type_create_subarray(3, size, subsize, start,MPI_ORDER_C, MPI_FLOAT, &procview);
 		  MPI_Type_commit(&procview);
 
+      MPI_Type_contiguous(6,MPI_FLOAT, &tensorcomp);
+      MPI_Type_commit(&tensorcomp);
+
+      MPI_Type_create_subarray(3, size, subsize, start, MPI_ORDER_C, tensorcomp, &procviewTensor);
+      MPI_Type_commit(&procviewTensor);
+
 		  subsize[0] = nxc-2; subsize[1] =nyc-2; subsize[2] = nzc-2;
 		  size[0]    = nxc;	  size[1] 	 =nyc;	 size[2] 	= nzc;
 		  start[0]	 = 1;	  start[1]	 =1;	 start[2]	= 1;
@@ -394,7 +400,11 @@ void EMfields3D::freeDataType(){
     MPI_Type_free(&cornertypeN);
 
     MPI_Type_free(&procview);
+    MPI_Type_free(&procviewXYZ);
+    MPI_Type_free(&procviewTensor);
     MPI_Type_free(&xyzcomp);
+    MPI_Type_free(&tensorcomp);
+    MPI_Type_free(&ghosttype);
 }
 
 //

@@ -1167,7 +1167,7 @@ void WriteTemperatureVTK(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCt
               Tperpar[iz][iy][ix][5] = Tc;
           }
 
-  for(int tagid=0; tagid<tagsize; tagid++){
+   for(int tagid=0; tagid<tagsize; tagid++){
 
    if (outputTag.find(temperaturetags[tagid], 0) == string::npos) continue;
 
@@ -1223,6 +1223,7 @@ void WriteTemperatureVTK(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCt
     int nelem = strlen(header);
     int charsize=sizeof(char);
     MPI_Offset disp = nelem*charsize;
+
 
     ostringstream filename;
     filename << col->getSaveDirName() << "/" << col->getSimName() << "_"<< temperaturetags[tagid] << ((si%2==0)?"e":"i")<< si  << "_" << cycle << ".vtk";

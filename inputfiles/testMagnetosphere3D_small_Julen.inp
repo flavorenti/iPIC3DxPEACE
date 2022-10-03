@@ -39,7 +39,7 @@ PlanetOffset = -0.5   #negative for Mercury
 
 #  %%%%%%%%%%%%%%%%%%% TIME %%%%%%%%%%%%%%%%%%
 dt = 0.5                    # dt = time step  
-ncycles = 82		 #!!!    # cycles
+ncycles = 50		 #!!!    # cycles
 th = 1.0                     # th =   decentering parameter
 c = 1.0                      # c = light speed 
 
@@ -77,11 +77,11 @@ PERIODICZ = 0
 #    1 = solar wind protons
 #    2 = exosphere elctrons
 #    3 = exosphere protons
-ns = 2 
+ns = 2
 # Initial density (make sure you are neutral)
-rhoINIT =  1.0	1.0  1.0  1.0
+rhoINIT =  1.0	1.0  0  0
 # Injection density (make sure you are neutral)
-rhoINJECT =  1.0   1.0  1.0  1.0
+rhoINJECT =  1.0   1.0  0  0
 # TrackParticleID[species] = 1=true, 0=false --> Assign ID to particles
 TrackParticleID = 0  0  0  0
 
@@ -93,13 +93,13 @@ npcely =  4  4  0  0
 npcelz =  4  4  0  0
 
 # qom = charge to mass ratio for different species 
-qom =  -25.0	1.0  -25.0  1.0	
+qom =  -100.0	1.0  -25.0  1.0	
 # uth = thermal velocity for different species - Direction X  
-uth =  0.045  0.0063  0.031  0.0005
+uth =  0.031  0.0063  0.031  0.0005
 # vth = thermal velocity for different species - Direction Y 
-vth =  0.045  0.0063  0.031  0.0005
+vth =  0.031  0.0063  0.031  0.0005
 # wth = thermal velocity for different species - Direction Z 
-wth =  0.045  0.0063  0.031  0.0005
+wth =  0.031  0.0063  0.031  0.0005
 
 # u0 = drift velocity   - Direction X    
 u0 =  0.02  0.02  0.0  0.0
@@ -148,7 +148,7 @@ w0 =  0.0  0.0  0.0  0.0
 # Include collision option
 # 0 = no Collisions
 # 1 = Collisions
-   collisionProcesses = 0 
+   collisionProcesses = 0
 
 # Xsec - Collision Cross Section
    xSec = 1.76e-9
@@ -208,10 +208,25 @@ w0 =  0.0  0.0  0.0  0.0
    FieldOutputCycle = 10
    FieldOutputTag   = B+E+Je+Ji
    MomentsOutputTag = rho+PXX+PXY+PXZ+PYY+PYZ+PZZ
+# Output for temperature
+   TemperatureOutputCycle = 10
+   TemperatureOutputTag = Tcart, Tperpar
+# Output for spectra
+   SpectraOutputCycle = 10
+   SpectraOutputTag = Stot, Spar, Sperp
+   DeltaX = 2
+   DeltaY = 2
+   DeltaZ = 2
+   Estarti = -6
+   Eendi = -1
+   dEi = 0.1
+   Estarte = -8
+   Eende = -1 
+   dEe = 0.1
 # Output for particles if 0 it doesnt save particles data
    ParticlesOutputCycle = 0
    ParticlesOutputTag = position+velocity+q 
 # Restart cycle
-   RestartOutputCycle = 25
+   RestartOutputCycle = 0
 # Output for particles removed from inside planet
    RemoveParticlesOutputCycle = 0

@@ -61,11 +61,13 @@ void OutputWrapperFPP::init_output_files(
     output_mgr.push_back(&hdf5_agent);
 
     if(col->getWriteMethod() == "shdf5"||(col->getWriteMethod()=="pvtk"&&!col->particle_output_is_off()) ){
+	/*
         if (cartesian_rank == 0 && restart_status < 2) {
           hdf5_agent.open(SaveDirName + "/settings.hdf");
           output_mgr.output("collective + total_topology + proc_topology", 0);
           hdf5_agent.close();
         }
+	*/
 
     	if (restart_status == 0) {
     	      hdf5_agent.open(output_file);
@@ -77,12 +79,13 @@ void OutputWrapperFPP::init_output_files(
     }
 
     if(col->getCallFinalize() || col->getRestartOutputCycle()>0){
-
+	/*
         if (cartesian_rank == 0 && restart_status < 2) {
   		  hdf5_agent.open(RestartDirName + "/settings.hdf");
   		  output_mgr.output("collective + total_topology + proc_topology", 0);
   		  hdf5_agent.close();
         }
+	*/
 
     	if (restart_status == 0) {
     		hdf5_agent.open(restart_file);
@@ -91,6 +94,7 @@ void OutputWrapperFPP::init_output_files(
 
     }
 
+    printf("entered4 %i \n",vct->getCartesian_rank());
 
 #endif
 }
