@@ -435,29 +435,6 @@ public:
         this->output_adaptor.write("/collective/testspecies_" + ii.str() + "/energy", 	   _col->getEnergy(i));
       };
 
-      this->output_adaptor.write("/collective/colls/collisionProcesses", _col->getcollisionProcesses());
-      this->output_adaptor.write("/collective/colls/xSec", _col->getxSec());
-      this->output_adaptor.write("/collective/colls/iSecElec", _col->getiSecElec());
-      this->output_adaptor.write("/collective/colls/iSecIon", _col->getiSecIon());
-      this->output_adaptor.write("/collective/colls/nCollProcesses", _col->getnCollProcesses());
-      for (int i = 0; i < nCollProcesses; i++){
-        stringstream ii;
-        ii << i;
-	if (_col->getcollisionProcesses())
-        	this->output_adaptor.write("/collective/colls/E_th_el"+ii.str(), _col->getE_th_el(i));
-      }
-      this->output_adaptor.write("/collective/colls/nIoniColls", _col->getnIoniColls());
-      this->output_adaptor.write("/collective/colls/collStepSkip", _col->getcollStepSkip());
-
-      this->output_adaptor.write("/collective/neutrals/nNeutSpecies", _col->getnNeutSpecies());
-      for (int i = 0; i < nNeutSpecies; i++){
-        stringstream ii;
-        ii << i;
-        this->output_adaptor.write("/collective/neutrals/nSurf" + ii.str(), _col->getnSurf(i));
-        this->output_adaptor.write("/collective/neutrals/hExo" + ii.str(), _col->gethExo(i));
-        this->output_adaptor.write("/collective/neutrals/fExo" + ii.str(), _col->getfExo(i));
-      }
-
     }
 
     if (tag.find("total_topology", 0) != string::npos) {

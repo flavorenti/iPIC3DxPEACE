@@ -130,10 +130,6 @@ int c_Solver::Init(int argc, char **argv) {
   // Create the local grid
   grid = new Grid3DCU(col, vct);  // Create the local grid
   EMf = new EMfields3D(col, grid, vct);  // Create Electromagnetic Fields Object
- 
-  if (col->getcollisionProcesses()){ // If Collisional processes
-    colls = new Collisions(col, vct, grid, EMf); //Create Collision object
-  }
 
   if      (col->getCase()=="GEMnoPert") 		EMf->initGEMnoPert();
   else if (col->getCase()=="ForceFree") 		EMf->initForceFree();
@@ -174,14 +170,6 @@ int c_Solver::Init(int argc, char **argv) {
       part[i].reserve_remaining_particle_IDs();
     }
   }
-  else
-  {
-    for (int i = 0; i < ns; i++){
-      part[i].load_restart_pcls();
-    }
-  }
-// printf("\n PArticle initial conditions complete \n");
-// cout << "Rank " << myrank << "\n";
 
   //allocate test particles if any
   nstestpart = col->getNsTestPart();
@@ -194,7 +182,6 @@ int c_Solver::Init(int argc, char **argv) {
 	   }
   }
 
-
   if ( Parameters::get_doWriteOutput()){
 		#ifndef NO_HDF5
 	  	if(col->getWriteMethod() == "shdf5" || col->getCallFinalize() || restart_cycle>0 ||
@@ -204,12 +191,8 @@ int c_Solver::Init(int argc, char **argv) {
 			  fetch_outputWrapperFPP().init_output_files(col,vct,grid,EMf,part,ns,testpart,nstestpart);
 		}
 		#endif
- 
-   if (vct->getCartesian_rank()==0) 
-	printf("\n Success writing outputs. \n");
-
 	  if(!col->field_output_is_off()){
-	  	if(col->getWriteMethod()=="pvtk"){
+		  if(col->getWriteMethod()=="pvtk"){
 			  if(!(col->getFieldOutputTag()).empty())
 				  fieldwritebuffer = newArr4(float,(grid->getNZN()-3),grid->getNYN()-3,grid->getNXN()-3,3);
 			  if(!(col->getMomentsOutputTag()).empty())
@@ -262,7 +245,6 @@ int c_Solver::Init(int argc, char **argv) {
       }
     }
   }
-
   rho = new double[ns];
   Ke = new double[ns];
   BulkEnergy = new double[ns];
@@ -272,7 +254,7 @@ int c_Solver::Init(int argc, char **argv) {
     ofstream my_file(cq.c_str());
     my_file.close();
   }
-
+  
   Qdel = new double[ns];
   Count = new double[ns];
   Qrep = new double[ns];
@@ -381,11 +363,13 @@ bool c_Solver::ParticlesMover(int cycle)
 
     // Varibles for Exosphere injection 
     const double R = col->getL_square();
-    const double Nexo_H  = col->getnSurf(0);   // density of exosphere neutrals at the surface (in nsw units)
-    const double fexo_H  = col->getfExo(0);    // ioniz. frequency in units of wpi
-    const double hexo_H  = col->gethExo(0);    // scale length of exosphere
-    const double w_fact  = col->getWfact();                // factor weight_exo / weight_sw - Not currently set input file
-    bool applyCollisions = (col->getcollisionProcesses()) && (cycle % col->getcollStepSkip() == 0);
+    const double Nexo_H  = 1e4;   // density of exosphere neutrals at the surface (in nsw units)
+    const double fexo_H  = 1e-9;  // ioniz. frequency in units of wpi
+    const double hexo_H  = 0.5*R; // scale length of exosphere
+    const double Nexo_Na = 1e3;
+    const double fexo_Na = 1e-7;
+    const double hexo_Na = 0.025*R;
+    const double w_fact  = 8e3;   // factor weight_exo / weight_sw
 
     for (int i = 0; i < ns; i++)  // move each species
     {
@@ -412,22 +396,20 @@ bool c_Solver::ParticlesMover(int cycle)
         default:
           unsupported_value_error(Parameters::get_MOVER_TYPE());
       }
-    
-      // Particles undergo collisions.
-      if ( applyCollisions )  colls->Collide(i, part, col, EMf);
+
       // Injection particles from ionized exosphere ./Job
       // inject hydrogen
-      if ( i>1 and i<4 and col->getAddExosphere()){
-     	 // dprintf("ok add exosph\n");	      
+      if ( (i==2 or i==3) and col->getAddExosphere()){	 
          Qexo[i] = part[i].AddIonizedExosphere(R,col->getx_center(),col->gety_center(),col->getz_center(),Nexo_H,fexo_H,hexo_H,w_fact);
       }
-    
+      // inject sodium
+      if ( (i==4 or i==5) and col->getAddExosphere()){	 
+         Qexo[i] = part[i].AddIonizedExosphere(R,col->getx_center(),col->gety_center(),col->getz_center(),Nexo_Na,fexo_Na,hexo_Na,w_fact);
+      }
+
       // External boundary conditions particles     ./Job
       Qrep[i] = part[i].repopulate_particles(EMf); 
     }
-    
-      // Inject particles produced through impact ioni
-      if (applyCollisions) colls->createIonizedParticles(part);
 
     // Internal boundary conditions particles.                 ./Job
     // case with re-inejction of pcls to keep net charge zero  ./Job
@@ -578,7 +560,7 @@ void c_Solver::WriteOutput(int cycle) {
         WriteTemperatureVTK(grid, EMf, col, vct, col->getTemperatureOutputTag() ,cycle, temperaturewritebuffer);
       }
     }
-  
+
 	  //Particle information is still in hdf5
 	  	WriteParticles(cycle);
 	  //Test Particle information is still in hdf5

@@ -136,6 +136,7 @@ class EMfields3D                // :public Field
     void sumMoments_AoS_intr(const Particles3Dcomm* part);
     void sumMoments_vectorized(const Particles3Dcomm* part);
     void sumMoments_vectorized_AoS(const Particles3Dcomm* part);
+    void sumMomentsOld(const Particles3Dcomm& pcls);
     /*! add accumulated moments to the moments for a given species */
     //void addToSpeciesMoments(const TenMoments & in, int is);
     /*! add an amount of charge density to charge density field at node X,Y,Z */

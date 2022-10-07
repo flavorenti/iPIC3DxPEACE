@@ -18,33 +18,19 @@
  * limitations under the License.
  */
 
-#ifndef Moments_H
-#define Moments_H
+#include "Moments.h"
 #include "Alloc.h"
 
-// class to accumulate node-centered species moments
-// 
-class Moments10
+void Moments10::set_to_zero()
 {
-  private:
-    arr4_double arr;
-    int nx;
-    int ny;
-    int nz;
-  public:
-    void set_to_zero();
+  arr.setall(0);
+  //#pragma omp parallel for collapse(4)
+  //for (register int i = 0; i < nx; i++)
+  //for (register int j = 0; j < ny; j++)
+  //for (register int k = 0; k < nz; k++)
+  //for (register int m = 0; m < 10; m++)
+  //{
+  //  arr[i][j][k][m] = 0.0;
+  //}
+}
 
-    // fetch accessors (write access)
-    arr4_double fetch_arr() { return arr; }
-
-    Moments10(int nxn, int nyn, int nzn) :
-      nx(nxn),
-      ny(nyn),
-      nz(nzn),
-      arr (nxn, nyn, nzn,10)
-    {
-    };
-    ~Moments10(){};
-};
-
-#endif

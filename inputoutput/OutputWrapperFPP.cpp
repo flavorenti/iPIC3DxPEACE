@@ -77,6 +77,7 @@ void OutputWrapperFPP::init_output_files(
     }
 
     if(col->getCallFinalize() || col->getRestartOutputCycle()>0){
+
         if (cartesian_rank == 0 && restart_status < 2) {
   		  hdf5_agent.open(RestartDirName + "/settings.hdf");
   		  output_mgr.output("collective + total_topology + proc_topology", 0);
@@ -89,6 +90,7 @@ void OutputWrapperFPP::init_output_files(
     	}
 
     }
+
 
 #endif
 }

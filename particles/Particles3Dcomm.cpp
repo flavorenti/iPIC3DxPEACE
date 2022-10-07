@@ -182,6 +182,7 @@ if( !isTestParticle ){
   v0 = col->getV0(get_species_num());
   w0 = col->getW0(get_species_num());
   //TrackParticleID = col->getTrackParticleID(get_species_num());
+  Ninj = col->getRHOinject(get_species_num());
 }else{
 	pitch_angle = col->getPitchAngle(get_species_num()-col->getNs());
 	energy = col->getEnergy(get_species_num()-col->getNs());
@@ -194,6 +195,7 @@ if( !isTestParticle ){
   dx = grid->getDX();
   dy = grid->getDY();
   dz = grid->getDZ();
+  delta = col->getDelta();
 
   c = col->getC();
   // info for mover
@@ -296,6 +298,21 @@ if( !isTestParticle ){
   
   assert_eq(sizeof(SpeciesParticle),64);
 
+  // if RESTART is true initialize the particle in allocate method
+  restart = col->getRestart_status();
+  if (restart != 0)
+  {
+  #ifdef NO_HDF5
+    eprintf("restart is supported only if compiling with HDF5");
+  #else
+    int species_number = get_species_num();
+    // prepare arrays to receive particles
+    particleType = ParticleType::SoA;
+    col->read_particles_restart(vct, species_number,u, v, w, q, x, y, z, t);
+    convertParticlesToAoS();
+  #endif
+  }
+
   // set_velocity_caps()
   //
   umax = 0.95*col->getLx()/col->getDt();
@@ -311,26 +328,6 @@ if( !isTestParticle ){
       ns, umax,vmax,wmax);
   }
 }
-
-
-// if RESTART is true initialize the particle in allocate method
-void Particles3Dcomm::load_restart_pcls()
-{
-  restart = col->getRestart_status();
-  if (restart != 0)
-  {
-  #ifdef NO_HDF5
-    eprintf("restart is supported only if compiling with HDF5");
-  #else
-    int species_number = get_species_num();
-    // prepare arrays to receive particles
-    particleType = ParticleType::SoA;
-    col->read_particles_restart(vct, species_number,u, v, w, q, x, y, z, t);
-    convertParticlesToAoS();
-  #endif
-  }
-}
-
 
 // pad capacities so that aligned vectorization
 // does not result in an array overrun.
@@ -2102,7 +2099,7 @@ void Particles3Dcomm::copyParticlesToAoS()
 {
   timeTasks_set_task(TimeTasks::TRANSPOSE_PCLS_TO_AOS);
   const int nop = u.size();
-  if(is_output_thread()) dprintf("copying to array of structs size=%i",nop);
+  if(is_output_thread()) dprintf("copying to array of structs");
   resize_AoS(nop);
  #ifndef __MIC__
   // use a simple stride-8 gather
