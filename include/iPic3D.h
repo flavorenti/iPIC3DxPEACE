@@ -50,7 +50,6 @@ namespace iPic3D {
       grid(0),
       EMf(0),
       part(0),
-      colls(0),
 #ifndef NO_HDF5
       outputWrapperFPP(0),
 #endif
@@ -100,9 +99,7 @@ namespace iPic3D {
     Grid3DCU      *grid;
     EMfields3D    *EMf;
     Particles3D   *part;
-    // Particles3D   *
     Particles3D   *testpart;
-    Collisions    *colls;
     double        *Ke;
     double        *rho;
     double        *BulkEnergy;
@@ -181,6 +178,24 @@ namespace iPic3D {
     MPI_File    temperaturefhArr[4];
     MPI_Status  temperaturestsArr[4];
     int temperaturereqcounter;
+
+	  float**** spectrawritebuffere;
+	MPI_Request spectrareqArre[6];//Stot+Spar+Sperp for species0,1
+	MPI_File    spectrafhArre[6];
+	MPI_Status  spectrastsArre[6];
+	int spectrareqcountere;
+
+    float**** spectrawritebufferi;
+  MPI_Request spectrareqArri[6];//Stot+Spar+Sperp for species0,1
+  MPI_File    spectrafhArri[6];
+  MPI_Status  spectrastsArri[6];
+  int spectrareqcounteri;
+
+    float**** temperaturewritebuffer;
+  MPI_Request temperaturereqArr[4];//Tcart+Tperpar for species0,1
+  MPI_File    temperaturefhArr[4];
+  MPI_Status  temperaturestsArr[4];
+  int temperaturereqcounter;
 
   };
 

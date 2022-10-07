@@ -21,6 +21,7 @@
 #include "mpi.h"
 #include "ipicdefs.h"
 #include "Basic.h"
+#include "EllipticF.h"
 #include "Alloc.h"
 #include "TimeTasks.h"
 #include "errors.h"

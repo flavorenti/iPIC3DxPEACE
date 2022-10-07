@@ -84,9 +84,6 @@ void Collective::ReadInput(string inputfile) {
   ConfigFile config(inputfile);
   // the following variables are ALWAYS taken from inputfile, even if restarting 
   {
-    /* first load SIMULATION PARAMETERS */	  
-    SaveDirName       = config.read < string > ("SaveDirName","data");
-    RestartDirName    = config.read < string > ("RestartDirName","data");
     Case              = config.read<string>("Case");
     wmethod           = config.read<string>("WriteMethod","pvtk");
     SimName           = config.read<string>("SimulationName");
@@ -517,12 +514,11 @@ void Collective::ReadInput(string inputfile) {
   #ifndef NO_HDF5 
   if (RESTART1) {               // you are restarting
     RestartDirName = config.read < string > ("RestartDirName","data");
-    // ReadRestart(RestartDirName);
+    //ReadRestart(RestartDirName);
     restart_status = 1;
-
     hid_t file_id = H5Fopen((RestartDirName + "/restart0.hdf").c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
     if (file_id < 0) {
-      cout << "couldn't open file: " << (RestartDirName + "/restart0.hdf").c_str() << endl;
+      cout << "couldn't open file: " << inputfile << endl;
       return;
     }
 
@@ -576,11 +572,10 @@ int Collective::ReadRestart(string inputfile) {
   hid_t file_id;
   hid_t dataset_id;
   herr_t status;
-  printf("\n Commencing restart with H5F commands. In collective.cpp. \n");
   // Open the setting file for the restart.
   file_id = H5Fopen((inputfile + "/settings.hdf").c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
   if (file_id < 0) {
-    cout << "couldn't open file: " << (inputfile + "/settings.hdf").c_str() << endl;
+    cout << "couldn't open file: " << inputfile << endl;
     return -1;
   }
 
@@ -892,7 +887,6 @@ int Collective::ReadRestart(string inputfile) {
     status = H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &fExo[i]);
     status = H5Dclose(dataset_id);
   }
-
 
   // if RestartDirName == SaveDirName overwrite dt,Th,Smooth (append to old hdf files)
   if (RestartDirName == SaveDirName) {
@@ -1479,7 +1473,6 @@ void Collective::Print() {
 
 }
 /*! Print Simulation Parameters */
-/* WARNING: should add collisional and neutral gas parameters to save */
 void Collective::save() {
   string temp;
   temp = SaveDirName + "/SimulationData.txt";

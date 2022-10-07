@@ -36,12 +36,11 @@ developers: D. Burgess, June/July 2006
 #include "errors.h"
 #include "PSKException.h"
 #include "Particles3Dcomm.h"
-#include "EMfields3D.h"
+#include "Field.h"
 #include "Collective.h"
 #include "VCtopology3D.h"
 #include "MPIdata.h"
 #include "ipicdefs.h"
-// #include "Collisions.h"
 
 using std::string;
 using std::stringstream;
@@ -302,10 +301,7 @@ template < class Toa > class myOutputAgent:public PSK::OutputAgent < Toa > {
   Grid *_grid;
   VCtopology3D *_vct;
   Collective *_col;
-  // Collisions *_colls;
   int ns;
-  int nCollProcesses;
-  int nNeutSpecies;
   std::vector < Particles * >_part;
 
 public:
@@ -317,7 +313,6 @@ public:
     _grid = grid;
     _vct = vct;
     _col = col;
-    // _colls = colls;
   }
 
   void set_simulation_pointers_part(Particles * part) {
@@ -362,8 +357,6 @@ public:
     ss << MPIdata::instance().get_rank();
     cc << cycle;
     const int ns = _col->getNs();
-    const int nCollProcesses = _col->getnCollProcesses();
-    const int nNeutSpecies = _col->getnNeutSpecies();
     if (tag.find("last_cycle", 0) != string::npos)
       this->output_adaptor.write("/last_cycle", cycle);
     if (tag.find("collective", 0) != string::npos) {
@@ -430,7 +423,6 @@ public:
         this->output_adaptor.write("/collective/species_" + ii.str() + "/w0", _col->getW0(i));
       };
 
-
       const int nstestpart = _col->getNsTestPart();
       for (int i = 0; i < nstestpart; ++i) {
         stringstream ii;
@@ -467,8 +459,6 @@ public:
       }
 
     }
-
-      
 
     if (tag.find("total_topology", 0) != string::npos) {
       this->output_adaptor.write("/topology/XLEN", _vct->getXLEN());

@@ -36,7 +36,7 @@ developers: Stefano Markidis, Giovanni Lapenta
 #include "Collective.h"
 #include "Basic.h"
 #include "Grid3DCU.h"
-#include "EMfields3D.h"
+#include "Field.h"
 #include "MPIdata.h"
 #include "ipicdefs.h"
 #include "TimeTasks.h"
@@ -2771,11 +2771,11 @@ double Particles3D::AddIonizedExosphere(double R, double x_center, double y_cent
     for (int j=1; j<grid->getNYC()-1;j++)
       for (int k=1; k<grid->getNZC()-1;k++) {
               
-        xd = grid->getXC(i,j,k)-x_center; // x position relative to planet
-        yd = grid->getYC(i,j,k)-y_center; // y position relative to planet
-        zd = grid->getZC(i,j,k)-z_center-PlanetOffset; // z position relative to planet
+        xd = grid->getXC(i,j,k)-x_center;
+        yd = grid->getYC(i,j,k)-y_center;
+        zd = grid->getZC(i,j,k)-z_center-PlanetOffset;
         
-      	dist_sq = xd*xd+yd*yd+zd*zd;
+	dist_sq = xd*xd+yd*yd+zd*zd;
         dist    = sqrt(dist_sq);
         // If in range of production distance
         if( (dist>R) and (dist<Rmax) ){

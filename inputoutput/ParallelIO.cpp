@@ -1167,7 +1167,7 @@ void WriteTemperatureVTK(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCt
               Tperpar[iz][iy][ix][5] = Tc;
           }
 
-   for(int tagid=0; tagid<tagsize; tagid++){
+  for(int tagid=0; tagid<tagsize; tagid++){
 
    if (outputTag.find(temperaturetags[tagid], 0) == string::npos) continue;
 

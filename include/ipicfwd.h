@@ -32,6 +32,4 @@ typedef VCtopology3D VirtualTopology3D;
 class Particles3D;
 class Particles3Dcomm;
 typedef Particles3Dcomm Particles;
-class Collisions;
-
 #endif
