@@ -434,7 +434,7 @@ public:
         this->output_adaptor.write("/collective/testspecies_" + ii.str() + "/pitch_angle", _col->getPitchAngle(i));
         this->output_adaptor.write("/collective/testspecies_" + ii.str() + "/energy", 	   _col->getEnergy(i));
       };
-
+      /*
       this->output_adaptor.write("/collective/colls/collisionProcesses", _col->getcollisionProcesses());
       this->output_adaptor.write("/collective/colls/xSec", _col->getxSec());
       this->output_adaptor.write("/collective/colls/iSecElec", _col->getiSecElec());
@@ -457,6 +457,7 @@ public:
         this->output_adaptor.write("/collective/neutrals/hExo" + ii.str(), _col->gethExo(i));
         this->output_adaptor.write("/collective/neutrals/fExo" + ii.str(), _col->getfExo(i));
       }
+      */
 
     }
 
