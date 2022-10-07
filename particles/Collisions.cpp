@@ -110,13 +110,13 @@ void Collisions::Collide(int species, Particles3D *part, CollectiveIO * col, EMf
       zpl = part[species].getZ(pidx);
 
       // Find neutral density at particle
-      findneutDensity(species, part);
+      double nNeutr = findneutDensity(species, part);
 
       // Find Bulk velocity at particle
       findBulkVelocity(species, Emf, u0, v0, w0);
       
       double vScaled = velMagnitude_wScale(species, part, pidx, u0, v0, w0);
-      double pColl = ProbColl(vScaled);
+      double pColl = ProbColl(nNeutr, vScaled);
 
       double rColl =  sample_clopen_u_double();// Random number for coll
 
@@ -201,13 +201,14 @@ void Collisions::CollideElectron(int species, Particles3D *part, int pidx, Colle
 }
 
 /* Calculate Collision probability in a given step */
-double Collisions::ProbColl(double vMag)
+double Collisions::ProbColl(double nNeutral, double vMag)
 {
   // nNeutral - neutral density of water (?) 
   // Should be same as used for photoionization module
 
   // xSec - Cross section of collision. Set in input file
   // vScale - Scaling ratio to correct for heavy electrons
+  //dprintf("nNeutral is %f",nNeutral);
   double tau = nNeutral * xSec * vMag * dt;
   // double tau = nNeutral * xSec * vMag * dt;
   
@@ -382,7 +383,7 @@ void Collisions::findBulkVelocity(int species, EMfields3D *Emf, double &u0, doub
 
 }
 
-void Collisions::findneutDensity(int species, Particles3D *part)
+double Collisions::findneutDensity(int species, Particles3D *part)
 {
   
   // Find distance from planet centre
@@ -396,4 +397,5 @@ void Collisions::findneutDensity(int species, Particles3D *part)
   // Use neutral density function for exosphere
   double nNeutral = part->neutralDensity(Nexo_H, dist, R, hexo_H);
   
+  return nNeutral;
 }

@@ -68,7 +68,7 @@ class Collisions {
       * 
       * @param[in] vMag magnitude of the rescaled velocity
       */
-      double ProbColl(double vMag);
+      double ProbColl(double nNeutr, double vMag);
 
       /*! @brief Calculates velocity magnitude
       *
@@ -108,7 +108,7 @@ class Collisions {
       *  @param[in] part particles object
       * 
       */
-      void findneutDensity(int species, Particles3D *part);
+      double findneutDensity(int species, Particles3D *part);
 
       /*! @brief Records properties of the secondary particles.
       *
@@ -173,7 +173,7 @@ class Collisions {
     int collStepSkip;
     bool isIoni;
  
-    double nNeutral = 1e7; //Hard coded neutral density for validation
+    double nNeutral;
     double qom_eReal = -1836; // Real charge per mass for electrons (if qom = 1 for protons)
 
     // Used to keep track of how many electrons have 'large' coll probabilities

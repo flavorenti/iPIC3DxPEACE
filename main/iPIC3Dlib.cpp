@@ -136,11 +136,11 @@ int c_Solver::Init(int argc, char **argv) {
   grid = new Grid3DCU(col, vct);  // Create the local grid
   // printf("\n Done with local grid. Make EM field object. \n");
   EMf = new EMfields3D(col, grid, vct);  // Create Electromagnetic Fields Object
-
+ 
   if (col->getcollisionProcesses()){ // If Collisional processes
     colls = new Collisions(col, vct, grid, EMf); //Create Collision object
   }
-  
+ 
   if      (col->getCase()=="GEMnoPert") 		EMf->initGEMnoPert();
   else if (col->getCase()=="ForceFree") 		EMf->initForceFree();
   else if (col->getCase()=="GEM")       		EMf->initGEM();
@@ -178,6 +178,12 @@ int c_Solver::Init(int argc, char **argv) {
       else if (col->getCase()=="Dipole2D" and col->getNewPclInit())    part[i].maxwellianDipole(EMf,col->getL_square(),col->getx_center(),0.,col->getz_center());
       else                                                             part[i].maxwellian(EMf);
       part[i].reserve_remaining_particle_IDs();
+    }
+  }
+  else
+  {
+    for (int i = 0; i < ns; i++){
+      part[i].load_restart_pcls();
     }
   }
 // printf("\n PArticle initial conditions complete \n");
@@ -265,8 +271,8 @@ int c_Solver::Init(int argc, char **argv) {
     }
   }
 
-   if (vct->getCartesian_rank()==0) 
-	cout << "done output Rank " << myrank << "\n";
+   //if (vct->getCartesian_rank()==0) 
+  //	cout << "done output Rank " << myrank << "\n";
 
   rho = new double[ns];
   Ke = new double[ns];
@@ -391,10 +397,7 @@ bool c_Solver::ParticlesMover(int cycle)
     const double Nexo_H  = col->getnSurf(0);   // density of exosphere neutrals at the surface (in nsw units)
     const double fexo_H  = col->getfExo(0);    // ioniz. frequency in units of wpi
     const double hexo_H  = col->gethExo(0);    // scale length of exosphere
-    const double Nexo_Na = col->getnSurf(1);
-    const double fexo_Na = col->getfExo(1);
-    const double hexo_Na = col->gethExo(1);
-    const double w_fact  = 8e3;                // factor weight_exo / weight_sw - Not currently set input file
+    const double w_fact  = col->getWfact();                // factor weight_exo / weight_sw - Not currently set input file
     bool applyCollisions = (col->getcollisionProcesses()) && (cycle % col->getcollStepSkip() == 0);
 
     for (int i = 0; i < ns; i++)  // move each species
@@ -427,12 +430,9 @@ bool c_Solver::ParticlesMover(int cycle)
       if ( applyCollisions )  colls->Collide(i, part, col, EMf);
       // Injection particles from ionized exosphere ./Job
       // inject hydrogen
-      if ( (i==2 or i==3) and col->getAddExosphere()){	 
+      if ( i>1 and i<4 and col->getAddExosphere()){
+     	 // dprintf("ok add exosph\n");	      
          Qexo[i] = part[i].AddIonizedExosphere(R,col->getx_center(),col->gety_center(),col->getz_center(),Nexo_H,fexo_H,hexo_H,w_fact);
-      }
-      // inject sodium
-      if ( (i==4 or i==5) and col->getAddExosphere()){	 
-         Qexo[i] = part[i].AddIonizedExosphere(R,col->getx_center(),col->gety_center(),col->getz_center(),Nexo_Na,fexo_Na,hexo_Na,w_fact);
       }
     
       // External boundary conditions particles     ./Job

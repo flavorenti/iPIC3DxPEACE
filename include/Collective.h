@@ -121,7 +121,6 @@ class Collective
     double getNpMaxNpRatio()const{ return (NpMaxNpRatio); }
     double getQOM(int nspecies)const{ return (qom[nspecies]); }
     double getRHOinit(int nspecies)const{ return (rhoINIT[nspecies]); }
-    double getRHOinject(int nspecies)const { return(rhoINJECT[nspecies]); }
     double getUth(int nspecies)const{ return (uth[nspecies]); }
     double getVth(int nspecies)const{ return (vth[nspecies]); }
     double getWth(int nspecies)const{ return (wth[nspecies]); }
@@ -170,6 +169,7 @@ class Collective
     int getNewPclInit()const{ return (NewPclInit); }
     int getNonTrivialBCPlanet()const{ return (NonTrivialBCPlanet); }
     int getAddExosphere()const{ return (AddExosphere); }
+    int getWfact()const{ return (Wfact); }
 
     int getBcPfaceXright()const{ return (bcPfaceXright); }
     int getBcPfaceXleft()const{ return (bcPfaceXleft); }
@@ -198,7 +198,7 @@ class Collective
     double getB1z()const{ return (B1z); }
     double getPlanetOffset()const{ return (PlanetOffset); }
     bool getVerbose()const{ return (verbose); }
-    bool getTrackParticleID(int nspecies)const{ return (TrackParticleID[nspecies]); }
+    //bool getTrackParticleID(int nspecies)const{ return (TrackParticleID[nspecies]); }
     int getRestart_status()const{ return (restart_status); }
     string getSaveDirName()const{ return (SaveDirName); }
     string getRestartDirName()const{ return (RestartDirName); }
@@ -320,6 +320,9 @@ class Collective
 
     /*! number of species */
     int ns;
+    int ns_all;
+    int ns_sw;
+    int ns_pl;
     /*! number of test particle species */
     int nstestpart;
     /*! number of particles per cell */
@@ -339,8 +342,6 @@ class Collective
     double *qom;
     /*! charge to mass ratio array for different species */
     double *rhoINIT;
-    /*! density of injection */
-    double *rhoINJECT;
     /*! thermal velocity - Direction X */
     double *uth;
     /*! thermal velocity - Direction Y */
@@ -405,6 +406,8 @@ class Collective
     int NonTrivialBCPlanet;
     /* bool value for applying exosphere pcls */
     int AddExosphere;
+    /* double value of ratio weigth pcls planet and sw */
+    double Wfact;
 
     /*! Case type */
     string Case;
@@ -416,7 +419,7 @@ class Collective
     string PoissonCorrection;
     int PoissonCorrectionCycle;
     /*! TrackParticleID */
-    bool *TrackParticleID;
+    //bool *TrackParticleID;
     /*! SaveDirName */
     string SaveDirName;
     /*! RestartDirName */
