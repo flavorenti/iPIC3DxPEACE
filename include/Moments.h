@@ -32,8 +32,6 @@ class Moments10
     int ny;
     int nz;
   public:
-    void set_to_zero();
-
     // fetch accessors (write access)
     arr4_double fetch_arr() { return arr; }
 

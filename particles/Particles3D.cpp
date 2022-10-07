@@ -1742,7 +1742,7 @@ double Particles3D::repopulate_particles(Field * EMf)
   //
   double  FourPI =16*atan(1.0);
   const double q_per_particle
-    = (qom/fabs(qom))*(Ninj/FourPI/npcel)*(1.0/grid->getInvVOL());
+    = (qom/fabs(qom))*(1./FourPI/npcel)*(1.0/grid->getInvVOL());
 
   const int nxc = grid->getNXC();
   const int nyc = grid->getNYC();
@@ -2765,7 +2765,7 @@ double Particles3D::AddIonizedExosphere(double R, double x_center, double y_cent
 
   PlanetOffset = col->getPlanetOffset();
 
-  if (col->getVerbose() and vct->getCartesian_rank()==0)  cout << "*** Species " << ns << "-" << " Injecting ionized exosphere particles ****" << endl;
+  if (vct->getCartesian_rank()==0)  cout << "*** Species " << ns << "-" << " Injecting ionized exosphere particles ****" << endl;
 
   for (int i=1; i<grid->getNXC()-1;i++)
     for (int j=1; j<grid->getNYC()-1;j++)
@@ -2777,11 +2777,13 @@ double Particles3D::AddIonizedExosphere(double R, double x_center, double y_cent
         
 	dist_sq = xd*xd+yd*yd+zd*zd;
         dist    = sqrt(dist_sq);
-
-        if( (dist_sq>(R*R)) and (dist_sq<(Rmax*Rmax)) ){
-
-          Ninject = (npcel_sw*Nexo*w_fact)*(dt*fexo)*exp(-(dist-R)/hexo);
+        // If in range of production distance
+        if( (dist>R) and (dist<Rmax) ){
+          double nDens = neutralDensity(Nexo, dist, R, hexo);
+          // Ninject = (npcel_sw * Nexo * w_fact) * (dt*fexo)*exp(-(dist-R)/hexo);
+          Ninject = (npcel_sw * w_fact) * (dt*fexo)* nDens;
           Ninject_int = (int) Ninject;
+          //dprintf("Injecting %f = %i pcls",Ninject,Ninject_int);
 
           for (int jj=0; jj<Ninject_int; jj++){
             // Assign random position in the cell
@@ -2801,4 +2803,20 @@ double Particles3D::AddIonizedExosphere(double R, double x_center, double y_cent
         } 
       }
   return Qinject;
+}
+
+/* Calculate neutral density at distance dist from planet*/
+double Particles3D::neutralDensity(double Nexo, double dist, double R, double hexo)
+{
+  double nDens;
+  if (dist>R)  nDens = Nexo*exp(-(dist-R)/hexo);
+  else nDens = 0.0; //Zero if inside planet
+
+  //dprintf("a distanza %f c'e' %f neutri",dist,nDens);
+  //dprintf("Nexo = %f",Nexo);
+  //dprintf("R = %f",R);
+  //dprintf("hexo = %f",hexo);
+
+  return nDens; // In SW units
+
 }

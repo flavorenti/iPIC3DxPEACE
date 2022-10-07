@@ -131,6 +131,8 @@ public:
   void sort_particles_serial_AoS();
   //void sort_particles_serial_SoA();
 
+  void load_restart_pcls();
+
   // get accessors for optional arrays
   //
   //Larray<SpeciesParticle>& fetch_pcls(){ return _pcls; }

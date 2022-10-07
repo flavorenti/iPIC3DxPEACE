@@ -1224,6 +1224,7 @@ void WriteTemperatureVTK(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCt
     int charsize=sizeof(char);
     MPI_Offset disp = nelem*charsize;
 
+
     ostringstream filename;
     filename << col->getSaveDirName() << "/" << col->getSimName() << "_"<< temperaturetags[tagid] << ((si%2==0)?"e":"i")<< si  << "_" << cycle << ".vtk";
     MPI_File_open(vct->getFieldComm(),filename.str().c_str(), MPI_MODE_CREATE|MPI_MODE_WRONLY, MPI_INFO_NULL, &fh);

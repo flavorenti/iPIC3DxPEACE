@@ -52,6 +52,42 @@ int WriteFieldsVTKNonblk(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCt
 int WriteMomentsVTKNonblk(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCtopology3D *vct,int cycle,
 			float*** momentswritebuffer,MPI_Request requestArr[14],MPI_File fhArr[14]);
 
+/*! @brief Write the energy spectra into vtk files.
+ *
+ * The function takes the volume of the cells and the desired energy bins from the input configuration file
+ * It cycles through all the particles of the simulation, finds the cell where each particle is and it sums its
+ * charge to the corresponding energy bin, defining the energy spectra on each cell.
+ * It defines the energy spectra with velocities parallel to the magnetic field, perpendicular and total.
+ * It creates vtk files with the the absolute total charge of the species in each energy bin of each cell.
+ *
+ * @param[in] grid built-in type defining the uniform cartesian 3D local grid for each process
+ * @param[in] part built-in type for particles of the same species, in a 3D space and 3 component velocity
+ * @param[in] EMf built-in type with the electromagnetic fields and sources defined for each local grid
+ * @param[in] col built-in type with all the collective properties of the simulation
+ * @param[in] vct built-in type defining the 3D MPI cartesian topology
+ * @param[in] tag tags for the desired files from the input configuration file (Spar, Sperp, Stot)
+ * @param[in] cycle number of the current iteration
+ * @param[in] spectrawritebuffere 4D array for electrons: [x index of cell][y index of cell][z index of cell][total absolute charge in different bins on the cell]
+ * @param[in] spectrawritebufferi 4D array for ions: [x index of cell][y index of cell][z index of cell][total charge in different bins on the cell]
+ */
+void WriteSpectraVTK(Grid3DCU *grid, Particles3D *part, EMfields3D *EMf, CollectiveIO *col, VCtopology3D *vct, const string & tag, int cycle,float****  spectrawritebuffere,float****  spectrawritebufferi);
+
+/*! @brief Write the temperature tensor into vtk files.
+ *
+ * The function calculates the temperature tensor in cartesian coordinates and coordinates
+ * relative to the magnetic field where the diagonals of the pressure tensor are in gyrotropic form.
+ * It creates vtk files with the 6 components of the symmetric tensor in all the cells.
+ *
+ * @param[in] grid built-in type defining the uniform cartesian 3D local grid for each process
+ * @param[in] EMf built-in type with the electromagnetic fields and sources defined for each local grid
+ * @param[in] col built-in type with all the collective properties of the simulation
+ * @param[in] vct built-in type defining the 3D MPI cartesian topology
+ * @param[in] tag tags for the desired files from the input configuration file (Tcart, Tperpar)
+ * @param[in] cycle number of the current iteration
+ * @param[in] temperaturewritebuffer 4D array: [x index of cell][y index of cell][z index of cell][components of the tensor]
+ */
+void WriteTemperatureVTK(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCtopology3D *vct, const string & tag, int cycle,float**** temperaturewritebuffer);
+
 void WriteFieldsVTK(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCtopology3D *vct, const string & tag, int cycle);
 void WriteFieldsVTK(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCtopology3D *vct, const string & tag, int cycle,float**** fieldwritebuffer);
 void WriteMomentsVTK(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCtopology3D *vct, const string & tag, int cycle,float***  momentswritebuffer);
