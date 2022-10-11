@@ -212,6 +212,7 @@ class Collective
     string getTemperatureOutputTag()const{return TemperatureOutputTag;}
     string getPclOutputTag()const{return ParticlesOutputTag;}
     string getPoissonCorrection()const{ return (PoissonCorrection); }
+    string getParaviewScriptPath()const{return ParaviewScriptPath;}
     int getPoissonCorrectionCycle()const{ return (PoissonCorrectionCycle); }
     int getLast_cycle()const{ return (last_cycle); }
     double getVinj()const{ return (Vinj); }
@@ -232,6 +233,7 @@ class Collective
     bool field_output_is_off()const;
     bool spectra_output_is_off()const;
     bool temperature_output_is_off()const;
+
     
     /*! Boundary condition selection for BCFace for the electric field components */
     int bcEx[6], bcEy[6], bcEz[6];
@@ -514,6 +516,8 @@ class Collective
     string ParticlesOutputTag;
     /*! Output for test particles */
     int TestParticlesOutputCycle;
+    /*! Catalyst implementation*/
+    string ParaviewScriptPath;
     /*! test particles are flushed to disk every testPartFlushCycle  */
     int testPartFlushCycle;
     /*! restart cycle */

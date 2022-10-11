@@ -293,6 +293,14 @@ class EMfields3D                // :public Field
     double getJys(int X,int Y,int Z,int is)const{return Jys.get(is,X,Y,Z);}
     double getJzs(int X,int Y,int Z,int is)const{return Jzs.get(is,X,Y,Z);}
 
+    //temperature matrix elements
+    void calcT_si(int si);
+    double getTcart(int si,int X,int Y,int Z)const{return Tcart.get(si,X,Y,Z);}
+    double getTperpar(int si,int X,int Y,int Z)const{return Tperpar.get(si,X,Y,Z);}
+    arr4_double getTcart() { return Tcart; }
+    arr4_double getTperpar() { return Tperpar; }
+
+
     /*! get the electric field energy */
     double getEenergy();
     /*! get the magnetic field energy */
@@ -509,6 +517,10 @@ class EMfields3D                // :public Field
     array4_double Jxs;
     array4_double Jys;
     array4_double Jzs;
+
+    //matrix elements-specific current temperature defined on nodes
+    array4_double  Tcart;
+    array4_double Tperpar;
 
     // magnetic field components defined on nodes
     //

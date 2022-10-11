@@ -41,6 +41,43 @@ else()
 endif()
 
 #
+# Catalyst
+#
+#USE_CATALYST enables catalyst. Possible values are
+#"LEGACY" or "V2". Every other value will turn it off.
+set(USE_CATALYST "LEGACY")
+
+if(USE_CATALYST STREQUAL "LEGACY")
+  add_definitions(-DUSE_CATALYST_LEGACY)    #define USE_CATALYST_LEGACY in the code
+endif()
+if(USE_CATALYST STREQUAL "V2")
+  add_definitions(-DUSE_CATALYST_V2)        #define USE_CATALYST_V2 in the code
+endif()
+
+
+if(USE_CATALYST STREQUAL "LEGACY")
+  #path to the directory where the paraview build is
+  set(ParaView_DIR /home/lquerci/NICE/paraview/build ) 
+
+  find_package(ParaView 5.7 REQUIRED)
+
+  if (NOT TARGET ParaView::PythonCatalyst)
+    message(STATUS
+      "${CMAKE_PROJECT_NAME} requires ParaView to be built with Catalyst and \n"
+      "Python support enabled. Please rebuild ParaView (or point to a \n"
+      "different build of ParaView) with PARAVIEW_ENABLE_CATALYST and \n"
+      "PARAVIEW_ENABLE_PYTHON set to TRUE")
+  else()
+    add_library(iPICAdaptor ${CMAKE_SOURCE_DIR}/catalyst_legacy/Adaptor_legacy.cpp)
+
+    target_link_libraries(iPICAdaptor PRIVATE ParaView::PythonCatalyst VTK::CommonDataModel Python3::Python)
+    target_include_directories(iPICAdaptor INTERFACE ${CMAKE_SOURCE_DIR}/catalyst_legacy)
+    target_compile_definitions(iPICAdaptor INTERFACE USE_CATALYST)
+
+  endif()
+endif()
+
+#
 # Find third class libraries
 #
 if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "k1om") ## Xeon Phi
@@ -60,6 +97,7 @@ else()
 	if (${myhostname} MATCHES "(.*)pdc(.*)")
    	   set(HDF5_INCLUDE_DIRS /usr/local/Cellar/hdf5/1.10.6/include)
 	else()
+    #cmake_policy(SET CMP0074 NEW)
 		find_package(HDF5 COMPONENTS HL C )   
 	endif()
 endif()
@@ -171,6 +209,13 @@ target_link_libraries(
          iPIC3Dlib
 )
 
+if (USE_CATALYST STREQUAL "LEGACY")
+  target_link_libraries(
+    iPIC3Dlib
+    iPICAdaptor
+    )
+endif()
+
 ## to save the executable in the folder where the CMakeLists.txt file is, i.e. CMAKE_CURRENT_SOURCE_DIR
 set_target_properties(iPIC3D PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
@@ -187,3 +232,5 @@ message("HDF5_INCLUDE_DIRS is ${HDF5_INCLUDE_DIRS}")
 message("HDF5_LIBRARIES is ${HDF5_LIBRARIES}")
 message("HDF5_HL_LIBRARIES is ${HDF5_HL_LIBRARIES}")
 message("MPI_LIBRARIES is ${MPI_LIBRARIES}")
+message("USE_CATALYST is set to ${USE_CATALYST}")
+

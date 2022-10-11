@@ -1073,8 +1073,8 @@ void WriteTemperatureVTK(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCt
   const string outputtag = col->getTemperatureOutputTag();
   const int ns = col->getNs();
 
-  double Tcar[nzn-3][nyn-3][nxn-3][6] = {};
-  double Tperpar[nzn-3][nyn-3][nxn-3][6] = {};
+  double Tcar[nzn-3][nyn-3][nxn-3][6];
+  double Tperpar[nzn-3][nyn-3][nxn-3][6];
 
   for(int si=0;si<ns;si++){
    char   header[1024];
@@ -1138,11 +1138,11 @@ void WriteTemperatureVTK(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCt
               double Tzz = (pzz-((Jz*Jz)/rho))/(rho*fabs(qom));
 
               Tcar[iz][iy][ix][0] = Txx;
-              Tcar[iz][iy][ix][1] = Txy;
-              Tcar[iz][iy][ix][2] = Txz;
-              Tcar[iz][iy][ix][3] = Tyy;
+              Tcar[iz][iy][ix][1] = Tyy;
+              Tcar[iz][iy][ix][2] = Tzz;
+              Tcar[iz][iy][ix][3] = Txy;
               Tcar[iz][iy][ix][4] = Tyz;
-              Tcar[iz][iy][ix][5] = Tzz;
+              Tcar[iz][iy][ix][5] = Txz;
 
               double Tai = a1*b1*Txx + a2*b2*Tyy + a3*b3*Tzz + (a1*b2 + a2*b1)*Txy + (a1*b3 + a3*b1)*Txz + (a2*b3 + a3*b2)*Tyz;
               double Tbi = a1*c1*Txx + a2*c2*Tyy + a3*c3*Tzz + (a1*c2 + a2*c1)*Txy + (a1*c3 + a3*c1)*Txz + (a2*c3 + a3*c2)*Tyz;
@@ -1314,9 +1314,9 @@ void WriteSpectraVTK(Grid3DCU *grid, Particles3D *part, EMfields3D *EMf, Collect
         fclose(fptr);
       }
 
-      double Stot[sizeZ][sizeY][sizeX][Nspec+1] = {};
-      double Spar[sizeZ][sizeY][sizeX][Nspec+1] = {};
-      double Sperp[sizeZ][sizeY][sizeX][Nspec+1] = {};
+      double Stot[sizeZ][sizeY][sizeX][Nspec+1];
+      double Spar[sizeZ][sizeY][sizeX][Nspec+1];
+      double Sperp[sizeZ][sizeY][sizeX][Nspec+1];
 
        double qom = col->getQOM(si);
 
