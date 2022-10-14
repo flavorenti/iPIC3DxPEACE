@@ -13,7 +13,7 @@ rescale_lookuptable=False
 requestSpecificArrays=False
 
 # a root directory under which all Catalyst output goes
-rootDirectory='/home/lquerci/NICE/build_iPIC3D/data/images'
+rootDirectory='/data/home/lquerci/build_iPIC3D/data/images'
 
 # makes a cinema D index table
 make_cinema_table=False
@@ -87,85 +87,14 @@ def CreateCoProcessor():
       # ----------------------------------------------------------------
       # setup the data processing pipelines
       # ----------------------------------------------------------------
-      
+
       # create a new 'Legacy VTK Reader'
       # create a producer from a simulation input
-      exosphere_Tcarte0_0vtk = coprocessor.CreateProducer(datadescription, 'input')
-
-      # create a new 'Slice'
-      slice1 = Slice(Input=exosphere_Tcarte0_0vtk)
-      slice1.SliceType = 'Plane'
-      slice1.SliceOffsetValues = [0.0]
-
-      # init the 'Plane' selected for 'SliceType'
-      slice1.SliceType.Origin = [3.9999960000000003, 3.9999960000000003, 0.9999975000000001]
-      slice1.SliceType.Normal = [0.0, 0.0, 1.0]
-
-      # ----------------------------------------------------------------
-      # setup the visualization in view 'renderView1'
-      # ----------------------------------------------------------------
-
-      # show data from slice1
-      slice1Display = Show(slice1, renderView1)
-
-      # get color transfer function/color map for 'Tcart_e0'
-      tcart_eLUT = GetColorTransferFunction('Tcart_e0')
-      tcart_eLUT.RGBPoints = [0.0, 0.231373, 0.298039, 0.752941, 7.487248694815207e-06, 0.865003, 0.865003, 0.865003, 1.4974497389630415e-05, 0.705882, 0.0156863, 0.14902]
-      tcart_eLUT.ScalarRangeInitialized = 1.0
-      tcart_eLUT.VectorComponent = 1
-      tcart_eLUT.VectorMode = 'Component'
-
-      # trace defaults for the display properties.
-      slice1Display.Representation = 'Surface'
-      slice1Display.ColorArrayName = ['POINTS', 'Tcart_e0']
-      slice1Display.LookupTable = tcart_eLUT
-      slice1Display.OSPRayScaleArray = 'Tcart_e0'
-      slice1Display.OSPRayScaleFunction = 'PiecewiseFunction'
-      slice1Display.SelectOrientationVectors = 'None'
-      slice1Display.ScaleFactor = 0.7999991893768311
-      slice1Display.SelectScaleArray = 'None'
-      slice1Display.GlyphType = 'Arrow'
-      slice1Display.GlyphTableIndexArray = 'None'
-      slice1Display.GaussianRadius = 0.03999995946884155
-      slice1Display.SetScaleArray = ['POINTS', 'Tcart_e0']
-      slice1Display.ScaleTransferFunction = 'PiecewiseFunction'
-      slice1Display.OpacityArray = ['POINTS', 'Tcart_e0']
-      slice1Display.OpacityTransferFunction = 'PiecewiseFunction'
-      slice1Display.DataAxesGrid = 'GridAxesRepresentation'
-      slice1Display.PolarAxes = 'PolarAxesRepresentation'
-
-      # init the 'PiecewiseFunction' selected for 'ScaleTransferFunction'
-      slice1Display.ScaleTransferFunction.Points = [-5.16086305635266e-13, 0.0, 0.5, 0.0, 1.4278117305366322e-05, 1.0, 0.5, 0.0]
-
-      # init the 'PiecewiseFunction' selected for 'OpacityTransferFunction'
-      slice1Display.OpacityTransferFunction.Points = [-5.16086305635266e-13, 0.0, 0.5, 0.0, 1.4278117305366322e-05, 1.0, 0.5, 0.0]
-
-      # setup the color legend parameters for each legend in this view
-
-      # get color legend/bar for tcart_eLUT in view renderView1
-      tcart_eLUTColorBar = GetScalarBar(tcart_eLUT, renderView1)
-      tcart_eLUTColorBar.Title = 'Tcart_e0'
-      tcart_eLUTColorBar.ComponentTitle = 'YY'
-
-      # set color bar visibility
-      tcart_eLUTColorBar.Visibility = 1
-
-      # show color legend
-      slice1Display.SetScalarBarVisibility(renderView1, True)
-
-      # ----------------------------------------------------------------
-      # setup color maps and opacity mapes used in the visualization
-      # note: the Get..() functions create a new object, if needed
-      # ----------------------------------------------------------------
-
-      # get opacity transfer function/opacity map for 'Tcart_e0'
-      tcart_ePWF = GetOpacityTransferFunction('Tcart_e0')
-      tcart_ePWF.Points = [0.0, 0.0, 0.5, 0.0, 1.4974497389630415e-05, 1.0, 0.5, 0.0]
-      tcart_ePWF.ScalarRangeInitialized = 1
+      exosphere_B_0vtk = coprocessor.CreateProducer(datadescription, 'input')
 
       # ----------------------------------------------------------------
       # finally, restore active source
-      SetActiveSource(slice1)
+      SetActiveSource(exosphere_B_0vtk)
       # ----------------------------------------------------------------
     return Pipeline()
 
@@ -175,7 +104,7 @@ def CreateCoProcessor():
 
   coprocessor = CoProcessor()
   # these are the frequencies at which the coprocessor updates.
-  freqs = {'input': [1, 1]}
+  freqs = {'input': [1]}
   coprocessor.SetUpdateFrequencies(freqs)
   if requestSpecificArrays:
     arrays = []

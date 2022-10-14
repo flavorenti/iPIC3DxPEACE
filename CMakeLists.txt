@@ -57,7 +57,9 @@ endif()
 
 if(USE_CATALYST STREQUAL "LEGACY")
   #path to the directory where the paraview build is
-  set(ParaView_DIR /home/lquerci/NICE/paraview/build ) 
+  set(ParaView_DIR /home/lquerci/NICE/paraview/build )
+  #set(ParaView_DIR /data/home/lquerci/Sources/paraview/build ) 
+
 
   find_package(ParaView 5.7 REQUIRED)
 

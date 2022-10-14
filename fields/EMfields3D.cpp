@@ -177,8 +177,8 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid, VirtualTopology3D *vct) :
   Jy_ext(nxn,nyn,nzn),
   Jz_ext(nxn,nyn,nzn), 
   //temperature
-  Tcart(6,nxn,nyn,nzn),
-  Tperpar(6,nxn,nyn,nzn) 
+  Tcart(nzn,nyn,nxn,6),
+  Tperpar(nzn,nyn,nxn,6) 
 {
   // External imposed fields
   //
@@ -5596,9 +5596,9 @@ double EMfields3D::getCurlN2CB_z(int i, int j, int k) {
 void EMfields3D::calcT_si(int si){
 
   //for(int si=0;si<ns;si++)
-    for(int ix=0;ix<nxn;ix++)
+    for(int iz=0;iz<nzn;iz++)
       for(int iy=0;iy<nyn;iy++)
-        for(int iz= 0;iz<nzn;iz++){
+        for(int ix= 0;ix<nxn;ix++){
             double pxx = getpXXsn(ix, iy, iz, si);
             double pxy = getpXYsn(ix, iy, iz, si);
             double pxz = getpXZsn(ix, iy, iz, si);
@@ -5653,14 +5653,12 @@ void EMfields3D::calcT_si(int si){
             double Tyz = (pyz-((Jy*Jz)/rho))/(rho*fabs(qom[si]));
             double Tzz = (pzz-((Jz*Jz)/rho))/(rho*fabs(qom[si]));
 
-            //if (ix== 3 & iy == 3 & iz == 3) printf("xx: %f, yy: %f, zz: %f, xy: %f, xz: %f,yz: %f\n", Txx,Tyy, Tzz,Txy, Txz, Tyz);
-
-            Tcart[0][ix][iy][iz] = Txx;
-            Tcart[1][ix][iy][iz] = Tyy;
-            Tcart[2][ix][iy][iz] = Tzz;
-            Tcart[3][ix][iy][iz] = Txy;
-            Tcart[4][ix][iy][iz] = Tyz;
-            Tcart[5][ix][iy][iz] = Txz;
+            Tcart[iz][iy][ix][0] = Txx;
+            Tcart[iz][iy][ix][1] = Tyy;
+            Tcart[iz][iy][ix][2] = Tzz;
+            Tcart[iz][iy][ix][3] = Txy;
+            Tcart[iz][iy][ix][4] = Tyz;
+            Tcart[iz][iy][ix][5] = Txz;
 
             double Tai = a1*b1*Txx + a2*b2*Tyy + a3*b3*Tzz + (a1*b2 + a2*b1)*Txy + (a1*b3 + a3*b1)*Txz + (a2*b3 + a3*b2)*Tyz;
             double Tbi = a1*c1*Txx + a2*c2*Tyy + a3*c3*Tzz + (a1*c2 + a2*c1)*Txy + (a1*c3 + a3*c1)*Txz + (a2*c3 + a3*c2)*Tyz;
@@ -5677,15 +5675,12 @@ void EMfields3D::calcT_si(int si){
             double Tperp1 = 2*cos(theta)*sin(theta)*Tci + cos(theta)*cos(theta)*Tp1i + sin(theta)*sin(theta)*Tp2i; //Tci + 0.5*sin(2*theta)*(Tp2i + Tp1i);
             double Tperp2 = -2*cos(theta)*sin(theta)*Tci + cos(theta)*cos(theta)*Tp2i + sin(theta)*sin(theta)*Tp1i;
 
-            Tperpar[0][ix][iy][iz] = Tpar;
-            Tperpar[1][ix][iy][iz] = Tperp1;
-            Tperpar[2][ix][iy][iz] = Tperp2;
-            Tperpar[3][ix][iy][iz] = Ta;
-            Tperpar[4][ix][iy][iz] = Tb;
-            Tperpar[5][ix][iy][iz] = Tc;
-
-            if (si == 0 & ix== 3 & iy == 3 & iz == 3) printf("getrho: %f,rho: %f, jx: %f, pxx: %f, Txx: %f\n",rho_getns ,rho, Jx, pxx, Txx);
-
+            Tperpar[iz][iy][ix][0] = Tpar;
+            Tperpar[iz][iy][ix][1] = Tperp1;
+            Tperpar[iz][iy][ix][2] = Tperp2;
+            Tperpar[iz][iy][ix][3] = Ta;
+            Tperpar[iz][iy][ix][4] = Tb;
+            Tperpar[iz][iy][ix][5] = Tc;
           }
 
 }   

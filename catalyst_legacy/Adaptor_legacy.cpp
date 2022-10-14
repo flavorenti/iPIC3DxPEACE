@@ -168,7 +168,6 @@ void UpdateVTKAttributes(vtkCPInputDataDescription *idd, EMfields3D *EMf) {
           field_array_E->SetComponent(p, 1, Ey[i+1][j+1][k+1]);
           field_array_E->SetComponent(p, 2, Ez[i+1][j+1][k+1]);
         }
-        //printf("settig coordinates: %d %d %d spicies: %d\n", i,j,k,si);
        
         rhons[si]-> SetValue(p, rho[si][i+1][j+1][k+1]*4*3.1415926535897);
 
@@ -176,26 +175,23 @@ void UpdateVTKAttributes(vtkCPInputDataDescription *idd, EMfields3D *EMf) {
         Vns[si]  -> SetComponent(p, 1, Jys[si][i+1][j+1][k+1]/rho[si][i+1][j+1][k+1]*4*3.1415926535897);
         Vns[si]  -> SetComponent(p, 2, Jzs[si][i+1][j+1][k+1]/rho[si][i+1][j+1][k+1]*4*3.1415926535897);
 
-        Tcart_ns[si]  -> SetComponent(p,0, Tcart[0][i+1][j+1][k+1]);
-        Tcart_ns[si]  -> SetComponent(p,1, Tcart[1][i+1][j+1][k+1]);
-        Tcart_ns[si]  -> SetComponent(p,2, Tcart[2][i+1][j+1][k+1]);
-        Tcart_ns[si]  -> SetComponent(p,3, Tcart[3][i+1][j+1][k+1]);
-        Tcart_ns[si]  -> SetComponent(p,4, Tcart[4][i+1][j+1][k+1]);
-        Tcart_ns[si]  -> SetComponent(p,5, Tcart[5][i+1][j+1][k+1]);
+        Tcart_ns[si]  -> SetComponent(p,0, Tcart[k+1][j+1][i+1][0]);
+        Tcart_ns[si]  -> SetComponent(p,1, Tcart[k+1][j+1][i+1][1]);
+        Tcart_ns[si]  -> SetComponent(p,2, Tcart[k+1][j+1][i+1][2]);
+        Tcart_ns[si]  -> SetComponent(p,3, Tcart[k+1][j+1][i+1][3]);
+        Tcart_ns[si]  -> SetComponent(p,4, Tcart[k+1][j+1][i+1][4]);
+        Tcart_ns[si]  -> SetComponent(p,5, Tcart[k+1][j+1][i+1][5]);
 
-        Tperpar_ns[si]  -> SetComponent(p,0, Tperpar[0][i+1][j+1][k+1]);
-        Tperpar_ns[si]  -> SetComponent(p,1, Tperpar[1][i+1][j+1][k+1]);
-        Tperpar_ns[si]  -> SetComponent(p,2, Tperpar[2][i+1][j+1][k+1]);
-        Tperpar_ns[si]  -> SetComponent(p,3, Tperpar[3][i+1][j+1][k+1]);
-        Tperpar_ns[si]  -> SetComponent(p,4, Tperpar[4][i+1][j+1][k+1]);
-        Tperpar_ns[si]  -> SetComponent(p,5, Tperpar[5][i+1][j+1][k+1]);
-
-        //if (si == 0 & i== 3 & j == 3 & k == 3) printf("adaptor Tcart: %f\n",Tperpar[0][i][j][k]);
-        //if (Tcart[0][i+1][j+1][k+1] != 0 ) printf("coordinates: %d %d %d spicies: %d \t temp: %f\n", i,j,k,si,Tcart[0][i+1][j+1][k+1]);
+        Tperpar_ns[si]  -> SetComponent(p,0, Tperpar[k+1][j+1][i+1][0]);
+        Tperpar_ns[si]  -> SetComponent(p,1, Tperpar[k+1][j+1][i+1][1]);
+        Tperpar_ns[si]  -> SetComponent(p,2, Tperpar[k+1][j+1][i+1][2]);
+        Tperpar_ns[si]  -> SetComponent(p,3, Tperpar[k+1][j+1][i+1][3]);
+        Tperpar_ns[si]  -> SetComponent(p,4, Tperpar[k+1][j+1][i+1][4]);
+        Tperpar_ns[si]  -> SetComponent(p,5, Tperpar[k+1][j+1][i+1][5]);
       }
     }
 
-    /// Fast way, if memry layout is correct.
+    /// [KTH CODE] Fast way, if memry layout is correct.
     // velocityData->SetArray(const_cast<double*>(velocity.data()),
     // static_cast<vtkIdType>(velocity.size()), 1);
   }

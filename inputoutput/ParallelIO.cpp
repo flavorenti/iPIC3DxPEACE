@@ -708,6 +708,8 @@ void WriteMomentsVTK(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCtopol
 						  momentswritebuffer[iz][iy][ix] = (float)EMf->getRHOns(ix+1, iy+1, iz+1, si)*4*3.1415926535897;
 
 				//Write VTK header
+        ostringstream rhoname;
+        rhoname <<((si%2==0)?"rhoe":"rhoi" )<< si;
 				sprintf(header, "# vtk DataFile Version 2.0\n"
 								   "%s%d density from iPIC3D\n"
 								   "BINARY\n"
@@ -717,7 +719,7 @@ void WriteMomentsVTK(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCtopol
 								   "SPACING %f %f %f\n"
 								   "POINT_DATA %d \n"
 								   "SCALARS %s float\n"
-					"LOOKUP_TABLE default\n",(si%2==0)?"Electron":"Ion",si,dimX,dimY,dimZ, spaceX,spaceY,spaceZ, nPoints,(si%2==0)?"rhoe":"rhoi");
+					"LOOKUP_TABLE default\n",(si%2==0)?"Electron":"Ion",si,dimX,dimY,dimZ, spaceX,spaceY,spaceZ, nPoints,rhoname.str().c_str());
 		 }else if(momentstags[tagid].compare("PXX") == 0){
 				for(int iz=0;iz<nzn-3;iz++)
 				  for(int iy=0;iy<nyn-3;iy++)
@@ -1073,103 +1075,19 @@ void WriteTemperatureVTK(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCt
   const string outputtag = col->getTemperatureOutputTag();
   const int ns = col->getNs();
 
-  double Tcar[nzn-3][nyn-3][nxn-3][6];
-  double Tperpar[nzn-3][nyn-3][nxn-3][6];
-
   for(int si=0;si<ns;si++){
    char   header[1024];
 
-     for(int iz=0;iz<nzn-3;iz++)
-        for(int iy=0;iy<nyn-3;iy++)
-          for(int ix= 0;ix<nxn-3;ix++){
-              double pxx = (float)EMf->getpXXsn(ix+1, iy+1, iz+1, si);
-              double pxy = (float)EMf->getpXYsn(ix+1, iy+1, iz+1, si);
-              double pxz = (float)EMf->getpXZsn(ix+1, iy+1, iz+1, si);
-              double pyy = (float)EMf->getpYYsn(ix+1, iy+1, iz+1, si);
-              double pyz = (float)EMf->getpYZsn(ix+1, iy+1, iz+1, si);
-              double pzz = (float)EMf->getpZZsn(ix+1, iy+1, iz+1, si);
-
-              double rho = (float)EMf->getRHOns(ix+1, iy+1, iz+1, si);
-              if (rho==0){
-                rho=0.00001;
-              }
-
-              double Jx = (float)EMf->getJxs(ix+1, iy+1, iz+1, si);
-              double Jy = (float)EMf->getJys(ix+1, iy+1, iz+1, si);
-              double Jz = (float)EMf->getJzs(ix+1, iy+1, iz+1, si);
-
-              double qom = col->getQOM(si);
-
-              double Bx = (float)EMf->getBxTot(ix+1, iy+1, iz+1);
-              double By = (float)EMf->getByTot(ix+1, iy+1, iz+1);
-              double Bz = (float)EMf->getBzTot(ix+1, iy+1, iz+1);
-              double modB = sqrt(pow(Bx,2) + pow(By,2) + pow(Bz,2));
-
-              double a1 = Bx/modB;
-              double a2 = By/modB;
-              double a3 = Bz/modB;
-
-              double b1;
-              double b2;
-              double b3;
-              if (a2 != 0 || a3 != 0){
-                b1 = 0;
-                b2 = a3;
-                b3 = -a2;
-              }else{
-                b1 = -a3;
-                b2 = 0;
-                b3 = a1;
-              }
-              double modb = sqrt(pow(b1,2) + pow(b2,2) + pow(b3,2));
-              b1 = b1/modb;
-              b2 = b2/modb;
-              b3 = b3/modb;
-
-              double c1 = a2*b3 - a3*b2;
-              double c2 = a3*b1 - a1*b3;
-              double c3 = a1*b2 - a2*b1;
-              
-              double Txx = (pxx-((Jx*Jx)/rho))/(rho*fabs(qom));
-              double Txy = (pxy-((Jx*Jy)/rho))/(rho*fabs(qom));
-              double Txz = (pxz-((Jx*Jz)/rho))/(rho*fabs(qom));
-              double Tyy = (pyy-((Jy*Jy)/rho))/(rho*fabs(qom));
-              double Tyz = (pyz-((Jy*Jz)/rho))/(rho*fabs(qom));
-              double Tzz = (pzz-((Jz*Jz)/rho))/(rho*fabs(qom));
-
-              Tcar[iz][iy][ix][0] = Txx;
-              Tcar[iz][iy][ix][1] = Tyy;
-              Tcar[iz][iy][ix][2] = Tzz;
-              Tcar[iz][iy][ix][3] = Txy;
-              Tcar[iz][iy][ix][4] = Tyz;
-              Tcar[iz][iy][ix][5] = Txz;
-
-              double Tai = a1*b1*Txx + a2*b2*Tyy + a3*b3*Tzz + (a1*b2 + a2*b1)*Txy + (a1*b3 + a3*b1)*Txz + (a2*b3 + a3*b2)*Tyz;
-              double Tbi = a1*c1*Txx + a2*c2*Tyy + a3*c3*Tzz + (a1*c2 + a2*c1)*Txy + (a1*c3 + a3*c1)*Txz + (a2*c3 + a3*c2)*Tyz;
-              double Tci = b1*c1*Txx + b2*c2*Tyy + b3*c3*Tzz + (b1*c2 + b2*c1)*Txy + (b1*c3 + b3*c1)*Txz + (b2*c3 + b3*c2)*Tyz;
-              double Tpar = a1*a1*Txx + a2*a2*Tyy + a3*a3*Tzz + 2*(a1*a2*Txy + a1*a3*Txz + a2*a3*Tyz);
-              double Tp1i = b1*b1*Txx + b2*b2*Tyy + b3*b3*Tzz + 2*(b1*b2*Txy + b1*b3*Txz + b2*b3*Tyz);
-              double Tp2i = c1*c1*Txx + c2*c2*Tyy + c3*c3*Tzz + 2*(c1*c2*Txy + c1*c3*Txz + c2*c3*Tyz);
-
-              double theta = 0.5*atan((Tp2i-Tp1i)/(2*Tci));
-
-              double Ta = cos(theta)*Tai + sin(theta)*Tbi;
-              double Tb = cos(theta)*Tbi - sin(theta)*Tai;
-              double Tc = cos(theta)*cos(theta)*Tci - sin(theta)*sin(theta)*Tci + cos(theta)*sin(theta)*(Tp2i-Tp1i); //cos(2*theta)*Tci + 0.5*sin(2*theta)*(Tp2i - Tp1i);
-              double Tperp1 = 2*cos(theta)*sin(theta)*Tci + cos(theta)*cos(theta)*Tp1i + sin(theta)*sin(theta)*Tp2i; //Tci + 0.5*sin(2*theta)*(Tp2i + Tp1i);
-              double Tperp2 = -2*cos(theta)*sin(theta)*Tci + cos(theta)*cos(theta)*Tp2i + sin(theta)*sin(theta)*Tp1i;
-
-              Tperpar[iz][iy][ix][0] = Tpar;
-              Tperpar[iz][iy][ix][1] = Tperp1;
-              Tperpar[iz][iy][ix][2] = Tperp2;
-              Tperpar[iz][iy][ix][3] = Ta;
-              Tperpar[iz][iy][ix][4] = Tb;
-              Tperpar[iz][iy][ix][5] = Tc;
-          }
-
+    EMf->calcT_si(si);
+    auto Tcart = EMf -> getTcart();
+    auto Tperpar = EMf -> getTperpar();
+   
    for(int tagid=0; tagid<tagsize; tagid++){
 
    if (outputTag.find(temperaturetags[tagid], 0) == string::npos) continue;
+
+   ostringstream temperaturename;
+   temperaturename <<  temperaturetags[tagid] << "_" << ((si%2==0)?"e":"i")<< si;
 
    if (temperaturetags[tagid].compare("Tcart") == 0){
     //Write VTK header
@@ -1181,14 +1099,13 @@ void WriteTemperatureVTK(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCt
                  "ORIGIN 0 0 0\n"
                  "SPACING %f %f %f\n"
                  "POINT_DATA %d \n"
-                 "TENSORS6 %s float\n",(si%2==0)?"Electron":"Ion",si,dimX,dimY,dimZ, spaceX,spaceY,spaceZ, nPoints,(si%2==0)?"Tcart_e":"Tcart_i");
+                 "TENSORS6 %s float\n",(si%2==0)?"Electron":"Ion",si,dimX,dimY,dimZ, spaceX,spaceY,spaceZ, nPoints,temperaturename.str().c_str());
 
       for(int iz=0;iz<nzn-3;iz++)
         for(int iy=0;iy<nyn-3;iy++)
           for(int ix= 0;ix<nxn-3;ix++)
               for(int s=0;s<6;s++){
-                temperaturewritebuffer[iz][iy][ix][s] = Tcar[iz][iy][ix][s];
-              }
+                temperaturewritebuffer[iz][iy][ix][s] = Tcart[iz+1][iy+1][ix+1][s];              }
 
    }else if(temperaturetags[tagid].compare("Tperpar") == 0){
     //Write VTK header
@@ -1200,13 +1117,13 @@ void WriteTemperatureVTK(Grid3DCU *grid, EMfields3D *EMf, CollectiveIO *col, VCt
                  "ORIGIN 0 0 0\n"
                  "SPACING %f %f %f\n"
                  "POINT_DATA %d \n"
-                 "TENSORS6 %s float\n",(si%2==0)?"Electron":"Ion",si,dimX,dimY,dimZ, spaceX,spaceY,spaceZ, nPoints,(si%2==0)?"Tperpar_e":"Tperpar_i");
+                 "TENSORS6 %s float\n",(si%2==0)?"Electron":"Ion",si,dimX,dimY,dimZ, spaceX,spaceY,spaceZ, nPoints,temperaturename.str().c_str());
 
       for(int iz=0;iz<nzn-3;iz++)
         for(int iy=0;iy<nyn-3;iy++)
           for(int ix= 0;ix<nxn-3;ix++)
               for(int s=0;s<6;s++){
-                temperaturewritebuffer[iz][iy][ix][s] = Tperpar[iz][iy][ix][s];
+                temperaturewritebuffer[iz][iy][ix][s] = Tperpar[iz+1][iy+1][ix+1][s];
               }
 
    }
