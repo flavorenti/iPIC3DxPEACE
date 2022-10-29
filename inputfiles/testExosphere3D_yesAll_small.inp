@@ -31,7 +31,7 @@ SimulationName    = Exosphere	# simulation name for the output
 #  %%%%%%%%%%%%%%%%%%% NUMERICAL PARAMETERS %%%%%%%%%%%%%%%%%%%
 #  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 dt = 0.50			# time step  
-ncycles = 200 			# number of time cycles
+ncycles = 500 			# number of time cycles
 
 Smooth = 0.5			# Smoothing value, 7-points stencil in 3D (default is 1)
 SmoothNiter = 2			# How many times the smoothing is applied (default is 6)
@@ -128,17 +128,17 @@ E_th_el = 6e-6 3e-6 2e-7	# threshold energies of electron collisional processes\
 #  %%%%%%%%%%%%%%%%%%%% OUTPUT PARAMETERS %%%%%%%%%%%%%%%%%%%%%
 #  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-FieldOutputCycle = 10				# nb of steps to print fields and moments (default 100)
+FieldOutputCycle = 100				# nb of steps to print fields and moments (default 100)
 FieldOutputTag   = B+E+Je+Ji			# what fields to print B+E+Je+Ji (default "")
 MomentsOutputTag = rho				# what moments to print rho+PXX+PXY+PXZ+PYY+PYZ+PZZ (default "")
 
-TemperatureOutputCycle = 10			# nb of steps to print temperature (default 0)
-TemperatureOutputTag = Tcart			# what kind of temperature tensor to print Tcart+Tperppar (default "")
+TemperatureOutputCycle = 100			# nb of steps to print temperature (default 0)
+TemperatureOutputTag = Tperpar			# what kind of temperature tensor to print Tcart+Tperpar (default "")
 
-SpectraOutputCycle = 10				# nb of steps to print spectra (default 0)
+SpectraOutputCycle = 100				# nb of steps to print spectra (default 0)
 SpectraOutputTag = Stot				# what kind of spectra to print Stot+Spar+Sperp (default "")
 
-RestartOutputCycle = 25				# nb of steps to print restart (default 5000)
+RestartOutputCycle = 2500				# nb of steps to print restart (default 5000)
 
 DeltaX = 2					# subgrid for spectra output, if 1 same grid as the box (default 1) - X
 DeltaY = 2					# subgrid for spectra output, if 1 same grid as the box (default 1) - Y
@@ -150,4 +150,4 @@ Estarte = -7					# starting energy of log array for electron spectra (default -1
 Eende = -1					# final energy of log array for electron spectra (default 1)
 dEe = 1.2					# step in log-scale for energy array for electron spectra (default 0.5)
 
-ParaviewScriptPath = /home/lquerci/NICE/iPIC3DxPEACE/catalyst_legacy/scripts/Tcart_e0_YY.py
+ParaviewScriptPath = /home/lquerci/NICE/iPIC3DxPEACE/catalyst_legacy/scripts/presentation2.py

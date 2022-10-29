@@ -6,14 +6,14 @@ timeStepToStartOutputAt=0
 forceOutputAtFirstCall=False
 
 # Global screenshot output options
-imageFileNamePadding=3
+imageFileNamePadding=4
 rescale_lookuptable=False
 
 # Whether or not to request specific arrays from the adaptor.
 requestSpecificArrays=False
 
 # a root directory under which all Catalyst output goes
-rootDirectory='/home/lquerci/NICE/build_iPIC3D/data/images'
+rootDirectory='./data/images'
 
 # makes a cinema D index table
 make_cinema_table=False
@@ -50,15 +50,14 @@ def CreateCoProcessor():
 
       # Create a new 'Render View'
       renderView1 = CreateView('RenderView')
-      renderView1.ViewSize = [1216, 729]
+      renderView1.ViewSize = [1137, 729]
       renderView1.AxesGrid = 'GridAxes3DActor'
-      renderView1.CenterOfRotation = [4.999995231628418, 4.999995231628418, 4.999995231628418]
+      renderView1.CenterOfRotation = [3.9999959468841553, 3.9999959468841553, 0.9999974966049194]
       renderView1.StereoType = 'Crystal Eyes'
-      renderView1.CameraPosition = [5.333829497834304, 36.56272860302525, 16.10384697703235]
-      renderView1.CameraFocalPoint = [4.999995231628417, 4.999995231628418, 4.999995231628418]
-      renderView1.CameraViewUp = [-0.042219411893220225, 0.3319663066732358, -0.9423459515979903]
+      renderView1.CameraPosition = [3.9999959468841553, 3.9999959468841553, 23.195259688466994]
+      renderView1.CameraFocalPoint = [3.9999959468841553, 3.9999959468841553, 0.9999974966049194]
       renderView1.CameraFocalDisk = 1.0
-      renderView1.CameraParallelScale = 8.660245778782537
+      renderView1.CameraParallelScale = 5.744556566297824
       renderView1.Background = [0.32, 0.34, 0.43]
       renderView1.BackEnd = 'OSPRay raycaster'
       renderView1.OSPRayMaterialLibrary = materialLibrary1
@@ -67,7 +66,7 @@ def CreateCoProcessor():
       # and provide it with information such as the filename to use,
       # how frequently to write the images, etc.
       coprocessor.RegisterView(renderView1,
-          filename='image_%t.png', freq=1, fittoscreen=0, magnification=1, width=1216, height=729, cinema={}, compression=-1)
+          filename='image_%t.png', freq=1, fittoscreen=0, magnification=1, width=1137, height=729, cinema={}, compression=-1)
       renderView1.ViewTime = datadescription.GetTime()
 
       SetActiveView(None)
@@ -91,82 +90,51 @@ def CreateCoProcessor():
 
       # create a new 'Legacy VTK Reader'
       # create a producer from a simulation input
-      dipole3D_Tperpare0_ = coprocessor.CreateProducer(datadescription, 'input')
+      exosphere_Je_ = coprocessor.CreateProducer(datadescription, 'input')
 
-      # create a new 'Slice'
-      slice1 = Slice(Input=dipole3D_Tperpare0_)
-      slice1.SliceType = 'Plane'
-      slice1.SliceOffsetValues = [0.0]
+      # create a new 'Stream Tracer'
+      streamTracer2 = StreamTracer(Input=exosphere_Je_,
+          SeedType='Point Source')
+      streamTracer2.Vectors = ['POINTS', 'Ve0']
+      streamTracer2.MaximumStreamlineLength = 7.999992000000001
 
-      # init the 'Plane' selected for 'SliceType'
-      slice1.SliceType.Origin = [4.999995, 4.999995, 4.999995]
-      slice1.SliceType.Normal = [0.0, 1.0, 0.0]
-
+      # init the 'Point Source' selected for 'SeedType'
+      streamTracer2.SeedType.Center = [1.0, 3.9999960000000003, 0.9999975000000001]
+      streamTracer2.SeedType.NumberOfPoints = 60
       # ----------------------------------------------------------------
       # setup the visualization in view 'renderView1'
       # ----------------------------------------------------------------
 
-      # show data from slice1
-      slice1Display = Show(slice1, renderView1)
-
-      # get color transfer function/color map for 'Tperpar_e0'
-      tperpar_eLUT = GetColorTransferFunction('Tperpar_e0')
-      tperpar_eLUT.RGBPoints = [-9.999999680285692e+37, 0.231373, 0.298039, 0.752941, -4.999999840142846e+37, 0.865003, 0.865003, 0.865003, 0.0, 0.705882, 0.0156863, 0.14902]
-      tperpar_eLUT.ScalarRangeInitialized = 1.0
-      tperpar_eLUT.VectorComponent = 1
-      tperpar_eLUT.VectorMode = 'Component'
+      # show data from streamTracer2
+      streamTracer2Display = Show(streamTracer2, renderView1)
 
       # trace defaults for the display properties.
-      slice1Display.Representation = 'Surface'
-      slice1Display.ColorArrayName = ['POINTS', 'Tperpar_e0']
-      slice1Display.LookupTable = tperpar_eLUT
-      slice1Display.OSPRayScaleArray = 'Tperpar_e0'
-      slice1Display.OSPRayScaleFunction = 'PiecewiseFunction'
-      slice1Display.SelectOrientationVectors = 'None'
-      slice1Display.ScaleFactor = 0.9999990463256836
-      slice1Display.SelectScaleArray = 'None'
-      slice1Display.GlyphType = 'Arrow'
-      slice1Display.GlyphTableIndexArray = 'None'
-      slice1Display.GaussianRadius = 0.04999995231628418
-      slice1Display.SetScaleArray = ['POINTS', 'Tperpar_e0']
-      slice1Display.ScaleTransferFunction = 'PiecewiseFunction'
-      slice1Display.OpacityArray = ['POINTS', 'Tperpar_e0']
-      slice1Display.OpacityTransferFunction = 'PiecewiseFunction'
-      slice1Display.DataAxesGrid = 'GridAxesRepresentation'
-      slice1Display.PolarAxes = 'PolarAxesRepresentation'
+      streamTracer2Display.Representation = 'Surface'
+      streamTracer2Display.ColorArrayName = [None, '']
+      streamTracer2Display.OSPRayScaleArray = 'AngularVelocity'
+      streamTracer2Display.OSPRayScaleFunction = 'PiecewiseFunction'
+      streamTracer2Display.SelectOrientationVectors = 'Normals'
+      streamTracer2Display.ScaleFactor = 0.7883861541748047
+      streamTracer2Display.SelectScaleArray = 'AngularVelocity'
+      streamTracer2Display.GlyphType = 'Arrow'
+      streamTracer2Display.GlyphTableIndexArray = 'AngularVelocity'
+      streamTracer2Display.GaussianRadius = 0.039419307708740234
+      streamTracer2Display.SetScaleArray = ['POINTS', 'AngularVelocity']
+      streamTracer2Display.ScaleTransferFunction = 'PiecewiseFunction'
+      streamTracer2Display.OpacityArray = ['POINTS', 'AngularVelocity']
+      streamTracer2Display.OpacityTransferFunction = 'PiecewiseFunction'
+      streamTracer2Display.DataAxesGrid = 'GridAxesRepresentation'
+      streamTracer2Display.PolarAxes = 'PolarAxesRepresentation'
 
       # init the 'PiecewiseFunction' selected for 'ScaleTransferFunction'
-      slice1Display.ScaleTransferFunction.Points = [-312.51483154296875, 0.0, 0.5, 0.0, 0.0, 1.0, 0.5, 0.0]
+      streamTracer2Display.ScaleTransferFunction.Points = [-0.010548283550484048, 0.0, 0.5, 0.0, 0.010489982733140888, 1.0, 0.5, 0.0]
 
       # init the 'PiecewiseFunction' selected for 'OpacityTransferFunction'
-      slice1Display.OpacityTransferFunction.Points = [-312.51483154296875, 0.0, 0.5, 0.0, 0.0, 1.0, 0.5, 0.0]
-
-      # setup the color legend parameters for each legend in this view
-
-      # get color legend/bar for tperpar_eLUT in view renderView1
-      tperpar_eLUTColorBar = GetScalarBar(tperpar_eLUT, renderView1)
-      tperpar_eLUTColorBar.Title = 'Tperpar_e0'
-      tperpar_eLUTColorBar.ComponentTitle = 'YY'
-
-      # set color bar visibility
-      tperpar_eLUTColorBar.Visibility = 1
-
-      # show color legend
-      slice1Display.SetScalarBarVisibility(renderView1, True)
-
-      # ----------------------------------------------------------------
-      # setup color maps and opacity mapes used in the visualization
-      # note: the Get..() functions create a new object, if needed
-      # ----------------------------------------------------------------
-
-      # get opacity transfer function/opacity map for 'Tperpar_e0'
-      tperpar_ePWF = GetOpacityTransferFunction('Tperpar_e0')
-      tperpar_ePWF.Points = [-9.999999680285692e+37, 0.0, 0.5, 0.0, 0.0, 1.0, 0.5, 0.0]
-      tperpar_ePWF.ScalarRangeInitialized = 1
+      streamTracer2Display.OpacityTransferFunction.Points = [-0.010548283550484048, 0.0, 0.5, 0.0, 0.010489982733140888, 1.0, 0.5, 0.0]
 
       # ----------------------------------------------------------------
       # finally, restore active source
-      SetActiveSource(slice1)
+      SetActiveSource(streamTracer2)
       # ----------------------------------------------------------------
     return Pipeline()
 

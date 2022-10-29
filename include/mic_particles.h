@@ -30,7 +30,7 @@
     F64vec8 field_components[8])
   {
     F64vec8 fields = F64vec8(0.);
-    #pragma unroll
+    // #pragma unroll
     for(int c=0; c<8; c++)
       fields += F64vec8(weights[c])*field_components[c];
     return fields;
@@ -214,12 +214,12 @@
       int const*const subs_arr = (int*)&subs;
       // access underlying 1D array of fieldForPcls
       const double* fieldForPcls1d = fieldForPcls.get_arr();
-      #pragma unroll
+      // #pragma unroll
       for(int i=0; i<8; i++)
       {
         field_components0[i] = *(F64vec8*)&fieldForPcls1d[subs_arr[i]];
       }
-      #pragma unroll
+      // #pragma unroll
       for(int i=0; i<8; i++)
       {
         field_components1[i] = *(F64vec8*)&fieldForPcls1d[subs_arr[i+8]];

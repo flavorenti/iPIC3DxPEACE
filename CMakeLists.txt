@@ -50,15 +50,16 @@ set(USE_CATALYST "LEGACY")
 if(USE_CATALYST STREQUAL "LEGACY")
   add_definitions(-DUSE_CATALYST_LEGACY)    #define USE_CATALYST_LEGACY in the code
 endif()
-if(USE_CATALYST STREQUAL "V2")
-  add_definitions(-DUSE_CATALYST_V2)        #define USE_CATALYST_V2 in the code
-endif()
-
 
 if(USE_CATALYST STREQUAL "LEGACY")
+#uncoment if paraview catalyst is implemented using modules on Irene: 
+#list(APPEND CMAKE_MODULE_PATH
+#"/ccc/products/paraview-5.8.0/intel--19.0.5.281__openmpi--4.0.1/default/lib64/cmake/paraview-5.8")
+
   #path to the directory where the paraview build is
-  set(ParaView_DIR /home/lquerci/NICE/paraview/build )
-  #set(ParaView_DIR /data/home/lquerci/Sources/paraview/build ) 
+  set(ParaView_DIR /home/lquerci/NICE/paraview/build )             #local machine
+  #set(ParaView_DIR /data/home/lquerci/Sources/paraview/build )     #Licallo
+  #set(ParaView_DIR /ccc/products/paraview-5.8.0/intel--19.0.5.281__openmpi--4.0.1/default/lib64/cmake/paraview-5.8) #Irene
 
 
   find_package(ParaView 5.7 REQUIRED)
@@ -72,7 +73,7 @@ if(USE_CATALYST STREQUAL "LEGACY")
   else()
     add_library(iPICAdaptor ${CMAKE_SOURCE_DIR}/catalyst_legacy/Adaptor_legacy.cpp)
 
-    target_link_libraries(iPICAdaptor PRIVATE ParaView::PythonCatalyst VTK::CommonDataModel Python3::Python)
+    target_link_libraries(iPICAdaptor PRIVATE ParaView::PythonCatalyst VTK::CommonDataModel Python3::Python) #use Python2::Python on Irene
     target_include_directories(iPICAdaptor INTERFACE ${CMAKE_SOURCE_DIR}/catalyst_legacy)
     target_compile_definitions(iPICAdaptor INTERFACE USE_CATALYST)
 
@@ -87,6 +88,7 @@ if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "k1om") ## Xeon Phi
    set(VARIOUS_LIB /opt/intel/lib/mic)
    set (EXTRA_LIBS ${VARIOUS_LIB}/libimf.so ${VARIOUS_LIB}/libsvml.so ${VARIOUS_LIB}/libirng.so ${VARIOUS_LIB}/libintlc.so ${MPELIB})
 else()
+   #cmake_policy(SET CMP0074 NEW) #uncomment when using Irene 
    find_package(MPI)
    set(EXTRA_LIBS "")   
 endif()
@@ -99,7 +101,7 @@ else()
 	if (${myhostname} MATCHES "(.*)pdc(.*)")
    	   set(HDF5_INCLUDE_DIRS /usr/local/Cellar/hdf5/1.10.6/include)
 	else()
-    #cmake_policy(SET CMP0074 NEW)
+    #cmake_policy(SET CMP0074 NEW)  #uncomment when using Licallo
 		find_package(HDF5 COMPONENTS HL C )   
 	endif()
 endif()
@@ -180,14 +182,14 @@ option(STATIC_LINK "Choose static link"  on)
 if(STATIC_LINK) 
 	add_library(
 	    iPIC3Dlib      #name of the library
-		STATIC	   #type of the library
+		  STATIC	   #type of the library
 	    ${inc_files}    # stuff to build the library
 	    ${src_files}
 	)
 else()
 	add_library(
 	    iPIC3Dlib      #name of the library
-		SHARED	   #type of the library
+		  SHARED	   #type of the library
 	    ${inc_files}    # stuff to build the library
 	    ${src_files}
 	)
@@ -203,7 +205,12 @@ target_link_libraries(
          ${HDF5_HL_LIBRARIES}
          ${MPI_LIBRARIES}
 	 ${EXTRA_LIBS}
-	 #/ccc/products/icc-20.0.4/system/default/20.0.4/lib/intel64/libiomp5.so
+   #extra libraries user for Irene
+   if (USE_CATALYST STREQUAL "LEGACY")
+    #uncooment if paraview catalyst is implemented using modules on Irene: 
+    #ccc/products2/icc-19.0.5.281/Atos_7__x86_64/system/default/compilers_and_libraries_2019.5.281/linux/compiler/lib/intel64_lin/libirc.so
+	 endif()
+   #/ccc/products/icc-20.0.4/system/default/20.0.4/lib/intel64/libiomp5.so
 )
 
 target_link_libraries(

@@ -117,10 +117,8 @@ void UpdateVTKAttributes(vtkCPInputDataDescription *idd, EMfields3D *EMf) {
       Tperpar_ns[si]    = vtkDoubleArray::SafeDownCast(vtk_point_data->GetArray(Tperpar_tag[si].c_str()));
     }
     
-    
-
     // Feed the data into VTK array. Since we don't know the memory layout of
-    // our B field data, we feed it point-by-point, in a very slow way
+    // our field data, we feed it point-by-point, in a very slow way
 
     // Array of grid's dimensions
     int *dims = VTKGrid->GetDimensions();
@@ -138,9 +136,6 @@ void UpdateVTKAttributes(vtkCPInputDataDescription *idd, EMfields3D *EMf) {
     auto Jzs = EMf->getJzs();
 
     auto rho = EMf->getRHOns();
-
-
-
 
     // Cycle over all VTK grid's points, get their indices and copy the data.
     // We want to have only one cycle over point's ID to efficiently use
@@ -171,9 +166,9 @@ void UpdateVTKAttributes(vtkCPInputDataDescription *idd, EMfields3D *EMf) {
        
         rhons[si]-> SetValue(p, rho[si][i+1][j+1][k+1]*4*3.1415926535897);
 
-        Vns[si]  -> SetComponent(p, 0, Jxs[si][i+1][j+1][k+1]/rho[si][i+1][j+1][k+1]*4*3.1415926535897);
-        Vns[si]  -> SetComponent(p, 1, Jys[si][i+1][j+1][k+1]/rho[si][i+1][j+1][k+1]*4*3.1415926535897);
-        Vns[si]  -> SetComponent(p, 2, Jzs[si][i+1][j+1][k+1]/rho[si][i+1][j+1][k+1]*4*3.1415926535897);
+        Vns[si]  -> SetComponent(p, 0, Jxs[si][i+1][j+1][k+1]);//(rho[si][i+1][j+1][k+1]*4*3.1415926535897));
+        Vns[si]  -> SetComponent(p, 1, Jys[si][i+1][j+1][k+1]);//(rho[si][i+1][j+1][k+1]*4*3.1415926535897));
+        Vns[si]  -> SetComponent(p, 2, Jzs[si][i+1][j+1][k+1]);//(rho[si][i+1][j+1][k+1]*4*3.1415926535897));
 
         Tcart_ns[si]  -> SetComponent(p,0, Tcart[k+1][j+1][i+1][0]);
         Tcart_ns[si]  -> SetComponent(p,1, Tcart[k+1][j+1][i+1][1]);
@@ -255,7 +250,7 @@ void Initialize(const Collective *sim_params, const int start_x,
     // the first time it's needed. If we needed the memory
     // we could delete it and rebuild as necessary.
     VTKGrid = vtkImageData::New();
-    printf("start: (%d, %d, %d); end: (%d,%d,%d)\n", start_x, start_y, start_z, start_x + nx- 3, start_y + ny- 3, start_z + nz - 3);
+    //printf("start: (%d, %d, %d); end: (%d,%d,%d)\n", start_x, start_y, start_z, start_x + nx- 3, start_y + ny- 3, start_z + nz - 3);
     VTKGrid->SetExtent(start_x, start_x + nx - 3, start_y , start_y + ny - 3,
                        start_z, start_z + nz - 3);
     VTKGrid->SetSpacing(dx, dy, dz);
@@ -283,7 +278,6 @@ void CoProcess(double time, unsigned int timeStep, EMfields3D *EMf) {
   vtkNew<vtkStringArray> fd0{};
   fd0->SetName("CaseName");
   fd0->SetNumberOfComponents(1);
-  fd0->InsertNextValue(_sim_params->getCase().c_str());
   VTKGrid->GetFieldData()->AddArray(fd0);
 
   vtkNew<vtkIntArray> fd1{};
@@ -293,10 +287,10 @@ void CoProcess(double time, unsigned int timeStep, EMfields3D *EMf) {
   VTKGrid->GetFieldData()->AddArray(fd1);
 
   std::vector<std::pair<std::string, double>> params{
-      {"B0x", _sim_params->getB0x()},
-      {"B0y", _sim_params->getB0y()},
-      {"B0z", _sim_params->getB0z()},
-      {"ns", _sim_params->getNs()}};
+        {"B0x", _sim_params->getB0x()},
+        {"B0y", _sim_params->getB0y()},
+        {"B0z", _sim_params->getB0z()},
+        {"ns", _sim_params->getNs()}};
 
   for (const auto &pair : params) {
     vtkNew<vtkDoubleArray> fd{};
@@ -310,7 +304,7 @@ void CoProcess(double time, unsigned int timeStep, EMfields3D *EMf) {
 
     vtkCPInputDataDescription *idd =
         dataDescription->GetInputDescriptionByName(InputName);
-    BuildVTKDataStructures(idd, EMf);
+    UpdateVTKAttributes(idd, EMf);
     idd->SetGrid(VTKGrid);
     Processor->CoProcess(dataDescription);
   }

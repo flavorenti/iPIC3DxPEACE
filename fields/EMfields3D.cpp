@@ -472,7 +472,7 @@ void EMfields3D::sumMoments(const Particles3Dcomm* part)
   // to the particles and then accumulate moments in smaller
   // subarrays.
   //#ifdef _OPENMP
-  #pragma omp parallel
+  // #pragma omp parallel
   {
   for (int i = 0; i < ns; i++)
   {
@@ -504,11 +504,11 @@ void EMfields3D::sumMoments(const Particles3Dcomm* part)
     for(int i=0; i<moments1dsize; i++) moments1d[i]=0;
     //
     // This barrier is not needed
-    #pragma omp barrier
+    // #pragma omp barrier
     // The following loop is expensive, so it is wise to assume that the
     // compiler is stupid.  Therefore we should on the one hand
     // expand things out and on the other hand avoid repeating computations.
-    #pragma omp for // used nowait with the old way
+    // #pragma omp for // used nowait with the old way
     for (int i = 0; i < nop; i++)
     {
       // compute the quadratic moments of velocity
@@ -605,7 +605,7 @@ void EMfields3D::sumMoments(const Particles3Dcomm* part)
     for(int thread_num=0;thread_num<get_sizeMomentsArray();thread_num++)
     {
       arr4_double moments = fetch_moments10Array(thread_num).fetch_arr();
-      #pragma omp for collapse(2)
+      // #pragma omp for collapse(2)
       for(int i=0;i<nxn;i++)
       for(int j=0;j<nyn;j++)
       for(int k=0;k<nzn;k++)
@@ -626,34 +626,34 @@ void EMfields3D::sumMoments(const Particles3Dcomm* part)
     // This was the old way of reducing;
     // did not scale well to large number of threads
     //{
-    //  #pragma omp critical (reduceMoment0)
+    //  // #pragma omp critical (reduceMoment0)
     //  for(int i=0;i<nxn;i++){for(int j=0;j<nyn;j++) for(int k=0;k<nzn;k++)
     //    { rhons[is][i][j][k] += invVOL*moments[i][j][k][0]; }}
-    //  #pragma omp critical (reduceMoment1)
+    //  // #pragma omp critical (reduceMoment1)
     //  for(int i=0;i<nxn;i++){for(int j=0;j<nyn;j++) for(int k=0;k<nzn;k++)
     //    { Jxs  [is][i][j][k] += invVOL*moments[i][j][k][1]; }}
-    //  #pragma omp critical (reduceMoment2)
+    //  // #pragma omp critical (reduceMoment2)
     //  for(int i=0;i<nxn;i++){for(int j=0;j<nyn;j++) for(int k=0;k<nzn;k++)
     //    { Jys  [is][i][j][k] += invVOL*moments[i][j][k][2]; }}
-    //  #pragma omp critical (reduceMoment3)
+    //  // #pragma omp critical (reduceMoment3)
     //  for(int i=0;i<nxn;i++){for(int j=0;j<nyn;j++) for(int k=0;k<nzn;k++)
     //    { Jzs  [is][i][j][k] += invVOL*moments[i][j][k][3]; }}
-    //  #pragma omp critical (reduceMoment4)
+    //  // #pragma omp critical (reduceMoment4)
     //  for(int i=0;i<nxn;i++){for(int j=0;j<nyn;j++) for(int k=0;k<nzn;k++)
     //    { pXXsn[is][i][j][k] += invVOL*moments[i][j][k][4]; }}
-    //  #pragma omp critical (reduceMoment5)
+    //  // #pragma omp critical (reduceMoment5)
     //  for(int i=0;i<nxn;i++){for(int j=0;j<nyn;j++) for(int k=0;k<nzn;k++)
     //    { pXYsn[is][i][j][k] += invVOL*moments[i][j][k][5]; }}
-    //  #pragma omp critical (reduceMoment6)
+    //  // #pragma omp critical (reduceMoment6)
     //  for(int i=0;i<nxn;i++){for(int j=0;j<nyn;j++) for(int k=0;k<nzn;k++)
     //    { pXZsn[is][i][j][k] += invVOL*moments[i][j][k][6]; }}
-    //  #pragma omp critical (reduceMoment7)
+    //  // #pragma omp critical (reduceMoment7)
     //  for(int i=0;i<nxn;i++){for(int j=0;j<nyn;j++) for(int k=0;k<nzn;k++)
     //    { pYYsn[is][i][j][k] += invVOL*moments[i][j][k][7]; }}
-    //  #pragma omp critical (reduceMoment8)
+    //  // #pragma omp critical (reduceMoment8)
     //  for(int i=0;i<nxn;i++){for(int j=0;j<nyn;j++) for(int k=0;k<nzn;k++)
     //    { pYZsn[is][i][j][k] += invVOL*moments[i][j][k][8]; }}
-    //  #pragma omp critical (reduceMoment9)
+    //  // #pragma omp critical (reduceMoment9)
     //  for(int i=0;i<nxn;i++){for(int j=0;j<nyn;j++) for(int k=0;k<nzn;k++)
     //    { pZZsn[is][i][j][k] += invVOL*moments[i][j][k][9]; }}
     //}
@@ -687,7 +687,7 @@ void EMfields3D::sumMoments_AoS(const Particles3Dcomm* part)
   // to the particles and then accumulate moments in smaller
   // subarrays.
   //#ifdef _OPENMP
-  #pragma omp parallel
+  // #pragma omp parallel
   {
   for (int species_idx = 0; species_idx < ns; species_idx++)
   {
@@ -709,8 +709,8 @@ void EMfields3D::sumMoments_AoS(const Particles3Dcomm* part)
     int moments1dsize = moments.get_size();
     for(int i=0; i<moments1dsize; i++) moments1d[i]=0;
     //
-    #pragma omp barrier
-    #pragma omp for
+    // #pragma omp barrier
+    // #pragma omp for
     for (int pidx = 0; pidx < nop; pidx++)
     {
       const SpeciesParticle& pcl = pcls.get_pcl(pidx);
@@ -808,7 +808,7 @@ void EMfields3D::sumMoments_AoS(const Particles3Dcomm* part)
     for(int thread_num=0;thread_num<get_sizeMomentsArray();thread_num++)
     {
       arr4_double moments = fetch_moments10Array(thread_num).fetch_arr();
-      #pragma omp for collapse(2)
+      // #pragma omp for collapse(2)
       for(int i=0;i<nxn;i++)
       for(int j=0;j<nyn;j++)
       for(int k=0;k<nzn;k++)
@@ -980,7 +980,7 @@ void EMfields3D::sumMoments_AoS_intr(const Particles3Dcomm* part)
   // by mesh cell (and num_threads times as much as if particles
   // were sorted by thread subdomain).
   //
-  #pragma omp parallel
+  // #pragma omp parallel
   {
     // array4<F64vec8> cell_moments(nxc,nyc,nzc,10);
     const int this_thread = omp_get_thread_num();
@@ -1008,7 +1008,7 @@ void EMfields3D::sumMoments_AoS_intr(const Particles3Dcomm* part)
       // if the number of particles is odd, then make
       // sure that the data after the last particle
       // will not contribute to the moments.
-      #pragma omp single // the implied omp barrier is needed
+      // #pragma omp single // the implied omp barrier is needed
       {
         // make sure that we will not overrun the array
         assert_divides(num_pcls_per_loop,pcl_list.capacity());
@@ -1022,7 +1022,7 @@ void EMfields3D::sumMoments_AoS_intr(const Particles3Dcomm* part)
           pcl.set_to_zero();
         }
       }
-      #pragma omp for
+      // #pragma omp for
       for (int pidx = 0; pidx < nop; pidx+=2)
       {
         // cast particles as vectors
@@ -1088,7 +1088,7 @@ void EMfields3D::sumMoments_AoS_intr(const Particles3Dcomm* part)
 
         // distribute moments from cells to nodes
         //
-        #pragma omp for collapse(2)
+        // #pragma omp for collapse(2)
         for(int cx=1;cx<nxc;cx++)
         for(int cy=1;cy<nyc;cy++)
         for(int cz=1;cz<nzc;cz++)
@@ -1185,7 +1185,7 @@ void EMfields3D::sumMoments_AoS_intr(const Particles3Dcomm* part)
 
         // at each node add moments to moments of first thread
         //
-        #pragma omp for collapse(2)
+        // #pragma omp for collapse(2)
         for(int nx=1;nx<nxn;nx++)
         for(int ny=1;ny<nyn;ny++)
         {
@@ -1210,7 +1210,7 @@ void EMfields3D::sumMoments_AoS_intr(const Particles3Dcomm* part)
 
         // transpose moments for field solver
         //
-        #pragma omp for collapse(2)
+        // #pragma omp for collapse(2)
         for(int nx=1;nx<nxn;nx++)
         for(int ny=1;ny<nyn;ny++)
         {
@@ -1532,7 +1532,7 @@ void EMfields3D::sumMoments_vectorized(const Particles3Dcomm* part)
   const double xstart = grid->getXstart();
   const double ystart = grid->getYstart();
   const double zstart = grid->getZstart();
-  #pragma omp parallel
+  // #pragma omp parallel
   {
   for (int species_idx = 0; species_idx < ns; species_idx++)
   {
@@ -1550,7 +1550,7 @@ void EMfields3D::sumMoments_vectorized(const Particles3Dcomm* part)
     double const*const q = pcls.getQall();
 
     const int nop = pcls.getNOP();
-    #pragma omp master
+    // #pragma omp master
     { timeTasks_begin_task(TimeTasks::MOMENT_ACCUMULATION); }
     Moments10& speciesMoments10 = fetch_moments10Array(0);
     arr4_double moments = speciesMoments10.fetch_arr();
@@ -1559,14 +1559,14 @@ void EMfields3D::sumMoments_vectorized(const Particles3Dcomm* part)
     //moments.setall(0.);
     double *moments1d = &moments[0][0][0][0];
     int moments1dsize = moments.get_size();
-    #pragma omp for // because shared
+    // #pragma omp for // because shared
     for(int i=0; i<moments1dsize; i++) moments1d[i]=0;
     
     // prevent threads from writing to the same location
     for(int cxmod2=0; cxmod2<2; cxmod2++)
     for(int cymod2=0; cymod2<2; cymod2++)
     // each mesh cell is handled by its own thread
-    #pragma omp for collapse(2)
+    // #pragma omp for collapse(2)
     for(int cx=cxmod2;cx<nxc;cx+=2)
     for(int cy=cymod2;cy<nyc;cy+=2)
     for(int cz=0;cz<nzc;cz++)
@@ -1624,7 +1624,7 @@ void EMfields3D::sumMoments_vectorized(const Particles3Dcomm* part)
         double weights[8][8];
         double momentsAccVec[8][10][8];
         memset(momentsAccVec,0,sizeof(double)*8*10*8);
-        #pragma simd
+        // #pragma simd
         for(int i=bucket_offset; i<bucket_end; i++)
         {
           add_moments_for_pcl_vec(momentsAccVec, velmoments, weights,
@@ -1643,14 +1643,14 @@ void EMfields3D::sumMoments_vectorized(const Particles3Dcomm* part)
       }
      }
     }
-    #pragma omp master
+    // #pragma omp master
     { timeTasks_end_task(TimeTasks::MOMENT_ACCUMULATION); }
 
     // reduction
-    #pragma omp master
+    // #pragma omp master
     { timeTasks_begin_task(TimeTasks::MOMENT_REDUCTION); }
     {
-      #pragma omp for collapse(2)
+      // #pragma omp for collapse(2)
       for(int i=0;i<nxn;i++){
       for(int j=0;j<nyn;j++){
       for(int k=0;k<nzn;k++)
@@ -1667,7 +1667,7 @@ void EMfields3D::sumMoments_vectorized(const Particles3Dcomm* part)
         pZZsn[is][i][j][k] = invVOL*moments[i][j][k][9];
       }}}
     }
-    #pragma omp master
+    // #pragma omp master
     { timeTasks_end_task(TimeTasks::MOMENT_REDUCTION); }
     // uncomment this and remove the loop below
     // when we change to use asynchronous communication.
@@ -1693,7 +1693,7 @@ void EMfields3D::sumMoments_vectorized_AoS(const Particles3Dcomm* part)
   const double xstart = grid->getXstart();
   const double ystart = grid->getYstart();
   const double zstart = grid->getZstart();
-  #pragma omp parallel
+  // #pragma omp parallel
   {
   for (int species_idx = 0; species_idx < ns; species_idx++)
   {
@@ -1703,7 +1703,7 @@ void EMfields3D::sumMoments_vectorized_AoS(const Particles3Dcomm* part)
     assert_eq(species_idx,is);
 
     const int nop = pcls.getNOP();
-    #pragma omp master
+    // #pragma omp master
     { timeTasks_begin_task(TimeTasks::MOMENT_ACCUMULATION); }
     Moments10& speciesMoments10 = fetch_moments10Array(0);
     arr4_double moments = speciesMoments10.fetch_arr();
@@ -1712,14 +1712,14 @@ void EMfields3D::sumMoments_vectorized_AoS(const Particles3Dcomm* part)
     //moments.setall(0.);
     double *moments1d = &moments[0][0][0][0];
     int moments1dsize = moments.get_size();
-    #pragma omp for // because shared
+    // #pragma omp for // because shared
     for(int i=0; i<moments1dsize; i++) moments1d[i]=0;
     
     // prevent threads from writing to the same location
     for(int cxmod2=0; cxmod2<2; cxmod2++)
     for(int cymod2=0; cymod2<2; cymod2++)
     // each mesh cell is handled by its own thread
-    #pragma omp for collapse(2)
+    // #pragma omp for collapse(2)
     for(int cx=cxmod2;cx<nxc;cx+=2)
     for(int cy=cymod2;cy<nyc;cy+=2)
     for(int cz=0;cz<nzc;cz++)
@@ -1855,14 +1855,14 @@ void EMfields3D::sumMoments_vectorized_AoS(const Particles3Dcomm* part)
       }
      }
     }
-    #pragma omp master
+    // #pragma omp master
     { timeTasks_end_task(TimeTasks::MOMENT_ACCUMULATION); }
 
     // reduction
-    #pragma omp master
+    // #pragma omp master
     { timeTasks_begin_task(TimeTasks::MOMENT_REDUCTION); }
     {
-      #pragma omp for collapse(2)
+      // #pragma omp for collapse(2)
       for(int i=0;i<nxn;i++){
       for(int j=0;j<nyn;j++){
       for(int k=0;k<nzn;k++)
@@ -1879,7 +1879,7 @@ void EMfields3D::sumMoments_vectorized_AoS(const Particles3Dcomm* part)
         pZZsn[is][i][j][k] = invVOL*moments[i][j][k][9];
       }}}
     }
-    #pragma omp master
+    // #pragma omp master
     { timeTasks_end_task(TimeTasks::MOMENT_REDUCTION); }
     // uncomment this and remove the loop below
     // when we change to use asynchronous communication.
@@ -2872,7 +2872,7 @@ void EMfields3D::ConstantChargePlanet2DPlaneXZ(double R,  double x_center,double
 //
 void EMfields3D::set_fieldForPcls()
 {
-  #pragma omp parallel for collapse(3)
+  // #pragma omp parallel for collapse(3)
   for(int i=0;i<nxn;i++)
   for(int j=0;j<nyn;j++)
   for(int k=0;k<nzn;k++)

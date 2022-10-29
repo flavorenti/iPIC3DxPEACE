@@ -13,7 +13,7 @@ rescale_lookuptable=False
 requestSpecificArrays=False
 
 # a root directory under which all Catalyst output goes
-rootDirectory='/data/home/lquerci/build_iPIC3D/data/images'
+rootDirectory='./data'
 
 # makes a cinema D index table
 make_cinema_table=False
