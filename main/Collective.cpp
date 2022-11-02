@@ -32,6 +32,10 @@
 #include "debug.h"
 #include "asserts.h" // for assert_ge
 #include "string.h"
+#include <ctime>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
 
 // order must agree with Enum in Collective.h
 static const char *enumNames[] =
@@ -491,6 +495,12 @@ void Collective::ReadInput(string inputfile) {
     w0[ns_sw+5] = w00_pl.f;
     qom[ns_sw+5] = qom_pl.f;
   }
+
+  // electric field in SW
+  E0x = w0[0]*B0y - v0[0]*B0z;
+  E0y =-u0[0]*B0z + w0[0]*B0x;
+  E0z = u0[0]*B0y - v0[0]*B0x;
+
 
   // translates bcEM into BC for EM fields E and B
   bcEx[0] = bcEMfaceXright == 0 ? 2 : 1;   bcBx[0] = bcEMfaceXright == 0 ? 1 : 2;
@@ -1478,78 +1488,363 @@ void Collective::Print() {
 
 
 }
-/*! Print Simulation Parameters */
-/* WARNING: should add collisional and neutral gas parameters to save */
+/*! Print Simulation Parameters in tree.xml */
+// SPASE-compliant metadata in xml file
 void Collective::save() {
-  string temp;
-  temp = SaveDirName + "/SimulationData.txt";
+
+  // path to outputfile
+  string temp;  
+  temp = SaveDirName + "/tree.xml";
   ofstream my_file(temp.c_str());
-  my_file << "---------------------------" << endl;
-  my_file << "-  Simulation Parameters  -" << endl;
-  my_file << "---------------------------" << endl;
 
-  my_file << "Number of species    = " << ns << endl;
-  for (int i = 0; i < ns; i++)
-    my_file << "qom[" << i << "] = " << qom[i] << endl;
-  my_file << "---------------------------" << endl;
-  my_file << "x-Length                 = " << Lx << endl;
-  my_file << "y-Length                 = " << Ly << endl;
-  my_file << "z-Length                 = " << Lz << endl;
-  my_file << "Number of cells (x)      = " << nxc << endl;
-  my_file << "Number of cells (y)      = " << nyc << endl;
-  my_file << "Number of cells (z)      = " << nzc << endl;
-  my_file << "---------------------------" << endl;
-  my_file << "MPI processes (x)      = " << XLEN << endl;
-  my_file << "MPI processes (y)      = " << YLEN << endl;
-  my_file << "MPI processes (z)      = " << ZLEN << endl;
-  my_file << "---------------------------" << endl;
-  my_file << "x-center                 = " << x_center << endl;
-  my_file << "y-center                 = " << y_center << endl;
-  my_file << "z-center                 = " << z_center << endl;
-  my_file << "Radius planet            = " << L_square << endl;
-  my_file << "Planet Offset            = " << PlanetOffset << endl;
-  my_file << "---------------------------" << endl;
-  my_file << "SAL                      = " << yes_sal << endl;
-  my_file << "Nlayers_SAL             = " << n_layers_sal << endl;
-  my_file << "---------------------------" << endl;
-  my_file << "Time step                = " << dt << endl;
-  my_file << "Number of cycles         = " << ncycles << endl;
-  my_file << "---------------------------" << endl;
-  for (int is = 0; is < ns; is++){
-    my_file << "rho init species   " << is << " = " << rhoINIT[is] << endl;
-  }
-  my_file << "current sheet thickness  = " << delta << endl;
-  my_file << "B0x                      = " << B0x << endl;
-  my_file << "B0y                      = " << B0y << endl;
-  my_file << "B0z                      = " << B0z << endl;
-  my_file << "---------------------------" << endl;
-  my_file << "v0x                      = " << u0[0] << endl;
-  my_file << "v0y                      = " << v0[0] << endl;
-  my_file << "v0z                      = " << w0[0] << endl;
-  for (int is = 0; is < ns; is++) 
-  my_file << "vth["<<is<<"]            = " << uth[is] << endl;
-  my_file << "---------------------------" << endl;
-  my_file << "Include Collisions       = " << collisionProcesses << endl;
-  my_file << "Collision XSection       = " << xSec << endl;
-  my_file << "Secondary elec species   = " << iSecElec << endl;
-  my_file << "Secondary ion species    = " << iSecIon << endl;
-  my_file << "---------------------------" << endl;
-  for (int i = 0; i < ns_pl; i++){
-    my_file << "nSurf["<<i<<"]           = " << nSurf[i] << endl;
-    my_file << "hExo["<<i<<"]            = " << hExo[i] << endl;
-    my_file << "fExo["<<i<<"]            = " << fExo[i] << endl;
-  }
-  my_file << "---------------------------" << endl;
-  my_file << "Smooth                   = " << Smooth << endl;
-  my_file << "SmoothNiter              = " << SmoothNiter<< endl;
-  my_file << "GMRES error tolerance    = " << GMREStol << endl;
-  my_file << "CG error tolerance       = " << CGtol << endl;
-  my_file << "Mover error tolerance    = " << NiterMover << endl;
-  my_file << "---------------------------" << endl;
-  my_file << "Results saved in: " << SaveDirName << endl;
-  my_file << "Restart saved in: " << RestartDirName << endl;
-  my_file << "---------------------" << endl;
-  my_file.close();
+  // day of the simulation
+  time_t t = time(0); 
+  tm* now = localtime(&t);
+  stringstream year, month, day, hour, min, sec;
+  year << setw(4) << setfill('0') << (now->tm_year+1900);
+  month << setw(2) << setfill('0') << (now->tm_mon+1);
+  day << setw(2) << setfill('0') << now->tm_mday;
+  hour << setw(2) << setfill('0') << now->tm_hour;
+  min << setw(2) << setfill('0') << now->tm_min;
+  sec << setw(2) << setfill('0') << now->tm_sec;
 
+  // string for later
+  string name_sp, name_ext;
+
+  // url to XML standard
+  string url_standard = "http://www.w3.org/2001/XMLSchema-instance";
+  // url to spase website - used to check scheme tree
+  string url_spase = "http://www.spase-group.org/data/schema";
+  // url to server where data are stored - TO BE UPDATED
+  string url_server = "http://impex.latmos.ipsl.fr";
+  // date of release of the code
+  string release_date = "2024-01-01T00:00:00.000";
+  // version of the code release
+  string vers = "0.0.1";
+  // date of start of this simulation
+  string date_simu = year.str()+"-"+month.str()+"-"+day.str()+"T"+hour.str()+":"+min.str()+":"+sec.str()+".000";
+  // name of this simulation
+  string name = "Mercury_"+day.str()+"_"+month.str()+"_"+year.str();
+  // name of the ouput file (for now only mag field at t=0)
+  string name_output = SimName + "_" + "B" + "_" + "0"; 
+
+  // Header of the xml file - should NOT be changed
+  my_file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
+  my_file << "<Spase>" << endl; 
+  my_file << "\t<Version>"<< vers <<"</Version>" << endl;
+
+  // Summary information on the simu Model
+  my_file << "\t<SimulationModel>" << endl;
+    my_file << "\t\t<ResourceID>spase://IMPEX/SimulationModel/Lagrange</ResourceID>" << endl;
+    my_file << "\t\t<ResourceHeader>" << endl;
+      my_file << "\t\t\t<ResourceName>PIC_Lagrange</ResourceName>" << endl;
+      my_file << "\t\t\t<ReleaseDate>" << release_date << "</ReleaseDate>" << endl;
+      my_file << "\t\t\t<Description>" << endl;
+        my_file << "\t\t\t\tPIC simulation model developped at OCA for plasma interaction with celestial neutral environments (planets or moons)" << endl;
+      my_file << "\t\t\t</Description>" << endl;
+      my_file << "\t\t\t<Contact>" << endl;
+        my_file << "\t\t\t\t<PersonID>Lagrange</PersonID>" << endl;
+        my_file << "\t\t\t\t<Role>DataProducer</Role>" << endl;
+      my_file << "\t\t\t</Contact>" << endl;
+      my_file << "\t\t\t<InformationURL>" << endl;
+        my_file << "\t\t\t\t<URL>" << url_server << "</URL>" << endl;
+      my_file << "\t\t\t</InformationURL>" << endl;
+    my_file << "\t\t</ResourceHeader>" << endl;
+    my_file << "\t\t<SimulationType>PIC</SimulationType>" << endl;
+    my_file << "\t\t<CodeLanguage>C/C++</CodeLanguage>" << endl;
+  my_file << "\t</SimulationModel>" << endl;
+
+  // Information of the rep where the simulations are stored
+  my_file << "\t<Repository>" << endl; 
+    my_file << "\t\t<ResourceID>spase://IMPEX/Repository/Lagrange</ResourceID>" << endl; 
+    my_file << "\t\t<ResourceHeader>" << endl; 
+      my_file << "\t\t\t<ResourceName>Lagrange_PIC_Simulation_Database</ResourceName>" << endl; 
+      my_file << "\t\t\t<ReleaseDate>" << release_date << "</ReleaseDate>" << endl;
+      my_file << "\t\t\t<Description/>" << endl;
+      my_file << "\t\t\t<Contact>" << endl; 
+        my_file << "\t\t\t\t<PersonID>Lagrange</PersonID>" << endl; 
+        my_file << "\t\t\t\t<Role>DataProducer</Role>" << endl; 
+      my_file << "\t\t\t</Contact>" << endl; 
+    my_file << "\t\t</ResourceHeader>" << endl;
+    my_file << "\t\t<AccessURL>" << endl; 
+      my_file << "\t\t\t<URL>" << url_server << "</URL>" << endl; 
+    my_file << "\t\t</AccessURL>" << endl; 
+  my_file << "\t</Repository>" << endl; 
+
+  // Information on the run we are doing now
+  my_file << "\t<SimulationRun>" << endl;
+    my_file << "\t\t<ResourceID>spase://IMPEX/SimulationRun/Lagrange/" << name << "</ResourceID>" << endl;
+    my_file << "\t\t<ResourceHeader>" << endl;
+      my_file << "\t\t\t<ResourceName>" << name << "</ResourceName>" << endl;
+      my_file << "\t\t\t<ReleaseDate>" << date_simu << "</ReleaseDate>" << endl;
+      my_file << "\t\t\t<Description/>" << endl;
+      my_file << "\t\t\t<Contact>" << endl;
+        my_file << "\t\t\t\t<PersonID>Lagrange</PersonID>" << endl;
+        my_file << "\t\t\t\t<Role>DataProducer</Role>" << endl;
+      my_file << "\t\t\t</Contact>" << endl;
+    my_file << "\t\t</ResourceHeader>" << endl;
+    my_file << "\t\t<Model>" << endl;
+      my_file << "\t\t\t<ModelID>spase://IMPEX/SimulationModel/Lagrange</ModelID>" << endl;
+    my_file << "\t\t</Model>" << endl;
+
+    // info on time of simulation --> TO BE CHANGED with real values
+    my_file << "\t\t<TemporalDependence>Yes</TemporalDependence>" << endl;
+    my_file << "\t\t<SimulatedRegion>Mercury</SimulatedRegion>" << endl;
+    my_file << "\t\t<LikelihoodRating>Strong</LikelihoodRating>" << endl;
+    my_file << "\t\t<SimulationTime>" << endl;
+      my_file << "\t\t\t<Duration>PT2072.854S</Duration>" << endl;  //put real tim of the simu (numerical)? or simu world time?
+      my_file << "\t\t\t<TimeStart>00:00:00</TimeStart>" << endl;
+      my_file << "\t\t\t<TimeStop>00:00:00</TimeStop>" << endl;
+      my_file << "\t\t\t<TimeStep>PT0.115S</TimeStep>" << endl;
+    my_file << "\t\t</SimulationTime>" << endl;
+
+    // info of simu box
+    my_file << "\t\t<SimulationDomain>" << endl;
+      my_file << "\t\t\t<CoordinateSystem>" << endl;
+        my_file << "\t\t\t\t<CoordinateRepresentation>Cartesian</CoordinateRepresentation>" << endl;
+        my_file << "\t\t\t\t<CoordinateSystemName>Box</CoordinateSystemName>" << endl;
+      my_file << "\t\t\t</CoordinateSystem>" << endl;
+      my_file << "\t\t\t<SpatialDimension>3</SpatialDimension>" << endl;
+      my_file << "\t\t\t<FieldDimension>3</FieldDimension>" << endl;
+      my_file << "\t\t\t<Units>di</Units>" << endl;
+      my_file << "\t\t\t<UnitsConversion> " << 1./L_square << " &gt; R </UnitsConversion>" << endl;
+      my_file << "\t\t\t<CoordinatesLabel>X Y Z</CoordinatesLabel>" << endl;
+      my_file << "\t\t\t<ValidMin>0  0  0</ValidMin>" << endl;
+      my_file << "\t\t\t<ValidMax>" << Lx << " " << Ly << " " << Lz << "</ValidMax>" << endl;
+      my_file << "\t\t\t<GridStructure>Constant</GridStructure>" << endl;
+      my_file << "\t\t\t<GridCellSize>" << Lx/nxc << " " << Ly/nyc << " " << Lz/nzc << "</GridCellSize>" << endl;
+      my_file << "\t\t\t<Symmetry>Plane</Symmetry>" << endl;
+      my_file << "\t\t\t<BoundaryConditions>" << endl;
+        my_file << "\t\t\t\t<ParticleBoundary>" << endl;
+          my_file << "\t\t\t\t\t<FrontWall> absorbing </FrontWall>" << endl; // definisci meglio qui le BC
+          my_file << "\t\t\t\t\t<BackWall> absorbing </BackWall>" << endl;
+          my_file << "\t\t\t\t\t<SideWall> absorbing </SideWall>" << endl;
+          my_file << "\t\t\t\t\t<Obstacle> absorbing </Obstacle>" << endl;
+        my_file << "\t\t\t\t</ParticleBoundary>" << endl;
+        my_file << "\t\t\t\t<FieldBoundary>" << endl;
+          my_file << "\t\t\t\t\t<FrontWall> IMF </FrontWall>" << endl;		// anche queste... Le vogliamo fissare o lasciamo qualche scelta allo user?
+          my_file << "\t\t\t\t\t<BackWall> Neuman zero-gradient </BackWall>" << endl;
+          my_file << "\t\t\t\t\t<SideWall> periodic </SideWall>" << endl;
+          my_file << "\t\t\t\t\t<Obstacle> absorbing </Obstacle>" << endl;
+        my_file << "\t\t\t\t</FieldBoundary>" << endl;
+      my_file << "\t\t\t</BoundaryConditions>" << endl;
+    my_file << "\t\t</SimulationDomain>" << endl;
+
+    // Information on the planet / body simulated
+    // 2- altitude exobas add real value and nsurf
+    // 4- add dipole offset
+    // 5- add info on dipole field (B1, harmonic expansion?)
+    my_file << "\t\t<RegionParameter>" << endl;
+      my_file << "\t\t\t<SimulatedRegion>Mercury</SimulatedRegion>" << endl;
+      my_file << "\t\t\t<Radius Units=di>" << L_square << "</Radius>" << endl;
+      my_file << "\t\t\t<Property>" << endl;
+        my_file << "\t\t\t\t<Name>Planet center</Name>" << endl;
+        my_file << "\t\t\t\t<Description>Coordinates of planet center w.r.t. box reference frame</Description>" << endl;
+        my_file << "\t\t\t\t<PropertyQuantity>Cartesion Coordinates</PropertyQuantity>" << endl;
+        my_file << "\t\t\t<Units>di</Units>" << endl;
+        my_file << "\t\t\t\t<PropertyValue>" << x_center << " " << y_center << " " << z_center << "</PropertyValue>" << endl;
+      my_file << "\t\t\t</Property>" << endl;
+    my_file << "\t\t</RegionParameter>" << endl;
+
+    // Information on input field B_SW
+    my_file << "\t\t<InputField>" << endl;
+      my_file << "\t\t\t<Name>Magnetic Field SW</Name>" << endl;
+      my_file << "\t\t\t<Description>Interplanetary Magnetic Field</Description>" << endl;
+      my_file << "\t\t\t<SimulatedRegion>Heliosphere</SimulatedRegion>" << endl;
+      my_file << "\t\t\t<FieldQuantity>Magnetic</FieldQuantity>" << endl;
+      my_file << "\t\t\t<Units>1/wpi</Units>" << endl;
+      my_file << "\t\t\t<InputLabel>Bx By Bz</InputLabel>" << endl;
+      my_file << "\t\t\t<FieldValue>" << B0x << " " << B0y << " " << B0z << "</FieldValue>" << endl;
+    my_file << "\t\t</InputField>" << endl;
+
+    // Information on input field E_SW
+    my_file << "\t\t<InputField>" << endl;
+      my_file << "\t\t\t<Name>Electric Field SW</Name>" << endl;
+      my_file << "\t\t\t<Description>Interplanetary Motional Electric Field</Description>" << endl;
+      my_file << "\t\t\t<SimulatedRegion>Heliosphere</SimulatedRegion>" << endl;
+      my_file << "\t\t\t<FieldQuantity>Electric</FieldQuantity>" << endl;
+      my_file << "\t\t\t<Units>1/wpi</Units>" << endl;
+      my_file << "\t\t\t<InputLabel>Ex Ey Ez</InputLabel>" << endl;
+      my_file << "\t\t\t<FieldValue>" << E0x << " " << E0y << " " << E0z << "</FieldValue>" << endl;
+    my_file << "\t\t</InputField>" << endl;
+
+    // Information on input field B_planet
+    my_file << "\t\t<InputField>" << endl;
+      my_file << "\t\t\t<Name>Magnetic Field Planet</Name>" << endl;
+      my_file << "\t\t\t<Description>Planet Intrinsic Magnetic Field</Description>" << endl;
+      my_file << "\t\t\t<SimulatedRegion>Magnetosphere</SimulatedRegion>" << endl;
+      my_file << "\t\t\t<FieldQuantity>Magnetic</FieldQuantity>" << endl;
+      my_file << "\t\t\t<Units>1/wpi</Units>" << endl;
+      my_file << "\t\t\t<InputLabel>Bx By Bz</InputLabel>" << endl;
+      my_file << "\t\t\t<FieldValue>" << B1x << " " << B1y << " " << B1z << "</FieldValue>" << endl;
+    my_file << "\t\t</InputField>" << endl;
+
+    // Information on input Particles (both SW and planet)
+    for (int is=0; is<ns; is++)
+    {
+      if (qom[is]>0)
+      {
+        name_sp = "i";
+        name_ext = "ions";
+      }
+      if (qom[is]<0)
+      {
+        name_sp = "e";
+        name_ext = "electrons";
+      }
+      my_file << "\t\t<InputPopulation>" << endl;
+        my_file << "\t\t\t<Name>Species " << name_sp << is << "</Name>" << endl;
+        my_file << "\t\t\t<ParticleType>" << name_ext << "</ParticleType>" << endl;
+        my_file << "\t\t\t<PopulationMassNumber>" << fabs(1./qom[is]) <<"</PopulationMassNumber>" << endl;
+        my_file << "\t\t\t<PopulationChargeState>" << (-2*signbit(qom[is]))+1 << "</PopulationChargeState>" << endl;   // assume charge state is always +-1
+        my_file << "\t\t\t<PopulationTemperature Units=mic2>" << fabs(1./qom[is])*(uth[is]*uth[is]+vth[is]*vth[is]+wth[is]*wth[is])<< "</PopulationTemperature>" << endl; // assume No anisotropy in the solar wind pcls (can be changed...)
+        my_file << "\t\t\t<PopulationFlowSpeed Units=c>" << u0[is] << " " << v0[is] << " " << w0[is] << "</PopulationFlowSpeed>" << endl;
+        my_file << "\t\t\t<Distribution>Maxwellian</Distribution>" << endl;
+        if (is<ns_sw)
+        my_file << "\t\t\t	<PopulationDensity Units=nsw>" << rhoINIT[is] <<  "</PopulationDensity>" << endl;
+	else
+	{
+        my_file << "\t\t\t<Property>" << endl;
+          my_file << "\t\t\t\t<Name>Surface Density</Name>" << endl;
+          my_file << "\t\t\t\t<Description>Surface Density of neutrals</Description>" << endl;
+          my_file << "\t\t\t\t<PropertyQuantity>Density</PropertyQuantity>" << endl;
+          my_file << "\t\t\t\t<Units>nsw</Units>" << endl;
+          my_file << "\t\t\t\t<PropertyValue>" << nSurf[is-ns_sw] << "</PropertyValue>" << endl;
+        my_file << "\t\t\t</Property>" << endl;
+        my_file << "\t\t\t<Property>" << endl;
+          my_file << "\t\t\t\t<Name>Exobase Altitude</Name>" << endl;
+          my_file << "\t\t\t\t<Description>Altitude of the exobase</Description>" << endl;
+          my_file << "\t\t\t\t<PropertyQuantity>Positional</PropertyQuantity>" << endl;
+          my_file << "\t\t\t\t<Units>di</Units>" << endl;
+          my_file << "\t\t\t\t<PropertyValue>" << hExo[is-ns_sw] << "</PropertyValue>" << endl;
+        my_file << "\t\t\t</Property>" << endl;
+	}	
+      }
+      my_file << "\t\t</InputPopulation>" << endl;
+
+    // Info on electron-neutral collision
+    for (int icoll=nCollProcesses-1; icoll>=0; icoll-=1)
+    {
+    if (icoll==nCollProcesses-1)
+      Emax = 1.0;
+    else
+      Emax = E_th_el[icoll+1];
+    Emin = E_th_el[icoll];
+    my_file << "\t\t<InputProcess>" << endl;
+      my_file << "\t\t\t<Name>Electron-Neutral Collision #" << icoll << "</Name>" << endl;
+      my_file << "\t\t\t<Description> Impact of electrons with energy in range " << Emin << " " << Emax << " [mic2]</Description>" << endl;
+      my_file << "\t\t\t<ProcessType>Collision</ProcessType>" << endl;
+      my_file << "\t\t\t<ProcessModel>Pete2022</ProcessModel>" << endl;  // look for a reference for this collision module (if existing ???)
+      my_file << "\t\t\t<Units>1/nsw/di</Units>" << endl;
+      my_file << "\t\t\t<ProcessCoefficient>" << xSec << "</ProcessCoefficient>" << endl;
+      my_file << "\t\t\t<ProcessCoeffType>Cross Section</ProcessCoeffType>" << endl;
+    my_file << "\t\t</InputProcess>" << endl;
+    }
+
+    // Info on plasma creation via photoionization
+    for (int iph=ns_sw; iph<(ns_sw+ns_pl); iph++)
+    {
+    my_file << "\t\t<InputProcess>" << endl;
+      my_file << "\t\t\t<Name>Creation of plasma of species " << iph << " via photoionization</Name>" << endl;
+      my_file << "\t\t\t<ProcessType>Photoionization</ProcessType>" << endl;
+      my_file << "\t\t\t<ProcessModel>Plasma creation with constant rate.</ProcessModel>" << endl;
+      my_file << "\t\t\t<Units>1/wpi</Units>" << endl;
+      my_file << "\t\t\t<ProcessCoefficient>" << fExo[iph-ns_sw] << "</ProcessCoefficient>" << endl;
+      my_file << "\t\t\t<ProcessCoeffType>frequency</ProcessCoeffType>" << endl;
+    my_file << "\t\t</InputProcess>" << endl;
+    }
+
+    // Derived parameters : Alfven speed, plasma beta, mach number
+    my_file << "\t\t<InputParameter>" << endl;
+      my_file << "\t\t\t<Name>Derived Parameters</Name>" << endl;
+      my_file << "\t\t\t<ParameterQuantity>Other</ParameterQuantity>" << endl;
+      my_file << "\t\t\t<Property>" << endl;
+        my_file << "\t\t\t\t<Name>Alfven Speed</Name>" << endl;
+        my_file << "\t\t\t\t<PropertyQuantity>AlfvenVelocity</PropertyQuantity>" << endl;
+        my_file << "\t\t\t\t<Units>c</Units>" << endl;
+        my_file << "\t\t\t\t<PropertyValue>" << sqrt(B0x*B0x+B0y*B0y+B0z*B0z) << "</PropertyValue>" << endl;
+      my_file << "\t\t\t</Property>" << endl;
+      my_file << "\t\t\t<Property>" << endl;
+        my_file << "\t\t\t\t<Name>Plasma Beta Ions i1</Name>" << endl;
+        my_file << "\t\t\t\t<PropertyQuantity>RatioPlasma-to-MagneticPressureIons</PropertyQuantity>" << endl;
+        my_file << "\t\t\t\t<PropertyValue>" << 2.*(uth[1]*uth[1]+vth[1]*vth[1]*+wth[1]*wth[1])/(B0x*B0x+B0y*B0y+B0z*B0z) << "</PropertyValue>" << endl;
+      my_file << "\t\t\t</Property>" << endl;
+      my_file << "\t\t\t<Property>" << endl;
+        my_file << "\t\t\t\t<Name>Alfven Mach Number Ions i1</Name>" << endl;
+        my_file << "\t\t\t\t<PropertyQuantity>MachNumber</PropertyQuantity>" << endl;
+        my_file << "\t\t\t\t<PropertyValue>" << sqrt((u0[1]*u0[1]+v0[1]*v0[1]+w0[1]*w0[1])/(B0x*B0x+B0y*B0y+B0z*B0z)) << "</PropertyValue>" << endl;
+      my_file << "\t\t\t</Property>" << endl;
+      my_file << "\t\t\t<Property>" << endl;
+        my_file << "\t\t\t\t<Name>Sonic Mach Number Ions i1</Name>" << endl;
+        my_file << "\t\t\t\t<PropertyQuantity>MachNumber</PropertyQuantity>" << endl;
+        my_file << "\t\t\t\t<PropertyValue>" <<  sqrt((u0[1]*u0[1]+v0[1]*v0[1]+w0[1]*w0[1])/(uth[1]*uth[1]+vth[1]*vth[1]*+wth[1]*wth[1])) << "</PropertyValue>" << endl;
+      my_file << "\t\t\t</Property>" << endl;
+    my_file << "\t\t</InputParameter>" << endl;
+
+  my_file << "\t</SimulationRun>" << endl; 
+
+  // Example for output 3D magnetic field 
+  // need a loop for all quantities printed and shared
+  my_file << "\t<NumericalOutput>" << endl;
+    my_file << "\t\t<ResourceID>spase://IMPEX/NumericalOutput/Lagrange/" << name << "/Mag/3D</ResourceID>" << endl;
+    my_file << "\t\t<ResourceHeader>" << endl;
+      my_file << "\t\t\t<ResourceName>Mag/3D</ResourceName>" << endl;
+      my_file << "\t\t\t<ReleaseDate>" << date_simu << "</ReleaseDate>" << endl;
+      my_file << "\t\t\t<Description/>" << endl;
+      my_file << "\t\t\t<Contact>" << endl;
+        my_file << "\t\t\t\t<PersonID>Lagrange</PersonID>" << endl;
+        my_file << "\t\t\t\t<Role>DataProducer</Role>" << endl;
+      my_file << "\t\t\t</Contact>" << endl;
+    my_file << "\t\t</ResourceHeader>" << endl;
+    my_file << "\t\t<AccessInformation>" << endl;
+      my_file << "\t\t\t<RepositoryID>spase://IMPEX/Repository/Lagrange</RepositoryID>" << endl;
+      my_file << "\t\t\t<AccessURL>" << endl;
+        my_file << "\t\t\t\t<URL>" << url_server << "</URL>" << endl;
+      my_file << "\t\t\t</AccessURL>" << endl;
+      my_file << "\t\t\t<Format>HDF5</Format>" << endl;
+    my_file << "\t\t</AccessInformation>" << endl;
+    my_file << "\t\t<MeasurementType>MagneticField</MeasurementType>" << endl;
+    my_file << "\t\t<SpatialDescription>" << endl;
+      my_file << "\t\t\t<Dimension>3</Dimension>" << endl;
+      my_file << "\t\t\t<CoordinateSystem>" << endl;
+        my_file << "\t\t\t\t<CoordinateRepresentation>Cartesian</CoordinateRepresentation>" << endl;
+        my_file << "\t\t\t\t<CoordinateSystemName>box</CoordinateSystemName>" << endl;
+      my_file << "\t\t\t</CoordinateSystem>" << endl;
+      my_file << "\t\t\t<Units>di</Units>" << endl;
+      my_file << "\t\t\t<UnitsConversion>" << 1./L_square << " &gt; R</UnitsConversion>" << endl;
+      my_file << "\t\t\t<RegionBegin> 0. 0. 0. </RegionBegin>" << endl;
+      my_file << "\t\t\t<RegionEnd> " << Lx << " " << Ly << " " << Lz << " </RegionEnd>" << endl;  // for now keep box units - to be check if need to add here MSO coord.
+    my_file << "\t\t</SpatialDescription>" << endl;
+    my_file << "\t\t<SimulatedRegion>Mercury</SimulatedRegion>" << endl;
+    my_file << "\t\t<InputResourceID>spase://IMPEX/SimulationRun/Lagrange/" << name << "</InputResourceID>" << endl;
+    my_file << "\t\t<Parameter>" << endl;
+      my_file << "\t\t\t<Name>MagneticField</Name>" << endl;
+      my_file << "\t\t\t<ParameterKey>Bx By Bz</ParameterKey>" << endl;
+      my_file << "\t\t\t<Units>1/wpi</Units>" << endl;
+      my_file << "\t\t\t<UnitsConversion> " << 1./sqrt(B0x*B0x+B0y*B0y+B0z*B0z) << " &gt; Bsw </UnitsConversion>" << endl; // TBC if need to add change to nT (is this possible?)
+      my_file << "\t\t\t<Field>" << endl;
+        my_file << "\t\t\t\t<Qualifier>Vector</Qualifier>" << endl;
+        my_file << "\t\t\t\t<FieldQuantity>Magnetic</FieldQuantity>" << endl;
+      my_file << "\t\t\t</Field>" << endl;
+    my_file << "\t\t</Parameter>" << endl;
+    my_file << "\t\t<SimulationProduct>3DCubes</SimulationProduct>" << endl;
+  my_file << "\t</NumericalOutput>" << endl;
+
+  // create a granule corrsponding to one file printed
+  my_file << "\t<Granule>" << endl;
+    my_file << "\t\t<ResourceID>spase://IMPEX/Granule/Lagrange/" << name << "/Mag/3D/" << name_output << "</ResourceID>" << endl;
+    my_file << "\t\t<ReleaseDate>" << date_simu << "</ReleaseDate>" << endl;
+    my_file << "\t\t<ParentID>spase://IMPEX/NumericalOutput/Lagrange/" << name << "/Mag/3D</ParentID>" << endl;
+    my_file << "\t\t\t<RegionBegin> 0. 0. 0. </RegionBegin>" << endl;
+    my_file << "\t\t\t<RegionEnd> " << Lx << " " << Ly << " " << Lz << " </RegionEnd>" << endl;  // for now keep box units - to be check if need to add here MSO coord.
+    my_file << "\t\t<Source>" << endl;
+      my_file << "\t\t\t<SourceType>Data</SourceType>" << endl;
+      my_file << "\t\t\t<URL>" << url_server << "/" << name << "/" << name_output << ".h5</URL>" << endl;
+    my_file << "\t\t</Source>" << endl;
+  my_file << "\t</Granule>" << endl;
+
+my_file << "</Spase>" << endl;
+
+ my_file.close();
 }
 
