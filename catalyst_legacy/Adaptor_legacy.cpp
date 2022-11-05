@@ -46,9 +46,7 @@ void UpdateVTKAttributes(vtkCPInputDataDescription *idd, EMfields3D *EMf) {
     // Get a reference to the grid's point data object.
     vtkPointData *vtk_point_data = VTKGrid->GetPointData();
 
-    // We need to create a new VTK array object and attach it to the point data,
-    // if it hasn't been done yet.
-
+    //tag_names for each species' fields 
     int ns = _sim_params->getNs();
     const string rhotag[]={"rhoe0", "rhoi1", "rhoe2", "rhoi3", "rhoe4", "rhoi5", "rhoe6", "rhoi7"};
     const string Vtag[]={"Ve0", "Vi1", "Ve2", "Vi3", "Ve4", "Vi5", "Ve6", "Vi7"};
@@ -56,6 +54,8 @@ void UpdateVTKAttributes(vtkCPInputDataDescription *idd, EMfields3D *EMf) {
     const string Tperpar_tag[]={"Tperpar_e0", "Tperpar_i1", "Tperpar_e2", "Tperpar_i3", "Tperpar_e4", "Tperpar_i5", "Tperpar_e6", "Tperpar_i7"};
 
 
+    // We need to create a new VTK array objects per variable per species
+    //  and attach it to the point data, if it hasn't been done yet.
     if (vtk_point_data->GetNumberOfArrays() == 0) {
       //B
       vtkNew<vtkDoubleArray> field_array_B;
@@ -100,12 +100,11 @@ void UpdateVTKAttributes(vtkCPInputDataDescription *idd, EMfields3D *EMf) {
       }      
     }
     
+    //if the VTK array objects exist, it use the exixting ones
     vtkDoubleArray *field_array_B =
-        vtkDoubleArray::SafeDownCast(vtk_point_data->GetArray("B"));
-    
+        vtkDoubleArray::SafeDownCast(vtk_point_data->GetArray("B"));    
     vtkDoubleArray *field_array_E =
         vtkDoubleArray::SafeDownCast(vtk_point_data->GetArray("E"));
-
     vtkDoubleArray *rhons[ns];
     vtkDoubleArray *Vns[ns];
     vtkDoubleArray *Tcart_ns[ns];
@@ -118,11 +117,12 @@ void UpdateVTKAttributes(vtkCPInputDataDescription *idd, EMfields3D *EMf) {
     }
     
     // Feed the data into VTK array. Since we don't know the memory layout of
-    // our field data, we feed it point-by-point, in a very slow way
+    // our field data, we feed it point-by-point (slow way)
 
     // Array of grid's dimensions
     int *dims = VTKGrid->GetDimensions();
 
+    //simulation values
     auto Bx = EMf->getBxTot();
     auto By = EMf->getByTot();
     auto Bz = EMf->getBzTot();
@@ -138,8 +138,7 @@ void UpdateVTKAttributes(vtkCPInputDataDescription *idd, EMfields3D *EMf) {
     auto rho = EMf->getRHOns();
 
     // Cycle over all VTK grid's points, get their indices and copy the data.
-    // We want to have only one cycle over point's ID to efficiently use
-    // multi-threading.
+    // [KTH] We want to have only one cycle over point's ID to efficiently use multi-threading.
     for(int si=0; si<ns; si++){
       EMf->calcT_si(si);
 
@@ -166,9 +165,9 @@ void UpdateVTKAttributes(vtkCPInputDataDescription *idd, EMfields3D *EMf) {
        
         rhons[si]-> SetValue(p, rho[si][i+1][j+1][k+1]*4*3.1415926535897);
 
-        Vns[si]  -> SetComponent(p, 0, Jxs[si][i+1][j+1][k+1]);//(rho[si][i+1][j+1][k+1]*4*3.1415926535897));
-        Vns[si]  -> SetComponent(p, 1, Jys[si][i+1][j+1][k+1]);//(rho[si][i+1][j+1][k+1]*4*3.1415926535897));
-        Vns[si]  -> SetComponent(p, 2, Jzs[si][i+1][j+1][k+1]);//(rho[si][i+1][j+1][k+1]*4*3.1415926535897));
+        Vns[si]  -> SetComponent(p, 0, Jxs[si][i+1][j+1][k+1]/(rho[si][i+1][j+1][k+1]*4*3.1415926535897));
+        Vns[si]  -> SetComponent(p, 1, Jys[si][i+1][j+1][k+1]/(rho[si][i+1][j+1][k+1]*4*3.1415926535897));
+        Vns[si]  -> SetComponent(p, 2, Jzs[si][i+1][j+1][k+1]/(rho[si][i+1][j+1][k+1]*4*3.1415926535897));
 
         Tcart_ns[si]  -> SetComponent(p,0, Tcart[k+1][j+1][i+1][0]);
         Tcart_ns[si]  -> SetComponent(p,1, Tcart[k+1][j+1][i+1][1]);
@@ -186,7 +185,8 @@ void UpdateVTKAttributes(vtkCPInputDataDescription *idd, EMfields3D *EMf) {
       }
     }
 
-    /// [KTH CODE] Fast way, if memry layout is correct.
+    // ----[KTH CODE]---- 
+    // Fast way, if memry layout is correct.
     // velocityData->SetArray(const_cast<double*>(velocity.data()),
     // static_cast<vtkIdType>(velocity.size()), 1);
   }
@@ -210,11 +210,16 @@ void UpdateVTKAttributes(vtkCPInputDataDescription *idd, EMfields3D *EMf) {
 }
 
 //----------------------------------------------------------------------------
+/*
+----Paraview suggests to use another function to create the data structure.---
+It is not our case, everything is inside UpdateVTKAttributes
+
 void BuildVTKDataStructures(vtkCPInputDataDescription *idd, EMfields3D *EMf) {
   // feed data to grid
   UpdateVTKAttributes(idd, EMf);
 }
 } // namespace
+*/
 
 namespace Adaptor_legacy {
 
@@ -250,7 +255,7 @@ void Initialize(const Collective *sim_params, const int start_x,
     // the first time it's needed. If we needed the memory
     // we could delete it and rebuild as necessary.
     VTKGrid = vtkImageData::New();
-    //printf("start: (%d, %d, %d); end: (%d,%d,%d)\n", start_x, start_y, start_z, start_x + nx- 3, start_y + ny- 3, start_z + nz - 3);
+    // the value 3 is the numberof ghost cells
     VTKGrid->SetExtent(start_x, start_x + nx - 3, start_y , start_y + ny - 3,
                        start_z, start_z + nz - 3);
     VTKGrid->SetSpacing(dx, dy, dz);
@@ -271,6 +276,7 @@ void Finalize() {
 
 //----------------------------------------------------------------------------
 void CoProcess(double time, unsigned int timeStep, EMfields3D *EMf) {
+  //check the Documentation for an explanation of the implementation
   vtkNew<vtkCPDataDescription> dataDescription;
   dataDescription->AddInput(InputName);
   dataDescription->SetTimeData(time, timeStep);

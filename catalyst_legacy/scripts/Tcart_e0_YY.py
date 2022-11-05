@@ -13,7 +13,7 @@ rescale_lookuptable=False
 requestSpecificArrays=False
 
 # a root directory under which all Catalyst output goes
-rootDirectory='/home/lquerci/NICE/build_iPIC3D/data/images'
+rootDirectory='./data/images'
 
 # makes a cinema D index table
 make_cinema_table=False
@@ -50,7 +50,7 @@ def CreateCoProcessor():
 
       # Create a new 'Render View'
       renderView1 = CreateView('RenderView')
-      renderView1.ViewSize = [1214, 729]
+      renderView1.ViewSize = [1280, 720]
       renderView1.AxesGrid = 'GridAxes3DActor'
       renderView1.CenterOfRotation = [3.9999959468841553, 3.9999959468841553, 0.9999974966049194]
       renderView1.StereoType = 'Crystal Eyes'
@@ -66,7 +66,7 @@ def CreateCoProcessor():
       # and provide it with information such as the filename to use,
       # how frequently to write the images, etc.
       coprocessor.RegisterView(renderView1,
-          filename='image_%t.png', freq=1, fittoscreen=0, magnification=1, width=1214, height=729, cinema={}, compression=-1)
+          filename='image_%t.png', freq=1, fittoscreen=0, magnification=1, width=1280, height=720, cinema={}, compression=-1)
       renderView1.ViewTime = datadescription.GetTime()
 
       SetActiveView(None)
