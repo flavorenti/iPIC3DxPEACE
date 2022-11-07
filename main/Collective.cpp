@@ -344,6 +344,7 @@ void Collective::ReadInput(string inputfile) {
     Eende = config.read < double >("Eende",1);
     dEe = config.read < double >("dEe",0.5);
     CallFinalize = config.read < bool >("CallFinalize", true);
+    ParaviewScriptPath =config.read <string>("ParaviewScriptPath", "");
   }
 
   last_cycle = -1;
