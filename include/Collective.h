@@ -378,6 +378,8 @@ class Collective
     int nIoniColls;
     /*! Number of skipped steps for collisional processes */
     int collStepSkip;
+    double Emin, Emax;
+
 
     /* Neutral Gas parameters */
     /*! Number of neutral species */
@@ -485,6 +487,9 @@ class Collective
     double B1y;
     double B1z;
     double PlanetOffset;
+    double E0x;
+    double E0y;
+    double E0z;
 
     /*! boolean value for verbose results */
     bool verbose;

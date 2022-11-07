@@ -207,91 +207,86 @@ class EMfields3D                // :public Field
     arr3_double getPHI() {return PHI;}
 
     // field components defined on nodes
+    const_arr4_pfloat get_fieldForPcls() { return fieldForPcls; }
     //
+    // electric field
     double getEx(int X, int Y, int Z) const { return Ex.get(X,Y,Z);}
     double getEy(int X, int Y, int Z) const { return Ey.get(X,Y,Z);}
     double getEz(int X, int Y, int Z) const { return Ez.get(X,Y,Z);}
-    double getBx(int X, int Y, int Z) const { return Bxn.get(X,Y,Z);}
-    double getBy(int X, int Y, int Z) const { return Byn.get(X,Y,Z);}
-    double getBz(int X, int Y, int Z) const { return Bzn.get(X,Y,Z);}
-    //
-    const_arr4_pfloat get_fieldForPcls() { return fieldForPcls; }
     arr3_double getEx() { return Ex; }
     arr3_double getEy() { return Ey; }
     arr3_double getEz() { return Ez; }
+    //
+    // magnetic field
+    double getBx(int X, int Y, int Z) const { return Bxn.get(X,Y,Z);}
+    double getBy(int X, int Y, int Z) const { return Byn.get(X,Y,Z);}
+    double getBz(int X, int Y, int Z) const { return Bzn.get(X,Y,Z);}
     arr3_double getBx() { return Bxn; }
     arr3_double getBy() { return Byn; }
     arr3_double getBz() { return Bzn; }
-
-    
-    //for parallel vtk
-    arr3_double getBxc(){return Bxc;};
-    arr3_double getByc(){return Byc;};
-    arr3_double getBzc(){return Bzc;};
-
-
-    //arr3_double getRHOc() { return rhoc; }
-    //arr3_double getRHOn() { return rhon; }
-    //double getRHOc(int X, int Y, int Z) const { return rhoc.get(X,Y,Z);}
-    //double getRHOn(int X, int Y, int Z) const { return rhon.get(X,Y,Z);}
-
-    // densities per species:
+    arr3_double getBxc() { return Bxc; }
+    arr3_double getByc() { return Byc; }
+    arr3_double getBzc() { return Bzc; }
     //
+    // densities for one species
+    double getRHOn(int X, int Y, int Z) const { return rhon.get(X,Y,Z);}
+    double getRHOc(int X, int Y, int Z) const { return rhoc.get(X,Y,Z);}
+    arr3_double getRHOn() { return rhon; }
+    arr3_double getRHOc() { return rhoc; }
+    //
+    // densities for all species
     double getRHOcs(int X,int Y,int Z,int is)const{return rhocs.get(is,X,Y,Z);}
+    arr4_double getRHOcs(){return rhocs;}
+    //
+    // densities for all species
     double getRHOns(int X,int Y,int Z,int is)const{return rhons.get(is,X,Y,Z);}
     arr4_double getRHOns(){return rhons;}
-    arr4_double getRHOcs(){return rhocs;}
-
-
+    //
+    // B_ext = dipole magnetic field
     double getBx_ext(int X, int Y, int Z) const{return Bx_ext.get(X,Y,Z);}
     double getBy_ext(int X, int Y, int Z) const{return By_ext.get(X,Y,Z);}
     double getBz_ext(int X, int Y, int Z) const{return Bz_ext.get(X,Y,Z);}
-    
     arr3_double getBx_ext() { return Bx_ext; }
     arr3_double getBy_ext() { return By_ext; }
     arr3_double getBz_ext() { return Bz_ext; }
-
-
+    //
     //B_tot = B + B_ext
-    arr3_double getBxTot() { addscale(1.0,Bxn,Bx_ext,Bx_tot,nxn,nyn,nzn); return Bx_tot; }
-    arr3_double getByTot() { addscale(1.0,Byn,By_ext,By_tot,nxn,nyn,nzn); return By_tot; }
-    arr3_double getBzTot() { addscale(1.0,Bzn,Bz_ext,Bz_tot,nxn,nyn,nzn); return Bz_tot; }
     double getBxTot(int X, int Y, int Z) const{return Bxn.get(X,Y,Z)+Bx_ext.get(X,Y,Z);;}
     double getByTot(int X, int Y, int Z) const{return Byn.get(X,Y,Z)+By_ext.get(X,Y,Z);}
     double getBzTot(int X, int Y, int Z) const{return Bzn.get(X,Y,Z)+Bz_ext.get(X,Y,Z);}
-
-    arr4_double getpXXsn() { return pXXsn; }
+    arr3_double getBxTot() { addscale(1.0,Bxn,Bx_ext,Bx_tot,nxn,nyn,nzn); return Bx_tot; }
+    arr3_double getByTot() { addscale(1.0,Byn,By_ext,By_tot,nxn,nyn,nzn); return By_tot; }
+    arr3_double getBzTot() { addscale(1.0,Bzn,Bz_ext,Bz_tot,nxn,nyn,nzn); return Bz_tot; }
+    //
+    // pressure for all species
     double getpXXsn(int X,int Y,int Z,int is)const{return pXXsn.get(is,X,Y,Z);}
-
-    arr4_double getpXYsn() { return pXYsn; }
     double getpXYsn(int X,int Y,int Z,int is)const{return pXYsn.get(is,X,Y,Z);}
-
-    arr4_double getpXZsn() { return pXZsn; }
     double getpXZsn(int X,int Y,int Z,int is)const{return pXZsn.get(is,X,Y,Z);}
-
-    arr4_double getpYYsn() { return pYYsn; }
     double getpYYsn(int X,int Y,int Z,int is)const{return pYYsn.get(is,X,Y,Z);}
-
-    arr4_double getpYZsn() { return pYZsn; }
     double getpYZsn(int X,int Y,int Z,int is)const{return pYZsn.get(is,X,Y,Z);}
-
-    arr4_double getpZZsn() { return pZZsn; }
     double getpZZsn(int X,int Y,int Z,int is)const{return pZZsn.get(is,X,Y,Z);}
-
-
+    arr4_double getpXXsn() { return pXXsn; }
+    arr4_double getpXYsn() { return pXYsn; }
+    arr4_double getpXZsn() { return pXZsn; }
+    arr4_double getpYYsn() { return pYYsn; }
+    arr4_double getpYZsn() { return pYZsn; }
+    arr4_double getpZZsn() { return pZZsn; }
+    //
+    // current for one species
     double getJx(int X, int Y, int Z) const { return Jx.get(X,Y,Z);}
     double getJy(int X, int Y, int Z) const { return Jy.get(X,Y,Z);}
     double getJz(int X, int Y, int Z) const { return Jz.get(X,Y,Z);}
     arr3_double getJx() { return Jx; }
     arr3_double getJy() { return Jy; }
     arr3_double getJz() { return Jz; }
-    arr4_double getJxs() { return Jxs; }
-    arr4_double getJys() { return Jys; }
-    arr4_double getJzs() { return Jzs; }
-
+    //
+    // current for all species
     double getJxs(int X,int Y,int Z,int is)const{return Jxs.get(is,X,Y,Z);}
     double getJys(int X,int Y,int Z,int is)const{return Jys.get(is,X,Y,Z);}
     double getJzs(int X,int Y,int Z,int is)const{return Jzs.get(is,X,Y,Z);}
+    arr4_double getJxs() { return Jxs; }
+    arr4_double getJys() { return Jys; }
+    arr4_double getJzs() { return Jzs; }
 
     //temperature matrix elements
     void calcT_si(int si);

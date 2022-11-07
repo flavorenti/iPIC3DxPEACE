@@ -102,6 +102,8 @@ else()
    	   set(HDF5_INCLUDE_DIRS /usr/local/Cellar/hdf5/1.10.6/include)
 	else()
     #cmake_policy(SET CMP0074 NEW)  #uncomment when using Licallo
+		add_definitions(-DPHDF5)
+		set(HDF5_PREFER_PARALLEL TRUE)
 		find_package(HDF5 COMPONENTS HL C )   
 	endif()
 endif()
