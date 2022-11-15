@@ -123,7 +123,7 @@ void Collective::ReadInput(string inputfile) {
     nstestpart        = config.read < int >("nsTestPart", 0); //TBR?
     NpMaxNpRatio      = config.read < double >("NpMaxNpRatio",1.5); //TBR?
     assert_ge(NpMaxNpRatio, 1.);
-    verbose           = config.read < bool > ("verbose",false);
+    verbose           = config.read < bool > ("verbose",true);
     delta             = config.read < double >("delta",0.5); //TBR
     CGtol             = config.read < double >("CGtol",1e-3);
     GMREStol          = config.read < double >("GMREStol",1e-3);
@@ -343,7 +343,7 @@ void Collective::ReadInput(string inputfile) {
     Estarte = config.read < double >("Estarte",-1);
     Eende = config.read < double >("Eende",1);
     dEe = config.read < double >("dEe",0.5);
-    CallFinalize = config.read < bool >("CallFinalize", true);
+    CallFinalize = config.read < bool >("CallFinalize", true); //deprecated TBR
   }
 
   last_cycle = -1;

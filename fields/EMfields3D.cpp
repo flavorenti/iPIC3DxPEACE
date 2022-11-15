@@ -2867,7 +2867,7 @@ void EMfields3D::ConstantChargePlanet2DPlaneXZ(double R,  double x_center,double
 // 
 // 
 //
-void EMfields3D::set_fieldForPcls()
+void EMfields3D::set_fieldForPcls()  // MIGHT BE DPRECATED -- TBR (?)
 {
   #pragma omp parallel for collapse(3)
   for(int i=0;i<nxn;i++)

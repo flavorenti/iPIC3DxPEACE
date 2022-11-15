@@ -111,6 +111,7 @@ class Collective
     int    getSmoothNiter()const{return SmoothNiter;}
     int getNcycles()const{ return (ncycles); }
     int getNs()const{ return (ns); }
+    int getNs_sw()const{ return (ns_sw); }
     int getNsTestPart()const{ return (nstestpart); }
     int getNpcel(int nspecies)const{ return (npcel[nspecies]); }
     int getNpcelx(int nspecies)const{ return (npcelx[nspecies]); }
