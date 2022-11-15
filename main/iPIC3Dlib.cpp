@@ -47,6 +47,10 @@
 
 #include "Moments.h" // for debugging
 
+#ifdef USE_CATALYST_LEGACY
+#include "Adaptor_legacy.h"
+#endif
+
 using namespace iPic3D;
 //MPIdata* iPic3D::c_Solver::mpi=0;
 
@@ -71,6 +75,10 @@ c_Solver::~c_Solver()
     }
     free(part);
   }
+
+  #ifdef USE_CATALYST_LEGACY
+  Adaptor_legacy::Finalize();
+  #endif
 
   delete [] Ke;
   delete [] rho;
@@ -256,6 +264,21 @@ int c_Solver::Init(int argc, char **argv) {
   Count = new double[ns];
   Qrep = new double[ns];
   Qexo = new double[ns];
+
+  //this initialization if for the 3D physical space 
+  #ifdef USE_CATALYST_LEGACY
+  Adaptor_legacy::Initialize(col, \
+		  (int)(grid->getXstart()/grid->getDX()), \
+		  (int)(grid->getYstart()/grid->getDY()), \
+		  (int)(grid->getZstart()/grid->getDZ()), \
+		  grid->getNXN(),
+		  grid->getNYN(),
+		  grid->getNZN(),
+		  grid->getDX(),
+		  grid->getDY(),
+		  grid->getDZ());
+  #endif
+
   my_clock = new Timing(myrank);
 
   if (verbosity)
@@ -534,6 +557,10 @@ void c_Solver::WriteOutput(int cycle) {
       }
 
       if (verbosity) dprintf("(2a) nbcvtk done with the fields output.");
+
+      #ifdef USE_CATALYST_LEGACY
+        Adaptor_legacy::CoProcess(col->getDt()*cycle, cycle, EMf);
+      #endif
 
       if(!(col->getMomentsOutputTag()).empty())
       {

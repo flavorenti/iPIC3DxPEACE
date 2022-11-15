@@ -339,7 +339,7 @@ void Particles3Dcomm::load_restart_pcls()
 //
 void Particles3Dcomm::pad_capacities()
 {
- #pragma omp master
+ // #pragma omp master
  {
   _pcls.reserve(roundup_to_multiple(_pcls.size(),DVECWIDTH));
   u.reserve(roundup_to_multiple(u.size(),DVECWIDTH));
@@ -355,7 +355,7 @@ void Particles3Dcomm::pad_capacities()
 
 void Particles3Dcomm::resize_AoS(int nop)
 {
- #pragma omp master
+ // #pragma omp master
  {
   const int padded_nop = roundup_to_multiple(nop,DVECWIDTH);
   _pcls.reserve(padded_nop);
@@ -365,7 +365,7 @@ void Particles3Dcomm::resize_AoS(int nop)
 
 void Particles3Dcomm::resize_SoA(int nop)
 {
- #pragma omp master
+ // #pragma omp master
  {
   //
   // allocate space for particles including padding
@@ -1932,13 +1932,13 @@ void Particles3Dcomm::sort_particles_serial_AoS()
 //
 //  // count the number of particles to go in each bucket
 //  numpcls_in_bucket.setall(0);
-//  #pragma omp parallel
+//  // #pragma omp parallel
 //  {
 //    const int thread_num = omp_get_thread_num();
 //    arr3_int numpcls_in_bucket_thr = fetch_numpcls_in_bucket_thr(thread_num);
 //    numpcls_in_bucket_thr.setall(0);
 //    // iterate through particles and count where they will go
-//    #pragma omp for // nowait
+//    // #pragma omp for // nowait
 //    for (int pidx = 0; pidx < nop; pidx++)
 //    {
 //      // get the cell indices of the particle
@@ -1961,7 +1961,7 @@ void Particles3Dcomm::sort_particles_serial_AoS()
 //    // reduce the thread buckets into the main bucket
 //    // #pragma omp critical (numpcls_in_bucket_reduction)
 //    {
-//      #pragma omp for collapse(2)
+//      // #pragma omp for collapse(2)
 //      for(int cx=0;cx<nxc;cx++)
 //      for(int cy=0;cy<nyc;cy++)
 //      for(int th=0;th<num_threads;th++)
@@ -1976,7 +1976,7 @@ void Particles3Dcomm::sort_particles_serial_AoS()
 //    // of each bucket (could parallelize this)
 //    //
 //    int accpcls=0;
-//    #pragma omp critical (bucket_offset_reduction)
+//    // #pragma omp critical (bucket_offset_reduction)
 //    for(int cx=0;cx<nxc;cx++)
 //    for(int cy=0;cy<nyc;cy++)
 //    for(int cz=0;cz<nzc;cz++)
@@ -1993,7 +1993,7 @@ void Particles3Dcomm::sort_particles_serial_AoS()
 //    // among threads.  But what about cache contention?
 //    //
 //    for(int cxmod3=0; cxmod3<3; cxmod3++)
-//    #pragma omp for collapse(2)
+//    // #pragma omp for collapse(2)
 //    for(int cx=cxmod3; cx<nxc; cx+=3)
 //    for(int cy=0; cy<nyc; cy++)
 //    for(int cz=0; cz<nzc; cz++)
@@ -2032,7 +2032,7 @@ void Particles3Dcomm::sort_particles_serial_AoS()
 //    // to move more than N mesh cells).
 //    //
 //    int numpcls_long_move_thr = 0;
-//    #pragma omp for // nowait
+//    // #pragma omp for // nowait
 //    for (int i = 0; i < nop; i++)
 //    {
 //      const int cx = xidx[pidx];
@@ -2061,7 +2061,7 @@ void Particles3Dcomm::copyParticlesToSoA()
   // create memory for SoA representation
   resize_SoA(nop);
  #ifndef __MIC__stub // replace with __MIC__ when this has been debugged
-  #pragma omp for
+  // #pragma omp for
   for(int pidx=0; pidx<nop; pidx++)
   {
     const SpeciesParticle& pcl = _pcls[pidx];
@@ -2078,7 +2078,7 @@ void Particles3Dcomm::copyParticlesToSoA()
   // rather than doing stride-8 scatter,
   // copy and transpose data 8 particles at a time
   assert_divides(8,u.capacity());
-  #pragma omp for
+  // #pragma omp for
   for(int pidx=0; pidx<nop; pidx+=8)
   {
     F64vec8* SoAdata[8] = {
@@ -2106,7 +2106,7 @@ void Particles3Dcomm::copyParticlesToAoS()
   resize_AoS(nop);
  #ifndef __MIC__
   // use a simple stride-8 gather
-  #pragma omp for
+  // #pragma omp for
   for(int pidx=0; pidx<nop; pidx++)
   {
     _pcls[pidx].set(
@@ -2117,7 +2117,7 @@ void Particles3Dcomm::copyParticlesToAoS()
   // for efficiency, copy data 8 particles at a time,
   // transposing each block of particles
   assert_divides(8,_pcls.capacity());
-  #pragma omp for
+  // #pragma omp for
   for(int pidx=0; pidx<nop; pidx+=8)
   {
     F64vec8* AoSdata = reinterpret_cast<F64vec8*>(&_pcls[pidx]);

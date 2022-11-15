@@ -143,7 +143,7 @@ void Collisions::CollideElectron(int species, Particles3D *part, int pidx, Colle
   vpl = part[species].getV(pidx);
   wpl = part[species].getW(pidx);
 
-  Epl = 0.5 * (upl*upl + vpl*vpl + wpl*wpl) / abs(qom); // Pl energy 
+  Epl = 0.5 * (upl*upl + vpl*vpl + wpl*wpl) / fabs(qom); // Pl energy 
   Eth = 0;
   
   // Run through collisions with decreasing threshold energy

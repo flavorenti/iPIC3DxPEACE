@@ -428,7 +428,7 @@ TimeTasks_caller_to_set_task_for_scope(TimeTasks::Tasks task_)
   // we cannot tell timeTasks to start it.
   if(already_active)
     return;
-  //#pragma omp barrier
+  //// #pragma omp barrier
   start_time = MPI_Wtime();
   timeTasks.start_task(task);
 
@@ -442,7 +442,7 @@ TimeTasks_caller_to_set_task_for_scope::
     assert(timeTasks.is_active(task));
     return;
   }
-  //#pragma omp barrier
+  //// #pragma omp barrier
   timeTasks.end_task(task, start_time);
 }
 

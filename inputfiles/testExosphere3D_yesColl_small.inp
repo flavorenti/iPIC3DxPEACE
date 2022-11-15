@@ -145,3 +145,5 @@ dEi = 1.2					# step in log-scale for energy array for ion spectra (default 0.5)
 Estarte = -7					# starting energy of log array for electron spectra (default -1)
 Eende = -1					# final energy of log array for electron spectra (default 1)
 dEe = 1.2					# step in log-scale for energy array for electron spectra (default 0.5)
+
+ParaviewScriptPath = /home/lquerci/NICE/iPIC3DxPEACE/catalyst_legacy/no_data.py
