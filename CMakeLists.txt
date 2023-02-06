@@ -105,15 +105,20 @@ include_directories(
 #
 # Link libraries - if machine=Irene need to explicitly link intel63 compiler
 # 
-link_directories(
+if(USE_MACHINE STREQUAL "IRENE")
+  link_directories(
       ${HDF5_LIBRARY_DIRS}
       ${HDF5_hdf5_hl_LIBRARY_DIRS}
       ${MPI_LIBRARY_DIRS}
       ${EXTRA_LIBS}
-)
-if(USE_MACHINE STREQUAL "IRENE")
-  link_directories(
       /ccc/products/icc-20.0.4/system/default/20.0.4/lib/intel64
+  )
+else()
+  link_directories(
+      ${HDF5_LIBRARY_DIRS}
+      ${HDF5_hdf5_hl_LIBRARY_DIRS}
+      ${MPI_LIBRARY_DIRS}
+      ${EXTRA_LIBS}  
   )
 endif()
 
@@ -174,21 +179,35 @@ endif()
 #
 # Link external libraries
 #
-target_link_libraries(
-         iPIC3Dlib
+if (USE_MACHINE STREQUAL "IRENE")
+  if (USE_CATALYST STREQUAL "LEGACY")
+    target_link_libraries(
+	 iPIC3Dlib
          ${HDF5_LIBRARIES}
          ${HDF5_HL_LIBRARIES}
          ${MPI_LIBRARIES}
 	 ${EXTRA_LIBS}
-	 )
-#
-# On machine Irene need to add extra libraries for good compilation
-#
-if (USE_MACHINE STREQUAL "IRENE")
-  target_link_libraries(/ccc/products/icc-20.0.4/system/default/20.0.4/lib/intel64/libiomp5.so)
-  if (USE_CATALYST STREQUAL "LEGACY")
-    target_link_libraries(/ccc/products2/icc-19.0.5.281/Atos_7__x86_64/system/default/compilers_and_libraries_2019.5.281/linux/compiler/lib/intel64_lin/libirc.so)
+	 /ccc/products/icc-20.0.4/system/default/20.0.4/lib/intel64/libiomp5.so
+    	 /ccc/products2/icc-19.0.5.281/Atos_7__x86_64/system/default/compilers_and_libraries_2019.5.281/linux/compiler/lib/intel64_lin/libirc.so
+  )
+  else()
+    target_link_libraries(
+	 iPIC3Dlib
+         ${HDF5_LIBRARIES}
+         ${HDF5_HL_LIBRARIES}
+         ${MPI_LIBRARIES}
+	 ${EXTRA_LIBS}
+	 /ccc/products/icc-20.0.4/system/default/20.0.4/lib/intel64/libiomp5.so
+    )
   endif()
+else()
+  target_link_libraries(
+	iPIC3Dlib
+         ${HDF5_LIBRARIES}
+         ${HDF5_HL_LIBRARIES}
+         ${MPI_LIBRARIES}
+	 ${EXTRA_LIBS}
+  )
 endif()
 
 
