@@ -311,14 +311,14 @@ void c_Solver::CalculateMoments() {
         sortParticles();
         EMf->sumMoments_vectorized(part);
 	if (verbosity)
-          dprint("(2a) SoA");
+          dprint("(2a) SoA method");
         break;
       case Parameters::AoS:
         convertParticlesToAoS();
         sortParticles();
         EMf->sumMoments_vectorized_AoS(part);
        	if (verbosity)
-          dprint("(2a) Aos");
+          dprint("(2a) Aos method");
         break;
       default:
         unsupported_value_error(Parameters::get_MOMENTS_TYPE());
@@ -341,21 +341,21 @@ void c_Solver::CalculateMoments() {
         convertParticlesToSoA();
         EMf->sumMoments(part);
 	if (verbosity)
-          dprint("(2b) SoA");
+          dprint("(2b) SoA method");
         break;
       case Parameters::AoS:
         EMf->setZeroPrimaryMoments();
         convertParticlesToAoS();
         EMf->sumMoments_AoS(part);
 	if (verbosity)
-          dprint("(2b) AoS");
+          dprint("(2b) AoS method");
         break;
       case Parameters::AoSintr:
         EMf->setZeroPrimaryMoments();
         convertParticlesToAoS();
         EMf->sumMoments_AoS_intr(part);
 	if (verbosity)
-          dprint("(2b) AoSintr");
+          dprint("(2b) AoSintr method");
         break;
       default:
         unsupported_value_error(Parameters::get_MOMENTS_TYPE());
@@ -388,6 +388,8 @@ void c_Solver::CalculateMoments() {
 void c_Solver::CalculateField(int cycle) {
   timeTasks_set_main_task(TimeTasks::FIELDS);
   EMf->calculateE(cycle);
+  if (verbosity) 
+    dprintf("(1) Calculate E-field with implicit method");
 }
 
 
@@ -397,6 +399,8 @@ void c_Solver::CalculateField(int cycle) {
 void c_Solver::CalculateB() {
   timeTasks_set_main_task(TimeTasks::FIELDS);
   EMf->calculateB();
+  if (verbosity) 
+    dprintf("(1) Calculate B-field from rot(E)");
 }
 
 
@@ -456,11 +460,13 @@ bool c_Solver::ParticlesMover(int cycle) {
       Qexo[i] = part[i].AddIonizedExosphere(i_pl);
       if (verbosity)
         dprintf("(2b) Injection of particles due to photoionization. Species %d",i);
+        dprintf("(2c) Ionized Exosph Injection proc %d the Q%d is = %.8f",myrank,i,Qexo[i]);
     }
     
       Qrep[i] = part[i].repopulate_particles(EMf);
       if (verbosity)
-        dprintf("(3) Injection of particles at box boundaries. Species %d",i);
+        dprintf("(3a) Injection of particles at box boundaries. Species %d",i);
+        dprintf("(3b) Repopulate boundary cells For proc %d the Q%d counted is = %.8f",myrank,i,Qrep[i]);
 
   }
     
@@ -481,7 +487,7 @@ bool c_Solver::ParticlesMover(int cycle) {
       if (Count[i]>0)  Count_plus += Count[i];
       if (Count[i]<0)  Count_mins += Count[i];
       if ( col->getVerbose() and Count[i]>0 ) 
-        dprintf("(4) BC planet surface RotateAndCount->For proc %d the Q%d counted is = %.5f",myrank,i,Count[i]);
+        dprintf("(4) BC planet surface RotateAndCount->For proc %d the Q%d counted is = %.8f",myrank,i,Count[i]);
     }
     Qrm = std::min(Count_plus,-Count_mins);
   }
@@ -492,7 +498,7 @@ bool c_Solver::ParticlesMover(int cycle) {
   {
     Qdel[i] = part[i].deleteParticlesInsideSphere(cycle,Qrm,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
     if ( col->getVerbose() and Qdel[i]>0 ) 
-      dprintf("(4a) BC planet surface: Delete->For proc %d the Q%d removed is = %.5f",myrank,i,Qdel[i]);
+      dprintf("(4a) BC planet surface: Delete->For proc %d the Q%d removed is = %.8f",myrank,i,Qdel[i]);
 
     // pcls communication - qui ci sta il problema su BCXright da capire...
     part[i].separate_and_send_particles();
@@ -511,7 +517,6 @@ bool c_Solver::ParticlesMover(int cycle) {
 void c_Solver::WriteOutput(int cycle) {
 
   WriteConserved(cycle);
-
   if (verbosity) dprintf("(1) Write integrals in ConservedQuantities.txt. Done.");
 
   #ifdef NO_HDF5
@@ -522,21 +527,19 @@ void c_Solver::WriteOutput(int cycle) {
       fetch_outputWrapperFPP().append_restart(cycle);
     }
   #endif  
-
   if (verbosity) dprintf("(2) Dump all particles in restart*.hdf. Done.");
 
   if (col->getWriteMethod() == "nbcvtk")
   {
     if(!col->field_output_is_off() && (cycle%(col->getFieldOutputCycle()) == 0 || cycle == first_cycle) )
     {
-
       if(!(col->getFieldOutputTag()).empty())
       {
         if(fieldreqcounter>0)
 	{
 	  //MPI_Waitall(fieldreqcounter,&fieldreqArr[0],&fieldstsArr[0]);\
 	  // why above is commented ? ./job --> can merge the two if 
-	  for(int si=0;si< fieldreqcounter;si++)
+	  for(int si=0; si<fieldreqcounter; si++)
 	  {
 	    int error_code = MPI_File_write_all_end(fieldfhArr[si],&fieldwritebuffer[si][0][0][0],&fieldstsArr[si]);//fieldstsArr[si].MPI_ERROR;
 	    if (error_code != MPI_SUCCESS) 
@@ -555,11 +558,10 @@ void c_Solver::WriteOutput(int cycle) {
 	}
 	fieldreqcounter = WriteFieldsVTKNonblk(grid, EMf, col, vct,cycle,fieldwritebuffer,fieldreqArr,fieldfhArr);
       }
-
       if (verbosity) dprintf("(2a) nbcvtk done with the fields output.");
 
       #ifdef USE_CATALYST_LEGACY
-        Adaptor_legacy::CoProcess(col->getDt()*cycle, cycle, EMf);
+        Adaptor_legacy::CoProcess(col->getDt()*cycle, cycle, EMf); //questo deve sta qui??? ./job
       #endif
 
       if(!(col->getMomentsOutputTag()).empty())
@@ -587,29 +589,20 @@ void c_Solver::WriteOutput(int cycle) {
 	}
 	momentreqcounter = WriteMomentsVTKNonblk(grid, EMf, col, vct,cycle,momentwritebuffer,momentreqArr,momentfhArr);
       }
-
       if (verbosity) dprintf("(2b) nbcvtk done with the moments output.");
-    
     }
-
-    //WriteParticles(cycle); try to comment this --> ./Job 
-    //WriteTestParticles(cycle); and also this ./Job
   }
   
   else if (col->getWriteMethod() == "pvtk")
   {
-
     if(!col->field_output_is_off() && (cycle%(col->getFieldOutputCycle()) == 0 || cycle == first_cycle) )
     {
-
       if(!(col->getFieldOutputTag()).empty())
         WriteFieldsVTK(grid, EMf, col, vct, col->getFieldOutputTag() ,cycle, fieldwritebuffer);//check this is E, B
-		  
       if (verbosity) dprintf("(2a) pvtk done with the fields output.");
 
       if(!(col->getMomentsOutputTag()).empty())
         WriteMomentsVTK(grid, EMf, col, vct, col->getMomentsOutputTag() ,cycle, momentwritebuffer);// and check this as Je0, Ji1 rhoe0 etc.
-		  
       if (verbosity) dprintf("(2b) pvtk done with the moments output.");
     }
 
@@ -617,7 +610,6 @@ void c_Solver::WriteOutput(int cycle) {
     {		  
       if(!(col->getSpectraOutputTag()).empty())
         WriteSpectraVTK(grid, part, EMf, col, vct, col->getSpectraOutputTag(),cycle, spectrawritebuffere, spectrawritebufferi);
-
       if (verbosity) dprintf("(2c) pvtk done with the spectra output.");
     }
 
@@ -625,45 +617,28 @@ void c_Solver::WriteOutput(int cycle) {
     {
       if(!(col->getTemperatureOutputTag()).empty())
         WriteTemperatureVTK(grid, EMf, col, vct, col->getTemperatureOutputTag() ,cycle, temperaturewritebuffer);
-      
       if (verbosity) dprintf("(2d) pvtk done with the Temperature output.");
     }
-	  //Particle information is still in hdf5
-	  	//WriteParticles(cycle);
-	  //Test Particle information is still in hdf5
-	    //WriteTestParticles(cycle);
   }
 
   else if (col->getWriteMethod() == "phdf5")
   {
-    #ifdef NO_HDF5
-      eprintf("The selected output option must be compiled with HDF5");
-    #else
     if (!col->field_output_is_off() && cycle%(col->getFieldOutputCycle())==0 || cycle == first_cycle)
       WriteOutputParallel(grid, EMf, part, col, vct, cycle);
-      if (verbosity) dprintf("(2a) phdf5 done with the fields and moments output (same file).");
-    #endif
+    if (verbosity) dprintf("(2a) phdf5 done with the fields and moments output (same file).");
   }
 
   else if (col->getWriteMethod() == "shdf5")
   {
-    #ifdef NO_HDF5
-      eprintf("The selected output option must be compiled with HDF5");
-    #else
     if (!col->field_output_is_off() && cycle%(col->getFieldOutputCycle())==0 || cycle == first_cycle)
     {
       if(!(col->getFieldOutputTag()).empty())
-      {
         fetch_outputWrapperFPP().append_output((col->getFieldOutputTag()).c_str(), cycle);
-         if (verbosity) dprintf("(2a) shdf5 done with the fields output.");
-      }
+      if (verbosity) dprintf("(2a) shdf5 done with the fields output.");
       if(!(col->getMomentsOutputTag()).empty())
-      {
         fetch_outputWrapperFPP().append_output((col->getMomentsOutputTag()).c_str(), cycle);
-        if (verbosity) dprintf("(2b) shdf5 done with the moments output.");
-      }
+      if (verbosity) dprintf("(2b) shdf5 done with the moments output.");
     }
-    #endif
    }
 
   else
@@ -682,6 +657,7 @@ void c_Solver::WriteConserved(int cycle)
 {
   if(col->getDiagnosticsOutputCycle() > 0 && cycle % col->getDiagnosticsOutputCycle() == 0) 
   {
+    if (verbosity) dprintf("(1) START Write ConservedQuantities.txt");
     Eenergy = EMf->getEenergy();
     Benergy = EMf->getBenergy();
     TOTenergy = 0.0;
@@ -697,6 +673,7 @@ void c_Solver::WriteConserved(int cycle)
     }
     if (myrank == (nprocs-1)) 
     {
+      if (verbosity) dprintf("(1) START Write ConservedQuantities.txt");
       ofstream my_file(cq.c_str(), fstream::app);
       if(cycle==0)
       { 
@@ -712,6 +689,7 @@ void c_Solver::WriteConserved(int cycle)
       for (int is = 0; is < ns; is++) my_file << "\t" << rho[is];
       my_file << endl;
       my_file.close();
+      if (verbosity) dprintf("(2) DONE Write ConservedQuantities.txt");
     }
   }
 }
@@ -799,6 +777,8 @@ void c_Solver::WriteTestParticles(int cycle)
 // and methods that save field data
 //
 void c_Solver::Finalize() {
+  if (verbosity) 
+    dprintf("(1) START Finalize");
   if (col->getCallFinalize() && Parameters::get_doWriteOutput())
   {
     #ifndef NO_HDF5
@@ -806,9 +786,9 @@ void c_Solver::Finalize() {
     fetch_outputWrapperFPP().append_restart((col->getNcycles() + first_cycle) - 1);
     #endif
   }
-  if (verbosity) dprintf("(1) ... roba") // da specificare ./job
   my_clock->stopTiming();
-  if (verbosity) dprintf("(2) Stop profiling. Finalize DONE.")
+  if (verbosity) 
+    dprintf("(2) Stop time profiling. Finalize DONE.");
 }
 
 void c_Solver::sortParticles() {

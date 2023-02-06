@@ -1,66 +1,52 @@
 cmake_minimum_required(VERSION 2.8.8) 
-# compiler set in ../cmake/cmake_template.cmake.XeonPhi
-#message ("for Xeon Phi:")
-#message ("cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/cmake_template.cmake.XeonPhi")
-#message ("for Xeon:")
-#message ("cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/cmake_template.cmake.Xeon")
+
 #
 # Project declaration
 #
-
 project(iPic3D)
 
 #
 # Set compiler flags per system
 #
-if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "k1om") ## Xeon Phi
-   option(IPIC_XEONPHI "ipic xeon phi standard compile flags" on)
-   if(IPIC_XEONPHI) 
-     set(CMAKE_CXX_FLAGS "-O3 -openmp -fno-exceptions -fp-model fast=2 -vec-report -mmic")
-   else()
-     set(CMAKE_CXX_FLAGS "-mmic")
-   endif()
-   #set(CMAKE_CXX_FLAGS "$(CMAKE_CXX_FLAGS) -mmic")
-   #set(CMAKE_CXX_FLAGS "-O3 -openmp -fno-exceptions -vec-report -mmic")
-   #set(CMAKE_CXX_FLAGS "-openmp -g -mmic") # set flags for Xeon Phi, totalview
-elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64") ## Xeon
-   option(IPIC_XEON "optimisation with icpc"  ON)
-   if(IPIC_XEON) 
-     #reporting: -g -vec-report
-     #optimization: -O3 -xHost -fno-exceptions
-     set(CMAKE_CXX_FLAGS "-openmp -fno-exceptions -O3 -xHost -vec-report")
-     set(CMAKE_CXX_COMPILER "mpicxx")  
-   endif()
-   #set(CMAKE_CXX_FLAGS "-O3 -openmp -g -xHost -fno-exceptions -vec-report")
-   # -DPRINTPCL for printing particle subcycles 
-   #-DNO_HDF5 to disable output 
-   #-h noomp if running on bluewaters
-   set(CMAKE_CXX_FLAGS  "-O3")
-else()
-   set(CMAKE_CXX_FLAGS "-O3")
-endif()
+# Possible flags are the following:
+# For Xeon Phi, totalview: -openmp -g -mmic
+# Reporting: -g -vec-report
+# Optimization: -O3 -xHost -fno-exceptions
+# OpenMP: -openmp
+# Print pcls subcycles: -DPRINTPCL 
+# Disable HDF5 output: -DNO_HDF5
+set(CMAKE_CXX_FLAGS "-O3")
+
+#
+# Set on which computer we are running
+#
+# possible values are IRENE, LICALLO, LOCAL
+set(USE_MACHINE "LOCAL")
 
 #
 # Catalyst
 #
-#USE_CATALYST enables catalyst. Possible values are
-#"LEGACY" or "V2". Every other value will turn it off.
-set(USE_CATALYST "LEGACY")
+# USE_CATALYST enables catalyst. Possible values are
+# "LEGACY" or "V2". Every other value will turn it off.
+set(USE_CATALYST "NO")
 
+#
+# Catalyst Legacy - load modules and libraries
+#
 if(USE_CATALYST STREQUAL "LEGACY")
-  add_definitions(-DUSE_CATALYST_LEGACY)    #define USE_CATALYST_LEGACY in the code
-endif()
 
-if(USE_CATALYST STREQUAL "LEGACY")
-#uncoment if paraview catalyst is implemented using modules on Irene: 
-#list(APPEND CMAKE_MODULE_PATH
-#"/ccc/products/paraview-5.8.0/intel--19.0.5.281__openmpi--4.0.1/default/lib64/cmake/paraview-5.8")
+  add_definitions(-DUSE_CATALYST_LEGACY)    
 
-  #path to the directory where the paraview build is
-  set(ParaView_DIR /home/lquerci/NICE/paraview/build )             #local machine
-  #set(ParaView_DIR /data/home/lquerci/Sources/paraview/build )     #Licallo
-  #set(ParaView_DIR /ccc/products/paraview-5.8.0/intel--19.0.5.281__openmpi--4.0.1/default/lib64/cmake/paraview-5.8) #Irene
-
+  if(USE_MACHINE STREQUAL "LOCAL")
+    set(ParaView_DIR /home/flavorenti/Desktop/Sources/paraview_lapo/build) #path to paraview build
+  endif()
+  if(USE_MACHINE STREQUAL "LICALLO")
+    set(ParaView_DIR /data/home/lquerci/Sources/paraview/build)     
+  endif()
+  if(USE_MACHINE STREQUAL "IRENE")
+    list(APPEND CMAKE_MODULE_PATH "/ccc/products/paraview-5.8.0/intel--19.0.5.281__openmpi--4.0.1/default/lib64/cmake/paraview-5.8")
+    set(ParaView_DIR /ccc/products/paraview-5.8.0/intel--19.0.5.281__openmpi--4.0.1/default/lib64/cmake/paraview-5.8)
+  endif()
 
   find_package(ParaView 5.7 REQUIRED)
 
@@ -72,46 +58,43 @@ if(USE_CATALYST STREQUAL "LEGACY")
       "PARAVIEW_ENABLE_PYTHON set to TRUE")
   else()
     add_library(iPICAdaptor ${CMAKE_SOURCE_DIR}/catalyst_legacy/Adaptor_legacy.cpp)
-
-    target_link_libraries(iPICAdaptor PRIVATE ParaView::PythonCatalyst VTK::CommonDataModel Python3::Python) #use Python2::Python on Irene
+    if(USE_MACHINE STREQUAL "IRENE")
+      target_link_libraries(iPICAdaptor PRIVATE ParaView::PythonCatalyst VTK::CommonDataModel Python2::Python)
+    else()
+      target_link_libraries(iPICAdaptor PRIVATE ParaView::PythonCatalyst VTK::CommonDataModel Python3::Python)
+    endif()
     target_include_directories(iPICAdaptor INTERFACE ${CMAKE_SOURCE_DIR}/catalyst_legacy)
     target_compile_definitions(iPICAdaptor INTERFACE USE_CATALYST)
-
   endif()
+  
 endif()
 
 #
-# Find third class libraries
+# Find MPI library
 #
-if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "k1om") ## Xeon Phi
-   set(CMAKE_PREFIX_PATH /opt/hdf5/1.8.10-patch1-mic)			
-   set(VARIOUS_LIB /opt/intel/lib/mic)
-   set (EXTRA_LIBS ${VARIOUS_LIB}/libimf.so ${VARIOUS_LIB}/libsvml.so ${VARIOUS_LIB}/libirng.so ${VARIOUS_LIB}/libintlc.so ${MPELIB})
-else()
-   #cmake_policy(SET CMP0074 NEW) #uncomment when using Irene 
-   find_package(MPI)
-   set(EXTRA_LIBS "")   
+if(USE_MACHINE STREQUAL "IRENE")
+   cmake_policy(SET CMP0074 NEW)
 endif()
+find_package(MPI)
+set(EXTRA_LIBS "")   
 
-
+#
+# Find HDF5 library
+#
 if(${CMAKE_CXX_FLAGS} MATCHES "(.*)-DNO_HDF5(.*)")
 # do nothing
 else()
-	SITE_NAME(myhostname)
-	if (${myhostname} MATCHES "(.*)pdc(.*)")
-   	   set(HDF5_INCLUDE_DIRS /usr/local/Cellar/hdf5/1.10.6/include)
-	else()
-    #cmake_policy(SET CMP0074 NEW)  #uncomment when using Licallo
-		add_definitions(-DPHDF5)
-		set(HDF5_PREFER_PARALLEL TRUE)
-		find_package(HDF5 COMPONENTS HL C )   
-	endif()
+  if(USE_MACHINE STREQUAL "LICALLO")
+    cmake_policy(SET CMP0074 NEW)
+  endif()
+  add_definitions(-DPHDF5)
+  set(HDF5_PREFER_PARALLEL TRUE)
+  find_package(HDF5 COMPONENTS HL C )   
 endif()
 
 #
 # include and lib directories
 #
-# include_directories: files there are accessible to the project
 include_directories(
         include
         ${HDF5_INCLUDE_DIRS}
@@ -119,18 +102,24 @@ include_directories(
         ${MPI_INCLUDE_PATH}
 )
 
+#
+# Link libraries - if machine=Irene need to explicitly link intel63 compiler
+# 
 link_directories(
-        ${HDF5_LIBRARY_DIRS}
-	${HDF5_hdf5_hl_LIBRARY_DIRS}
-        ${MPI_LIBRARY_DIRS}
-	${EXTRA_LIBS}
-	#/ccc/products/icc-20.0.4/system/default/20.0.4/lib/intel64
+      ${HDF5_LIBRARY_DIRS}
+      ${HDF5_hdf5_hl_LIBRARY_DIRS}
+      ${MPI_LIBRARY_DIRS}
+      ${EXTRA_LIBS}
 )
+if(USE_MACHINE STREQUAL "IRENE")
+  link_directories(
+      /ccc/products/icc-20.0.4/system/default/20.0.4/lib/intel64
+  )
+endif()
 
 #
 # Header file list
 #
-
 file(
         GLOB
         inc_files
@@ -140,7 +129,6 @@ file(
 #
 # Source file list
 #
-
 file(
         GLOB
         src_files
@@ -159,43 +147,28 @@ file(
 )
 
 #
-# Macro definitions
-#
-
-set(TEST_B $ENV{BATSRUS})
-if(DEFINED TEST_B)
-  add_definitions( -DBATSRUS )
-  message(" WARNING: BATSRUS flag is active.")
-else(DEFINED TEST_B)
-  message(" INFO: BATSRUS is not active.")
-endif(DEFINED TEST_B)
-
-#
 # Executable declaration
 #
-
-# Particle solver
 add_executable(
         iPIC3D
         iPIC3D.cpp
 )
-
 option(STATIC_LINK "Choose static link"  on)
 if(STATIC_LINK) 
 	add_library(
-	    iPIC3Dlib      #name of the library
-		  STATIC	   #type of the library
+	    iPIC3Dlib       # name of the library
+		  STATIC    # type of the library
 	    ${inc_files}    # stuff to build the library
 	    ${src_files}
 	)
 else()
 	add_library(
-	    iPIC3Dlib      #name of the library
-		  SHARED	   #type of the library
+	    iPIC3Dlib       # name of the library
+		  SHARED    # type of the library
 	    ${inc_files}    # stuff to build the library
 	    ${src_files}
 	)
-endif()	
+endif()
 
 
 #
@@ -207,13 +180,17 @@ target_link_libraries(
          ${HDF5_HL_LIBRARIES}
          ${MPI_LIBRARIES}
 	 ${EXTRA_LIBS}
-   #extra libraries user for Irene
-   if (USE_CATALYST STREQUAL "LEGACY")
-    #uncooment if paraview catalyst is implemented using modules on Irene: 
-    #ccc/products2/icc-19.0.5.281/Atos_7__x86_64/system/default/compilers_and_libraries_2019.5.281/linux/compiler/lib/intel64_lin/libirc.so
-	 endif()
-   #/ccc/products/icc-20.0.4/system/default/20.0.4/lib/intel64/libiomp5.so
-)
+	 )
+#
+# On machine Irene need to add extra libraries for good compilation
+#
+if (USE_MACHINE STREQUAL "IRENE")
+  target_link_libraries(/ccc/products/icc-20.0.4/system/default/20.0.4/lib/intel64/libiomp5.so)
+  if (USE_CATALYST STREQUAL "LEGACY")
+    target_link_libraries(/ccc/products2/icc-19.0.5.281/Atos_7__x86_64/system/default/compilers_and_libraries_2019.5.281/linux/compiler/lib/intel64_lin/libirc.so)
+  endif()
+endif()
+
 
 target_link_libraries(
          iPIC3D
@@ -222,19 +199,26 @@ target_link_libraries(
 
 if (USE_CATALYST STREQUAL "LEGACY")
   target_link_libraries(
-    iPIC3Dlib
-    iPICAdaptor
-    )
+      iPIC3Dlib
+      iPICAdaptor
+  )
 endif()
 
-## to save the executable in the folder where the CMakeLists.txt file is, i.e. CMAKE_CURRENT_SOURCE_DIR
+#
+# Properties of executable
+#
+# to save the executable in the folder 
+# where the CMakeLists.txt file is use CMAKE_CURRENT_SOURCE_DIR
+# debug releases have a _d appended to the executable
 set_target_properties(iPIC3D PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-
-## debug releases have a _d appended to the executable
 set_target_properties(iPIC3D PROPERTIES DEBUG_POSTFIX "_d")
 
+#
+# Final message at the end of compilation
+#
 message("Which system am I compiling for:")
-message("MYHOSTNAME is ${myhostname}")
+message("USER: $ENV{USER}")
+message("HOSTNAME: $ENV{HOSTNAME}")
 message("CMAKE_SYSTEM_PROCESSOR is ${CMAKE_SYSTEM_PROCESSOR}")
 message("Compiler & compiler flags:")
 message("CMAKE_CXX_COMPILER is ${CMAKE_CXX_COMPILER}")
@@ -244,4 +228,4 @@ message("HDF5_LIBRARIES is ${HDF5_LIBRARIES}")
 message("HDF5_HL_LIBRARIES is ${HDF5_HL_LIBRARIES}")
 message("MPI_LIBRARIES is ${MPI_LIBRARIES}")
 message("USE_CATALYST is set to ${USE_CATALYST}")
-
+message("USE_MACHINE is set to ${USE_MACHINE}")
