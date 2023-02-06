@@ -878,6 +878,7 @@ void Particles3Dcomm::apply_BCs_locally(vector_SpeciesParticle& pcl_list,
         break;
     }
   }
+  
   // if appropriate then apply boundary conditions to this block
   else if(do_apply_BCs)
   {
@@ -913,6 +914,7 @@ void Particles3Dcomm::apply_BCs_locally(vector_SpeciesParticle& pcl_list,
     }
     pcl_list.resize(size);
   }
+  
 }
 
 namespace PclCommMode
@@ -1113,7 +1115,7 @@ void Particles3Dcomm::apply_Xleft_BC(vector_SpeciesParticle& pcls, int start)
         pcl.set_u(u);
       }
       if(size>start)
-        cout<<"BCXleft in Particles3DComm.cpp #pcl="<<size-start<<endl;
+        //cout<<"BCXleft in Particles3DComm.cpp #pcl="<<size-start<<endl;
       break;
     case BCparticles::EXIT:
       // clear the remainder of the list
@@ -1172,7 +1174,7 @@ void Particles3Dcomm::apply_Yleft_BC(vector_SpeciesParticle& pcls, int start)
         pcl.set_u(u);
       }
       if(size>start)
-        cout<<"BCYleft in Particles3DComm.cpp #pcl="<<size-start<<endl;
+        //cout<<"BCYleft in Particles3DComm.cpp #pcl="<<size-start<<endl;
       break;
     case BCparticles::EXIT:
       pcls.resize(start);
@@ -1224,7 +1226,7 @@ void Particles3Dcomm::apply_Zleft_BC(vector_SpeciesParticle& pcls, int start)
         pcl.set_u(u);
       }
       if(size>start)
-        cout<<"BCZleft in Particles3DComm.cpp #pcl="<<size-start<<endl;
+        //cout<<"BCZleft in Particles3DComm.cpp #pcl="<<size-start<<endl;
       break;
     case BCparticles::EXIT:
       pcls.resize(start);
@@ -1278,7 +1280,7 @@ void Particles3Dcomm::apply_Xrght_BC(vector_SpeciesParticle& pcls, int start)
       }*/
       pcls.resize(start);
       if(size>start)
-        cout<<"BCXright in Particles3DComm.cpp #pcl="<<size-start<<endl; 
+        //cout<<"BCXright in Particles3DComm.cpp #pcl="<<size-start<<endl;
      break;
     case BCparticles::EXIT:
       pcls.resize(start);
@@ -1337,7 +1339,7 @@ void Particles3Dcomm::apply_Yrght_BC(vector_SpeciesParticle& pcls, int start)
         pcl.set_u(u);
       }
       if(size>start)
-        cout<<"BCYrght in Particles3DComm.cpp #pcl="<<size-start<<endl;
+        //cout<<"BCYrght in Particles3DComm.cpp #pcl="<<size-start<<endl;
       break;
     case BCparticles::EXIT:
       pcls.resize(start);
@@ -1389,7 +1391,7 @@ void Particles3Dcomm::apply_Zrght_BC(vector_SpeciesParticle& pcls, int start)
         pcl.set_u(u);
       }
       if(size>start)
-        cout<<"BCZrght in Particles3DComm.cpp #pcl="<<size-start<<endl;
+        //cout<<"BCZrght in Particles3DComm.cpp #pcl="<<size-start<<endl;
       break;
     case BCparticles::EXIT:
       pcls.resize(start);

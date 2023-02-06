@@ -456,18 +456,13 @@ bool c_Solver::ParticlesMover(int cycle) {
 
     if ( (i>=col->getNs_sw()) and (col->getAddExosphere()) )
     {
-      int i_pl = col->getNs_sw();
+      int i_pl = i-col->getNs_sw();
       Qexo[i] = part[i].AddIonizedExosphere(i_pl);
-      if (verbosity)
+      if (verbosity and myrank==0){
         dprintf("(2b) Injection of particles due to photoionization. Species %d",i);
-        dprintf("(2c) Ionized Exosph Injection proc %d the Q%d is = %.8f",myrank,i,Qexo[i]);
+        dprintf("(2c) Ionized Exosph Injection the total Q(is=%d) is = %e",i,Qexo[i]);
+      }
     }
-    
-      Qrep[i] = part[i].repopulate_particles(EMf);
-      if (verbosity)
-        dprintf("(3a) Injection of particles at box boundaries. Species %d",i);
-        dprintf("(3b) Repopulate boundary cells For proc %d the Q%d counted is = %.8f",myrank,i,Qrep[i]);
-
   }
     
   if (applyCollisions)
@@ -486,8 +481,8 @@ bool c_Solver::ParticlesMover(int cycle) {
       Count[i] = part[i].rotateAndCountParticlesInsideSphere(cycle,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
       if (Count[i]>0)  Count_plus += Count[i];
       if (Count[i]<0)  Count_mins += Count[i];
-      if ( col->getVerbose() and Count[i]>0 ) 
-        dprintf("(4) BC planet surface RotateAndCount->For proc %d the Q%d counted is = %.8f",myrank,i,Count[i]);
+      if ( col->getVerbose() and Count[i]>0 and myrank==0) 
+        dprintf("(4) BC planet surface RotateAndCount-> the total Q(is=%d) counted is = %e",i,Count[i]);
     }
     Qrm = std::min(Count_plus,-Count_mins);
   }
@@ -497,13 +492,22 @@ bool c_Solver::ParticlesMover(int cycle) {
   for (int i=0; i < ns; i++) 
   {
     Qdel[i] = part[i].deleteParticlesInsideSphere(cycle,Qrm,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
-    if ( col->getVerbose() and Qdel[i]>0 ) 
-      dprintf("(4a) BC planet surface: Delete->For proc %d the Q%d removed is = %.8f",myrank,i,Qdel[i]);
+    if ( col->getVerbose() and fabs(Qdel[i])>0 and myrank==0)
+      dprintf("(4a) BC planet surface: Delete-> the total Q(is=%d) removed is = %e",i,Qdel[i]);
+  }
+
+  for (int i=0; i < ns; i++)
+  { 
+    Qrep[i] = part[i].repopulate_particles(EMf);
+    if (verbosity)
+      dprintf("(5a) Injection of particles at box boundaries. Species %d",i);
 
     // pcls communication - qui ci sta il problema su BCXright da capire...
     part[i].separate_and_send_particles();
     //part[i].communicate_particles();
     part[i].recommunicate_particles_until_done(1);
+    if (verbosity)
+      dprintf("(6a) Communication pcls different MPI procs DONE. Species %d",i);
   }
 
   return (false);
@@ -677,16 +681,22 @@ void c_Solver::WriteConserved(int cycle)
       ofstream my_file(cq.c_str(), fstream::app);
       if(cycle==0)
       { 
-        my_file << "cycle" << "\t" << "Total_Energy" << "\t" << "Momentum" << "\t" << "Eenergy" << "\t" << "Benergy" << "\t" << "Kenergy" ;
+        my_file << "#cycle" << "\t" << "Total_Energy" << "\t" << "Momentum" << "\t" << "Eenergy" << "\t" << "Benergy" << "\t" << "Kenergy" ;
 	for (int is = 0; is < ns; is++) my_file << "Kenergy("<<is<<")" << "\t";
 	for (int is = 0; is < ns; is++) my_file << "BulkEnergy("<<is<<")" << "\t";
-	for (int is = 0; is < ns; is++) my_file << "Rho("<<is<<")" << "\t"; // add here Q removed and injected ./job
+	for (int is = 0; is < ns; is++) my_file << "Rho("<<is<<")" << "\t";
+	for (int is = 0; is < ns; is++) my_file << "Qrep("<<is<<")" << "\t"; 
+	for (int is = 0; is < ns; is++) my_file << "Qsphere("<<is<<")" << "\t"; 
+	for (int is = 0; is < ns; is++) my_file << "Qexo("<<is<<")" << "\t"; 
 	my_file << endl;
       }
       my_file << cycle << "\t" << (Eenergy + Benergy + TOTenergy) << "\t" << TOTmomentum << "\t" << Eenergy << "\t" << Benergy << "\t" << TOTenergy;
       for (int is = 0; is < ns; is++) my_file << "\t" << Ke[is];
       for (int is = 0; is < ns; is++) my_file << "\t" << BulkEnergy[is];
       for (int is = 0; is < ns; is++) my_file << "\t" << rho[is];
+      for (int is = 0; is < ns; is++) my_file << "\t" << Qrep[is];
+      for (int is = 0; is < ns; is++) my_file << "\t" << Qdel[is];
+      for (int is = 0; is < ns; is++) my_file << "\t" << Qexo[is];
       my_file << endl;
       my_file.close();
       if (verbosity) dprintf("(2) DONE Write ConservedQuantities.txt");

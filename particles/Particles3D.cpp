@@ -1620,11 +1620,11 @@ inline double Particles3D::populate_cell_with_particles(
   double rotx, roty, rotz;
   double Qremoved=0.;
   //for Xleft, for electrons add correction rot(B) to V0 
+  /*
   if ((i<=num_layers)*(ns==0)){
     rotx = EMf->getCurlN2CB_x(i,j,k);
     roty = EMf->getCurlN2CB_y(i,j,k);
     rotz = EMf->getCurlN2CB_z(i,j,k);
-    /*
     if (vct->getCartesian_rank() == 0)
       cout << "in particles3d roty="<<roty<<endl;
     du0 = rotx/(EMf->getRHOns(i,j,k,ns))/FourPI; 
@@ -1632,8 +1632,8 @@ inline double Particles3D::populate_cell_with_particles(
     dw0 = rotz/(EMf->getRHOns(i,j,k,ns))/FourPI;
     if (vct->getCartesian_rank() == 0) 
       cout << "Correct ns="<<ns<<" for i "<<i<<" and particle speed: u0="<<u0<<"+"<<du0<<" v0="<<v0<<"+"<<dv0<<" w0="<<w0<<"+"<<dw0<<endl;
-  */
   }
+  */
   const double cell_low_x = grid->getXN(i,j,k);
   const double cell_low_y = grid->getYN(i,j,k);
   const double cell_low_z = grid->getZN(i,j,k);
@@ -1759,7 +1759,7 @@ double Particles3D::repopulate_particles(Field * EMf)
   if(repopulateYleft || repopulateYrght) assert_gt(nyc, 2*num_layers);
   if(repopulateZleft || repopulateZrght) assert_gt(nzc, 2*num_layers);
 
-  double Qremoved=0.,Qtmp=0.;
+  double Qremoved=0.,TOTQremoved=0.,Qtmp=0.;
 
   // delete particles in repopulation layers
   //if(ns==1)
@@ -1778,12 +1778,19 @@ double Particles3D::repopulate_particles(Field * EMf)
       (repopulateYrght && pcl.get_y() > yHgh) ||
       (repopulateZrght && pcl.get_z() > zHgh);
     if(delete_pcl){
-      Qremoved += pcl.get_q();
+      Qremoved += -pcl.get_q();
       delete_particle(pidx);
     }
     else
       pidx++;
   }
+
+  if (npcel==0)
+  {
+    //dprintf("Exosphere species only rm pcls from box boundary - no injection.");
+    return Qremoved;
+  }
+
   const int nop_remaining = getNOP();
 
   const double dx_per_pcl = dx/npcelx;
@@ -2045,7 +2052,9 @@ double Particles3D::repopulate_particles(Field * EMf)
   //if (vct->getCartesian_rank()==0)
   //  cout << "*** number of particles after repopulate" << getNOP() << " ***" << endl;
 
-  return Qremoved;
+  MPI_Allreduce(&Qremoved, &TOTQremoved, 1, MPI_DOUBLE, MPI_SUM, mpi_comm);
+
+  return TOTQremoved;
 }
 
 // Open BC for particles: duplicate particles on the boundary,.
@@ -2518,7 +2527,7 @@ void Particles3D::RotatePlaneXY(double theta) {
 double Particles3D::rotateAndCountParticlesInsideSphere(int cycle, double R, double x_center, double y_center, double z_center)
 {
   int pidx = 0;
-  double Q_removed=0.;
+  double Q_removed=0., TOTQ_removed=0.;
   int OutputCycle = col->getRemoveParticlesOutputCycle();
   double uold,vold,wold,u,v,w,xd,yd,zd,theta,phi,Vmod;
   const double RandNorm = 8 * atan(1.0) / (double) RAND_MAX;
@@ -2559,6 +2568,7 @@ double Particles3D::rotateAndCountParticlesInsideSphere(int cycle, double R, dou
   }
   my_file_ct.close();
   my_file_rt.close();
+
   return Q_removed;
 }
 
@@ -2568,7 +2578,7 @@ double Particles3D::rotateAndCountParticlesInsideSphere(int cycle, double R, dou
 double Particles3D::deleteParticlesInsideSphere(int cycle, double Qrm, double R, double x_center, double y_center, double z_center)
 {
   int pidx=0, prm=0;
-  double Q_removed=0.;
+  double Q_removed=0., TOTQ_removed=0.;
   int OutputCycle = col->getRemoveParticlesOutputCycle();
   double xd,yd,zd,xnw,ynw,znw,Rnw;
   double  FourPI =16*atan(1.0);
@@ -2611,7 +2621,10 @@ double Particles3D::deleteParticlesInsideSphere(int cycle, double Qrm, double R,
     }
   }
   my_file.close();
-  return Q_removed;
+
+  MPI_Allreduce(&Q_removed, &TOTQ_removed, 1, MPI_DOUBLE, MPI_SUM, mpi_comm);
+  
+  return -TOTQ_removed;
 }
 
 
@@ -2764,12 +2777,12 @@ double Particles3D::AddIonizedExosphere(int i)
   const double Rmax = 3.*R;          // max radius to inject pcls
   const double FourPI =16*atan(1.0);
   const double q = (qom/fabs(qom))*grid->getVOL()/npcel_sw/FourPI/w_fact; // charge of injected pcls
- 
+
   int    Ninject_int;
   double randx,randy,randz;
   double x,y,z,u,v,w,Ninject;
   double PlanetOffset, xd,yd,zd, dist, dist_sq;
-  double Qinject=0.;
+  double Qinject=0., TOTQinject=0.;
 
   PlanetOffset = col->getPlanetOffset();
 
@@ -2788,10 +2801,11 @@ double Particles3D::AddIonizedExosphere(int i)
         // If in range of production distance
         if( (dist>R) and (dist<Rmax) ){
           double nDens = neutralDensity(Nexo, dist, R, hexo);
-          // Ninject = (npcel_sw * Nexo * w_fact) * (dt*fexo)*exp(-(dist-R)/hexo);
           Ninject = (npcel_sw * w_fact) * (dt*fexo)* nDens;
           Ninject_int = (int) Ninject;
-          //dprintf("Injecting %f = %i pcls",Ninject,Ninject_int);
+          //dprintf("Injecting %e = %i pcls",Ninject,Ninject_int);
+          //dprintf("\t %e",fexo);
+          //dprintf("\t %e",Nexo);
 
           for (int jj=0; jj<Ninject_int; jj++){
             // Assign random position in the cell
@@ -2810,7 +2824,10 @@ double Particles3D::AddIonizedExosphere(int i)
 
         } 
       }
-  return Qinject;
+
+  MPI_Allreduce(&Qinject, &TOTQinject, 1, MPI_DOUBLE, MPI_SUM, mpi_comm);
+  
+  return TOTQinject;
 }
 
 /* Calculate neutral density at distance dist from planet*/
