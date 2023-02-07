@@ -264,6 +264,15 @@ int c_Solver::Init(int argc, char **argv) {
   Count = new double[ns];
   Qrep = new double[ns];
   Qexo = new double[ns];
+  
+  // put charges at zero to avoid random values
+  for (int i = 0; i < ns; i++)
+  {
+    Qdel[i] = 0.;
+    Count[i] = 0.;
+    Qrep[i] = 0.;
+    Qexo[i] = 0.;
+  }
 
   //this initialization if for the 3D physical space 
   #ifdef USE_CATALYST_LEGACY
@@ -472,7 +481,7 @@ bool c_Solver::ParticlesMover(int cycle) {
       dprintf("(3a) Injection of particles due to electron impact ionization.");
   }
 
-  double Qrm, Count_plus=0., Count_mins=0.;
+  double Qrm=0., Count_plus=0., Count_mins=0.;
     
   if (col->getNonTrivialBCPlanet()) 
   {
@@ -482,7 +491,7 @@ bool c_Solver::ParticlesMover(int cycle) {
       if (Count[i]>0)  Count_plus += Count[i];
       if (Count[i]<0)  Count_mins += Count[i];
       if ( col->getVerbose() and Count[i]>0 and myrank==0) 
-        dprintf("(4) BC planet surface RotateAndCount-> the total Q(is=%d) counted is = %e",i,Count[i]);
+        dprintf("(4a) BC planet surface RotateAndCount-> the total Q(is=%d) counted is = %e",i,Count[i]);
     }
     Qrm = std::min(Count_plus,-Count_mins);
   }
@@ -493,14 +502,14 @@ bool c_Solver::ParticlesMover(int cycle) {
   {
     Qdel[i] = part[i].deleteParticlesInsideSphere(cycle,Qrm,col->getL_square(),col->getx_center(),col->gety_center(),col->getz_center());
     if ( col->getVerbose() and fabs(Qdel[i])>0 and myrank==0)
-      dprintf("(4a) BC planet surface: Delete-> the total Q(is=%d) removed is = %e",i,Qdel[i]);
+      dprintf("(4b) BC planet surface: Delete-> the total Q(is=%d) removed is = %e",i,Qdel[i]);
   }
 
   for (int i=0; i < ns; i++)
   { 
     Qrep[i] = part[i].repopulate_particles(EMf);
     if (verbosity)
-      dprintf("(5a) Injection of particles at box boundaries. Species %d",i);
+      dprintf("(5a) BC box walls (remove and inject): the total Q(is=%d) removed is = %e",i,Qrep[i]);
 
     // pcls communication - qui ci sta il problema su BCXright da capire...
     part[i].separate_and_send_particles();
@@ -521,7 +530,6 @@ bool c_Solver::ParticlesMover(int cycle) {
 void c_Solver::WriteOutput(int cycle) {
 
   WriteConserved(cycle);
-  if (verbosity) dprintf("(1) Write integrals in ConservedQuantities.txt. Done.");
 
   #ifdef NO_HDF5
     eprintf("The selected output option must be compiled with HDF5");
@@ -529,9 +537,9 @@ void c_Solver::WriteOutput(int cycle) {
     if (restart_cycle>0 && cycle%restart_cycle==0){
       convertParticlesToSynched();
       fetch_outputWrapperFPP().append_restart(cycle);
+      if (verbosity) dprintf("(2) Dump all particles in restart*.hdf. Done.");
     }
   #endif  
-  if (verbosity) dprintf("(2) Dump all particles in restart*.hdf. Done.");
 
   if (col->getWriteMethod() == "nbcvtk")
   {
@@ -661,7 +669,8 @@ void c_Solver::WriteConserved(int cycle)
 {
   if(col->getDiagnosticsOutputCycle() > 0 && cycle % col->getDiagnosticsOutputCycle() == 0) 
   {
-    if (verbosity) dprintf("(1) START Write ConservedQuantities.txt");
+    if (verbosity) 
+      dprintf("(1) START Write ConservedQuantities.txt");
     Eenergy = EMf->getEenergy();
     Benergy = EMf->getBenergy();
     TOTenergy = 0.0;
@@ -677,7 +686,6 @@ void c_Solver::WriteConserved(int cycle)
     }
     if (myrank == (nprocs-1)) 
     {
-      if (verbosity) dprintf("(1) START Write ConservedQuantities.txt");
       ofstream my_file(cq.c_str(), fstream::app);
       if(cycle==0)
       { 
@@ -699,8 +707,9 @@ void c_Solver::WriteConserved(int cycle)
       for (int is = 0; is < ns; is++) my_file << "\t" << Qexo[is];
       my_file << endl;
       my_file.close();
-      if (verbosity) dprintf("(2) DONE Write ConservedQuantities.txt");
     }
+    if (verbosity) 
+      dprintf("(2) DONE Write ConservedQuantities.txt");
   }
 }
 

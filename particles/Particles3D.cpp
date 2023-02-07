@@ -1698,56 +1698,33 @@ inline void Particles3D::populate_cell_with_particles_interp(int i, int j, int k
 }
 
 
-// This could be generalized to use fluid moments
-// to generate particles.
-//
+// Remove pcls from box boundaries (3 cells) and 
+// repopulate them with SW values
 double Particles3D::repopulate_particles(Field * EMf)
 {
   using namespace BCparticles;
 
-  // if this is not a boundary process then there is nothing to do
-  if(!vct->isBoundaryProcess_P()) return 0.;
-
   // if there are no reemission boundaries then no one has anything to do
-  const bool repop_bndry_in_X = !vct->getPERIODICX_P() &&
-        (bcPfaceXleft == REEMISSION || bcPfaceXright == REEMISSION);
-  const bool repop_bndry_in_Y = !vct->getPERIODICY_P() &&
-        (bcPfaceYleft == REEMISSION || bcPfaceYright == REEMISSION);
-  const bool repop_bndry_in_Z = !vct->getPERIODICZ_P() &&
-        (bcPfaceZleft == REEMISSION || bcPfaceZright == REEMISSION);
-  const bool repopulation_boundary_exists =
-        repop_bndry_in_X || repop_bndry_in_Y || repop_bndry_in_Z;
-
-  if(!repopulation_boundary_exists) return 0.;
-
+  const bool repop_bndry_in_X = !vct->getPERIODICX_P() && (bcPfaceXleft == REEMISSION || bcPfaceXright == REEMISSION);
+  const bool repop_bndry_in_Y = !vct->getPERIODICY_P() && (bcPfaceYleft == REEMISSION || bcPfaceYright == REEMISSION);
+  const bool repop_bndry_in_Z = !vct->getPERIODICZ_P() && (bcPfaceZleft == REEMISSION || bcPfaceZright == REEMISSION);
+  const bool repopulation_boundary_exists = repop_bndry_in_X || repop_bndry_in_Y || repop_bndry_in_Z;
 
   // boundaries to repopulate
-  //
   const bool repopulateXleft = (vct->noXleftNeighbor_P() && bcPfaceXleft == REEMISSION);
   const bool repopulateYleft = (vct->noYleftNeighbor_P() && bcPfaceYleft == REEMISSION);
   const bool repopulateZleft = (vct->noZleftNeighbor_P() && bcPfaceZleft == REEMISSION);
   const bool repopulateXrght = (vct->noXrghtNeighbor_P() && bcPfaceXright == REEMISSION);
   const bool repopulateYrght = (vct->noYrghtNeighbor_P() && bcPfaceYright == REEMISSION);
   const bool repopulateZrght = (vct->noZrghtNeighbor_P() && bcPfaceZright == REEMISSION);
-  const bool do_repopulate = 
-       repopulateXleft || repopulateYleft || repopulateZleft
-    || repopulateXrght || repopulateYrght || repopulateZrght;
+  const bool do_repopulate = repopulateXleft || repopulateYleft || repopulateZleft || repopulateXrght || repopulateYrght || repopulateZrght;
 
-  //dprintf("repopulate = %d,%d,%d,%d,%d,%d",repopulateXleft,repopulateYleft,repopulateZleft,repopulateXrght,repopulateYrght,repopulateZrght);
-  // if this process has no reemission boundaries then there is nothing to do
-  if(!do_repopulate)
-    return 0.; 
-
-  // there are better ways to obtain these values...
-  //
+  // initialize variables
   double  FourPI =16*atan(1.0);
-  const double q_per_particle
-    = (qom/fabs(qom))*(1./FourPI/npcel)*(1.0/grid->getInvVOL());
-
+  const double q_per_particle = (qom/fabs(qom))*(1./FourPI/npcel)*(1.0/grid->getInvVOL());
   const int nxc = grid->getNXC();
   const int nyc = grid->getNYC();
   const int nzc = grid->getNZC();
-  // number of cell layers to repopulate at boundary
   const int num_layers = 3;
   const double xLow = num_layers*dx;
   const double yLow = num_layers*dy;
@@ -1758,536 +1735,141 @@ double Particles3D::repopulate_particles(Field * EMf)
   if(repopulateXleft || repopulateXrght) assert_gt(nxc, 2*num_layers);
   if(repopulateYleft || repopulateYrght) assert_gt(nyc, 2*num_layers);
   if(repopulateZleft || repopulateZrght) assert_gt(nzc, 2*num_layers);
-
   double Qremoved=0.,TOTQremoved=0.,Qtmp=0.;
 
-  // delete particles in repopulation layers
-  //if(ns==1)
-  //  dprintf("repopulate electrons in layer X=%d,Zl=%d,Zr=%d",repopulateXleft,repopulateZleft,repopulateZrght);
-  const int nop_orig = getNOP();
-  int pidx = 0;
-  while(pidx < getNOP())
+  if ((!do_repopulate) || (!repopulation_boundary_exists) || (!vct->isBoundaryProcess_P()))
   {
-    SpeciesParticle& pcl = _pcls[pidx];
-    // determine whether to delete the particle
-    const bool delete_pcl =
-      (repopulateXleft && pcl.get_x() < xLow) ||
-      (repopulateYleft && pcl.get_y() < yLow) ||
-      (repopulateZleft && pcl.get_z() < zLow) ||
-      (repopulateXrght && pcl.get_x() > xHgh) ||
-      (repopulateYrght && pcl.get_y() > yHgh) ||
-      (repopulateZrght && pcl.get_z() > zHgh);
-    if(delete_pcl){
-      Qremoved += -pcl.get_q();
-      delete_particle(pidx);
+    //do nothing
+  }
+  else
+  {
+      
+    if (vct->getCartesian_rank()==0)
+      dprintf("*** Removing pcls in box boundary for species %d ***", get_species_num());
+
+    // delete particles in repopulation layers
+    const int nop_orig = getNOP();
+    int pidx = 0;
+    while(pidx < getNOP())
+    {
+      SpeciesParticle& pcl = _pcls[pidx];
+      // determine whether to delete the particle
+      const bool delete_pcl =
+        (repopulateXleft && pcl.get_x() < xLow) ||
+        (repopulateYleft && pcl.get_y() < yLow) ||
+        (repopulateZleft && pcl.get_z() < zLow) ||
+        (repopulateXrght && pcl.get_x() > xHgh) ||
+        (repopulateYrght && pcl.get_y() > yHgh) ||
+        (repopulateZrght && pcl.get_z() > zHgh);
+      if(delete_pcl){
+        Qremoved += -pcl.get_q();
+        delete_particle(pidx);
+      }
+      else
+        pidx++;
     }
-    else
-      pidx++;
-  }
 
-  if (npcel==0)
-  {
-    //dprintf("Exosphere species only rm pcls from box boundary - no injection.");
-    return Qremoved;
-  }
+    // re-inject sw pcls in boundary cells
+    const int nop_remaining = getNOP();
+    const double dx_per_pcl = dx/npcelx;
+    const double dy_per_pcl = dy/npcely;
+    const double dz_per_pcl = dz/npcelz;
 
-  const int nop_remaining = getNOP();
+    // starting coordinate of upper layer
+    const int upXstart = nxc-1-num_layers;
+    const int upYstart = nyc-1-num_layers;
+    const int upZstart = nzc-1-num_layers;
 
-  const double dx_per_pcl = dx/npcelx;
-  const double dy_per_pcl = dy/npcely;
-  const double dz_per_pcl = dz/npcelz;
-
-  // starting coordinate of upper layer
-  const int upXstart = nxc-1-num_layers;
-  const int upYstart = nyc-1-num_layers;
-  const int upZstart = nzc-1-num_layers;
-
-  // inject new particles.
-  //
-  {
     // we shrink the imagined boundaries of the array as we go along to ensure
     // that we never inject particles twice in a single mesh cell.
-    //
     // initialize imagined boundaries to full subdomain excluding ghost cells.
-    //
     int xbeg = 1;
     int xend = nxc-2;
     int ybeg = 1;
     int yend = nyc-2;
     int zbeg = 1;
     int zend = nzc-2;
-    // arrays with close neighbours to boundary, to fill in later
-    //double rho_close[7], V_close[3][7];
-    //bool warning=1;
 
-    // start the switch for all boundaries
-    if (repopulateXleft)
+    // check that this species is NOT exospheric
+    if ( get_species_num() < col->getNs_sw() )
     {
-      int dir[6] = {1,0,0,0,0,0};
-      //cout << "*** Repopulate Xleft species " << ns <<"dir="<<dir[0]<<dir[1]<<dir[2]<<dir[3]<<dir[4]<<dir[5]<< " ***" << endl;
-      for (int i=1; i<= num_layers; i++)
-      for (int j=ybeg; j<=yend; j++)
-      for (int k=zbeg; k<=zend; k++)
+      if (vct->getCartesian_rank()==0)
+        dprintf("*** Injecting pcls in box boundary for species %d ***", get_species_num());
+
+      // start the switch for all boundaries
+      if (repopulateXleft)
       {
-        Qtmp = populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
-        Qremoved += Qtmp;
+        for (int i=1; i<= num_layers; i++)
+        for (int j=ybeg; j<=yend; j++)
+        for (int k=zbeg; k<=zend; k++)
+        {
+          Qtmp = populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
+          Qremoved += Qtmp;
+        }
+        xbeg += num_layers;
       }
-      // these have all been filled, so never touch them again.
-      xbeg += num_layers;
-    }
-    /*
-    if (repopulateXrght)
-    {
-      int dir[6] = {0,1,0,0,0,0};      
-      //cout << "*** Repopulate-interp Xright species " << ns << " ***" << endl;
-      for (int i=upXstart; i<=xend; i++)
-      for (int j=ybeg; j<=yend; j++)
-      for (int k=zbeg; k<=zend; k++)
+
+      if (repopulateXrght)
       {
-        //  cout<<upXstart<<','<<j<<','<<k<<endl;
-	    // cycle over all the directions
-        for (int ind=0; ind<7; ind++){
-	  // define where you get the close values
-	  int sgn=(2*(ind%2))-1;
-	  int ibc[3] = {upXstart,j,k};
-	  if((ind>0)*(ind<=2))
-	    ibc[0]+=sgn;
-          if((ind>2)*(ind<=4))
-            ibc[1]+=sgn;
-          if((ind>4)*(ind<=6))
-            ibc[2]+=sgn; 
-          //cout << "index = {"<<ibc[0]<<','<<ibc[1]<<','<<ibc[2]<<'}'<<endl;
-          // get moments rho,J from fields class
-          rho_close[ind] = EMf->getRHOns(ibc[0],ibc[1],ibc[2],ns);
-          if(rho_close[ind]==0.0){
-            //dprintf("Warning: rho_close IS ZERO in cell %d,%d,%d",i,j,k);
-            //rho_close[ind]= 1./FourPI;
-            warning=1;
-          }
-          V_close[0][ind] = EMf->getJxs(ibc[0],ibc[1],ibc[2],ns)/rho_close[ind];
-          V_close[1][ind] = EMf->getJys(ibc[0],ibc[1],ibc[2],ns)/rho_close[ind];
-          V_close[2][ind] = EMf->getJzs(ibc[0],ibc[1],ibc[2],ns)/rho_close[ind];
-        }
-        // fill the cell with new method that uses n,V extrapolated
-        if(warning)
-          populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
-        //else
-        //  populate_cell_with_particles_interp(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl,rho_close,V_close,dir);
+        // do nothing
+        xend -= num_layers;
       }
-      // these have all been filled, so never touch them again.
-      xend -= num_layers;
-    }
-    */
-    if (repopulateYleft)
-    {
-      int dir[6] = {0,0,1,0,0,0};     
-      //cout << "*** Repopulate Yleft species " << ns << " ***" << endl;
-      for (int i=xbeg; i<=xend; i++)
-      for (int j=1; j<=num_layers; j++)
-      for (int k=zbeg; k<=zend; k++)
-      {/*
-      //cout<<i<<','<<num_layers<<','<<k<<endl;
-        // cycle over all the directions
-        for (int ind=0; ind<7; ind++)
+
+      if (repopulateYleft)
+      {
+        for (int i=xbeg; i<=xend; i++)
+        for (int j=1; j<=num_layers; j++)
+        for (int k=zbeg; k<=zend; k++)
         {
-          // define where you get the close values
-          int sgn=(2*(ind%2))-1;
-          int ibc[3] = {i,num_layers,k};
-          if((ind>0)*(ind<=2))
-            ibc[0]+=sgn;
-          if((ind>2)*(ind<=4))
-            ibc[1]+=sgn;
-          if((ind>4)*(ind<=6))
-            ibc[2]+=sgn;
-          // get moments rho,J from fields class
-          rho_close[ind] = EMf->getRHOns(ibc[0],ibc[1],ibc[2],ns);
-          if(rho_close[ind]==0.0){
-            //dprintf("Warning: rho_close IS ZERO in cell %d,%d,%d",i,j,k);
-            //rho_close[ind]= 1./FourPI;
-            warning=1;
-          }
-          V_close[0][ind] = EMf->getJxs(ibc[0],ibc[1],ibc[2],ns)/rho_close[ind];
-          V_close[1][ind] = EMf->getJys(ibc[0],ibc[1],ibc[2],ns)/rho_close[ind];
-          V_close[2][ind] = EMf->getJzs(ibc[0],ibc[1],ibc[2],ns)/rho_close[ind];
-          if(isnan(rho_close[ind]))
-            eprintf("ERROR rho_close IS NAN")
-          if(isnan(V_close[0][ind])+isnan(V_close[1][ind])+isnan(V_close[2][ind]))
-            eprintf("ERROR V_close IS NAN")
-         
+          Qtmp = populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
+          Qremoved += Qtmp;
         }
-        
-        // fill the cell with new method that uses n,V extrapolated
-        if(warning)*/
-        Qtmp = populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
-        Qremoved += Qtmp;
-        //else
-        //  populate_cell_with_particles_interp(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl,rho_close,V_close,dir);
+        ybeg += num_layers;
       }
-      // these have all been filled, so never touch them again.
-      ybeg += num_layers;
-    }
-    if (repopulateYrght)
-    {
-      int dir[6] = {0,0,0,1,0,0};     
-      //cout << "*** Repopulate Yright species " << ns << " ***" << endl;
-      for (int i=xbeg; i<=xend; i++)
-      for (int j=upYstart; j<=yend; j++)
-      for (int k=zbeg; k<=zend; k++)
-      {/*
-        for (int ind=0; ind<7; ind++)
+
+      if (repopulateYrght)
+      {
+        for (int i=xbeg; i<=xend; i++)
+        for (int j=upYstart; j<=yend; j++)
+        for (int k=zbeg; k<=zend; k++)
+        {         
+          Qtmp = populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
+          Qremoved += Qtmp;
+        }
+        yend -= num_layers;
+      }
+
+      if (repopulateZleft)
+      {
+        for (int i=xbeg; i<=xend; i++)
+        for (int j=ybeg; j<=yend; j++)
+        for (int k=1; k<=num_layers; k++)
+        {        
+          Qtmp = populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
+          Qremoved += Qtmp;
+        }
+        zbeg += num_layers;
+      }
+
+      if (repopulateZrght)
+      {
+        for (int i=xbeg; i<=xend; i++)
+        for (int j=ybeg; j<=yend; j++)
+        for (int k=upZstart; k<=zend; k++)
         {
-          //define where you get the close values
-          int sgn=(2*(ind%2))-1;
-          int ibc[3] = {i,upYstart,k};
-          if((ind>0)*(ind<=2))
-            ibc[0]+=sgn;
-          if((ind>2)*(ind<=4))
-            ibc[1]+=sgn;
-          if((ind>4)*(ind<=6))
-            ibc[2]+=sgn;
-          // get moments rho,J from fields class
-          rho_close[ind] = EMf->getRHOns(ibc[0],ibc[1],ibc[2],ns);
-          if(rho_close[ind]==0.0){
-            //dprintf("Warning: rho_close IS ZERO in cell %d,%d,%d",i,j,k);
-            //rho_close[ind]= 1./FourPI;
-            warning=1;
-          }
-          V_close[0][ind] = EMf->getJxs(ibc[0],ibc[1],ibc[2],ns)/rho_close[ind];
-          V_close[1][ind] = EMf->getJys(ibc[0],ibc[1],ibc[2],ns)/rho_close[ind];
-          V_close[2][ind] = EMf->getJzs(ibc[0],ibc[1],ibc[2],ns)/rho_close[ind];
+          Qtmp = populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
+          Qremoved += Qtmp;
         }
-        // fill the cell with new method that uses n,V extrapolated
-        if(warning)*/
-        Qtmp = populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
-        Qremoved += Qtmp;
-        //else
-        //  populate_cell_with_particles_interp(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl,rho_close,V_close,dir);
-        //
+        zend -= num_layers;
       }
-      // these have all been filled, so never touch them again.
-      yend -= num_layers;
-    }
-    if (repopulateZleft)
-    {
-      int dir[6] = {0,0,0,0,1,0};   
-      //cout << "*** Repopulate-interp Zleft species " << ns <<"dir="<<dir[0]<<dir[1]<<dir[2]<<dir[3]<<dir[4]<<dir[5]<< " ***" << endl;
-      for (int i=xbeg; i<=xend; i++)
-      for (int j=ybeg; j<=yend; j++)
-      for (int k=1; k<=num_layers; k++)
-      {/*
-        for (int ind=0; ind<7; ind++)
-        {
-          int sgn=(2*(ind%2))-1;
-          int ibc[3] = {i,j,num_layers};
-          if((ind>0)*(ind<=2))
-            ibc[0]+=sgn;
-          if((ind>2)*(ind<=4))
-            ibc[1]+=sgn;
-          if((ind>4)*(ind<=6))
-            ibc[2]+=sgn;
-          rho_close[ind] = EMf->getRHOns(ibc[0],ibc[1],ibc[2],ns);
-          if(rho_close[ind]==0.0){
-            //dprintf("Warning: rho_close IS ZERO in cell %d,%d,%d",i,j,k);
-            //rho_close[ind]= 1./FourPI;
-            warning=1;
-          }
-          V_close[0][ind] = EMf->getJxs(ibc[0],ibc[1],ibc[2],ns)/rho_close[ind];
-          V_close[1][ind] = EMf->getJys(ibc[0],ibc[1],ibc[2],ns)/rho_close[ind];
-          V_close[2][ind] = EMf->getJzs(ibc[0],ibc[1],ibc[2],ns)/rho_close[ind];
-        }
-        // fill the cell with new method that uses n,V extrapolated
-        if(warning)*/
-        Qtmp = populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
-        Qremoved += Qtmp;
-        //else
-        //  populate_cell_with_particles_interp(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl,rho_close,V_close,dir);
-        //
-      }
-      zbeg += num_layers;
-    }
-    if (repopulateZrght)
-    {
-      int dir[6] = {0,0,0,0,0,1};   
-      //cout << "*** Repopulate-interp Zright species " << ns << "dir="<<dir[0]<<dir[1]<<dir[2]<<dir[3]<<dir[4]<<dir[5]<<" ***" << endl;
-      for (int i=xbeg; i<=xend; i++)
-      for (int j=ybeg; j<=yend; j++)
-      for (int k=upZstart; k<=zend; k++)
-      {/*
-        for (int ind=0; ind<7; ind++)
-        {
-          int sgn=(2*(ind%2))-1;
-          int ibc[3] = {i,j,upZstart};
-          if((ind>0)*(ind<=2))
-            ibc[0]+=sgn;
-          if((ind>2)*(ind<=4))
-            ibc[1]+=sgn;
-          if((ind>4)*(ind<=6))
-            ibc[2]+=sgn;      
-          rho_close[ind] = EMf->getRHOns(ibc[0],ibc[1],ibc[2],ns);
-          if(rho_close[ind]==0.0){
-            //dprintf("Warning: rho_close IS ZERO in cell %d,%d,%d",i,j,k);
-            //rho_close[ind]= 1./FourPI;
-            warning=1;
-          }
-          V_close[0][ind] = EMf->getJxs(ibc[0],ibc[1],ibc[2],ns)/rho_close[ind];
-          V_close[1][ind] = EMf->getJys(ibc[0],ibc[1],ibc[2],ns)/rho_close[ind];
-          V_close[2][ind] = EMf->getJzs(ibc[0],ibc[1],ibc[2],ns)/rho_close[ind];
-        }
-        // fill the cell with new method that uses n,V extrapolated
-        if(warning)*/
-        Qtmp = populate_cell_with_particles(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl, num_layers, EMf);
-        Qremoved += Qtmp;//else
-        //  populate_cell_with_particles_interp(i,j,k,q_per_particle, dx_per_pcl, dy_per_pcl, dz_per_pcl,rho_close,V_close,dir);
-        //
-      }
-      zend -= num_layers;
     }
   }
-  const int nop_final = getNOP();
-  const int nop_deleted = nop_orig - nop_remaining;
-  const int nop_created = nop_final - nop_remaining;
-
-  //dprintf("change in # particles: %d - %d + %d = %d",nop_orig, nop_deleted, nop_created, nop_final);
-
-  //if (vct->getCartesian_rank()==0)
-  //  cout << "*** number of particles after repopulate" << getNOP() << " ***" << endl;
 
   MPI_Allreduce(&Qremoved, &TOTQremoved, 1, MPI_DOUBLE, MPI_SUM, mpi_comm);
 
   return TOTQremoved;
 }
 
-// Open BC for particles: duplicate particles on the boundary,.
-// shift outside the box and update location to test if inside box
-// if so, add to particle list
-void Particles3D::openbc_particles_inflow()
-{
-  eprintf("openbc_particles_inflow DEPRECATED!!!");
-
-  if(!vct->isBoundaryProcess_P()) return;
-
-  using namespace BCparticles;
-  //This is a hack here to test injection on XLeft
-  if(!vct->getPERIODICX_P() && vct->noXleftNeighbor_P() && bcPfaceXleft == OPENBCIn){
-
-	dprintf( "******  Inflow OpenBC ******");
-    int delpcl = 0;
-    double delq=0.0;
-
-    //delete those exiting particles
-    int pidx = 0;
-    double pclX, pclY, pclZ;
-    while(pidx < getNOP()){
-      SpeciesParticle& pcl = _pcls[pidx];
-      pclX= pcl.get_x();
-      pclY= pcl.get_y();
-      pclZ= pcl.get_z();
-      if( pclX < 0 || pclX > Lx  || pclY < 0 || pclY > Ly || pclZ < 0 || pclZ > Lz){
-	delpcl ++;
-        delq += pcl.get_q();
-	delete_particle(pidx);
-      }else
-	pidx ++;
-    }
-
-    dprintf("delete %d pcl, %f charges, now NOP=%d",delpcl,delq,getNOP());
-    const int newpartStartID = getNOP();
-
-    //Create Maxwellian Uniformly distributed particles
-    srand(vct->getCartesian_rank() + time(0) + ns);dprintf("Seed =%d",vct->getCartesian_rank() + time(0) + ns);
-    const double FourPI = 16*atan(1.0);
-    const double q_sgn  = (qom / fabs(qom));
-    const double InjCellx = Vinj * dt; 
-    //dprintf("Vinj=%f, dt=%f, InjCellx=%f",Vinj,dt,InjCellx);
-    //const double InjVol   = InjCellx*(dy*(grid->getNYC()-2))*(dz*(grid->getNZC()-2));
-    const double InjVol   = grid->getVOL()*InjCellx/dx;
-    const double q_tot_particle =  q_sgn*col->getRHOinit(ns)/FourPI*InjVol;
-    //const double q_tot_particle =  delq;
-    const double q_per_particle =  q_sgn*col->getRHOinit(ns)/FourPI*InjVol/npcel;
-    //dprintf("q_tot_particle=%f, q_per_particle=%f",q_tot_particle,q_per_particle);
-
-    int nop_inject=0;
-    double q_inject = 0.0;
-    const double InjCellStartX = 0.0-InjCellx;
-    const double invRandMax = 1.0/double(RAND_MAX);
-
-
-    for (int j = 1; j < grid->getNYC() - 1; j++)
-      for (int k = 1; k < grid->getNZC() - 1; k++){
-
-    	
-    	//The below is uniformly distributed in location
-		for (int ii=0; ii < npcelx; ii++)
-		  for (int jj=0; jj < npcely; jj++)
-			for (int kk=0; kk < npcelz; kk++){
-
-			  double u,v,w,x,y,z;
-			  sample_maxwellian(u,v,w,uth, vth, wth,u0, v0, w0);
-			  //dprintf("sample_maxwellian %f, %f, %f, %f, %f, %f,%f,%f,%f)",u,v,w,uth, vth, wth,u0, v0, w0);
-
-			  //Uniform distribution
-			  x = (ii + .5) * (InjCellx / npcelx) + InjCellStartX;
-			  y = (jj + .5) * (dy / npcely) + grid->getYN(1, j, k);
-			  z = (kk + .5) * (dz / npcelz) + grid->getZN(1, j, k);
-
-			  //check location after one time step
-			  x += u*dt;
-			  y += v*dt;
-			  z += w*dt;
-
-			  //Add particle if it enters the domain box
-			  //here may need communicating those exiting particles
-			  if( x>0 && x<Lx && y>0 && y<Ly && z>0 && z<Lz){
-				create_new_particle(u,v,w,q_per_particle,x,y,z);
-				nop_inject ++;
-				q_inject += q_per_particle;
-			  }
-		}
-
-		//The below is randomly distributed in location
-		for (int pclid=0; pclid < npcel; pclid++){
-
-		  double u,v,w,x,y,z;
-		  sample_maxwellian(u,v,w,uth, vth, wth,u0, v0, w0);
-
-		  x = InjCellStartX		   + (rand()*invRandMax)*InjCellx;
-		  y = grid->getYN(1, j, k) + (rand()*invRandMax)*dy;
-		  z = grid->getZN(1, j, k) + (rand()*invRandMax)*dz;
-
-		  //check location after one time step
-		  x += u*dt;
-		  y += v*dt;
-		  z += w*dt;
-
-		  //Add particle if it enters the domain box
-		  //here may need communicating those exiting particles
-		  if( x>0 && x<Lx && y>0 && y<Ly && z>0 && z<Lz){
-			create_new_particle(u,v,w,q_tot_particle,x,y,z);
-			nop_inject ++;
-			q_inject += q_per_particle;
-		  }
-		}
-
-     }
-      
-     //the below part is for dividing over the number of entering particles
-      const int newnop = getNOP();
-      q_inject=0.0;
-      for(int startid=newpartStartID;startid<newnop;startid++){
-          SpeciesParticle& pcl = _pcls[startid];
-          pcl.fetch_q() /= nop_inject;
-          q_inject += pcl.get_q();
-	  	  if(startid==newpartStartID) dprintf("x, y,z, u, v, w, q=%f,%f,%f,%f,%f,%f,%f",pcl.get_x(),pcl.get_y(),pcl.get_z(),pcl.get_u(),pcl.get_v(),pcl.get_w(),pcl.get_q());
-      }
-
-      dprintf("create %d species %d  pcl,  now NOP= %d , inject Q=%f" ,nop_inject, ns, getNOP(),q_inject);
-   
-  }//end of injecting from Xleft
-}
-
-
-
-//Open  BC for particles: duplicate particles on the boundary,.
-// shift outside the box and update location to test if inside box
-// if so, add to particle list
-void Particles3D::openbc_particles_outflow()
-{
-  eprintf("openbc_particles_outflow DEPRECATED!!!");
-
-  // if this is not a boundary process then there is nothing to do
-  if(!vct->isBoundaryProcess_P()) return;
-
-  //The below is OpenBC outflow for all other boundaries
-  using namespace BCparticles;
-
-  const bool openXleft = !vct->getPERIODICX_P() && vct->noXleftNeighbor_P() &&  bcPfaceXleft == OPENBCOut;
-  const bool openYleft = !vct->getPERIODICY_P() && vct->noYleftNeighbor_P() &&  bcPfaceYleft == OPENBCOut;
-  const bool openZleft = !vct->getPERIODICZ_P() && vct->noZleftNeighbor_P() &&  bcPfaceZleft == OPENBCOut;
-
-  const bool openXright = !vct->getPERIODICX_P() && vct->noXrghtNeighbor_P() && bcPfaceXright == OPENBCOut;
-  const bool openYright = !vct->getPERIODICY_P() && vct->noYrghtNeighbor_P() && bcPfaceYright == OPENBCOut;
-  const bool openZright = !vct->getPERIODICZ_P() && vct->noZrghtNeighbor_P() && bcPfaceZright == OPENBCOut;
-
-  if(!openXleft && !openYleft && !openZleft && !openXright && !openYright && !openZright)  return;
-
-  const int num_layers = 3;
-  assert_gt(nxc-2, (openXleft+openXright)*num_layers); //excluding 2 ghost cells, #of cells should be larger than total # of openBC layers
-  assert_gt(nyc-2, (openYleft+openYright)*num_layers);
-  assert_gt(nzc-2, (openZleft+openZright)*num_layers);
-
-  const double xLow = num_layers*dx;
-  const double yLow = num_layers*dy;
-  const double zLow = num_layers*dz;
-  const double xHgh = Lx-xLow;
-  const double yHgh = Ly-yLow;
-  const double zHgh = Lz-zLow;
-
-  const bool   apply_openBC[6]    = {openXleft, openXright,openYleft, openYright,openZleft, openZright};
-  const double delete_boundary[6] = {0, Lx,0, Ly,0, Lz};
-  const double open_boundary[6]   = {xLow, xHgh,yLow, yHgh,zLow, zHgh};
-
-  const int nop_orig = getNOP();
-  const int capacity_out = roundup_to_multiple(nop_orig*0.1,DVECWIDTH);
-  vector_SpeciesParticle injpcls(capacity_out);
-
-
-  for(int dir_cnt=0;dir_cnt<6;dir_cnt++){
-
-    if(apply_openBC[dir_cnt]){
-
-		  //dprintf( "*** OpenBC_out for Direction %d on particle species %d",dir_cnt, ns);
-
-		  int pidx = 0;
-		  int direction = dir_cnt/2;
-		  double delbry  = delete_boundary[dir_cnt];
-		  double openbry = open_boundary[dir_cnt];
-		  double location;
-		  while(pidx < getNOP())
-		  {
-		     SpeciesParticle& pcl = _pcls[pidx];
-		     location = pcl.get_x(direction);
-
-		     // delete the exiting particle if out of box on the direction of OpenBC
-		     if((dir_cnt%2==0 && location<delbry) ||(dir_cnt%2==1 && location>delbry))
-		       delete_particle(pidx);
-		     else{
-		       pidx++;
-
-		       //copy the particle within open boundary to inject particle list if their shifted location after 1 time step is within simulation box
-		       if ((dir_cnt%2==0 && location<openbry) ||(dir_cnt%2==1 && location>openbry)){
-		    	   double injx=pcl.get_x(0), injy=pcl.get_x(1), injz=pcl.get_x(2);
-		    	   double inju=pcl.get_u(0), injv=pcl.get_u(1), injw=pcl.get_u(2);
-		    	   double injq=pcl.get_q();
-
-		    	   //shift 3 layers out, not mirror
-		    	   if(direction == 0) injx = (dir_cnt%2==0) ?(injx-xLow):(injx+xLow);
-		    	   if(direction == 1) injy = (dir_cnt%2==0) ?(injy-yLow):(injy+yLow);
-		    	   if(direction == 2) injz = (dir_cnt%2==0) ?(injz-zLow):(injz+zLow);
-
-		    	   injx = injx + inju*dt;
-		    	   injy = injy + injv*dt;
-		    	   injz = injz + injw*dt;
-
-		    	   //Add particle if it enter that sub-domain or the domain box?
-		    	   //assume create particle as long as it enters the domain box
-		    	   if(injx>0 && injx<Lx && injy>0 && injy<Ly && injz>0 && injz<Lz){
-		    		    injpcls.push_back(SpeciesParticle(inju,injv,injw,injq,injx,injy,injz,pclIDgenerator.generateID()));
-		    	   }
-		       }
-		     }
-		   }
-	  }
-  }
-
-  //const int nop_remaining = getNOP();
-  //const int nop_deleted = nop_orig - nop_remaining;
-  const int nop_created = injpcls.size();
-
-  //dprintf("change in # particles: %d - %d + %d = %d",nop_orig, nop_deleted, nop_created, nop_remaining);
-
-  for(int outId=0;outId<nop_created;outId++)
-	  _pcls.push_back(injpcls[outId]);
-}
 
 //Simply delete exiting test particles if openBC
 void Particles3D::openbc_delete_testparticles()
@@ -2586,8 +2168,8 @@ double Particles3D::deleteParticlesInsideSphere(int cycle, double Qrm, double R,
   unsigned int Nrm;
   double PlanetOffset;
 
-  Nrm = (int) Qrm/q_per_particle;
- 
+  Nrm = INT_MAX;//(int) Qrm/q_per_particle;
+
   PlanetOffset = col->getPlanetOffset();
 
   ofstream my_file ("data/RemovedParticles.txt", ios::app);

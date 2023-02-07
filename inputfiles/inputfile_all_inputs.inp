@@ -117,6 +117,8 @@ x_center = 3.0  		# center of the dipole - X (default 5)
 y_center = 3.0			# center of the dipole - Y (default 5)
 z_center = 1.0			# center of the dipole - Z (default 5)
 
+PlanetOffset = 0.0		# planet offset w.r.t. dipole center (negative for Mercury)
+
 L_square =   0.0001		# radius of the planet     (default 5)
 
 ns_pl = 2			# number of plasma species around planet (default 0, max 6)
