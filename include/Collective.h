@@ -160,6 +160,7 @@ class Collective
     int    getcollStepSkip()const{ return (collStepSkip); }
 
     int    getnNeutSpecies()const{ return (nNeutSpecies); }
+    double getWfact(int nNeutral)const{ return (Wfact[nNeutral]); }
     double getnSurf(int nNeutral)const{ return (nSurf[nNeutral]); }
     double gethExo(int nNeutral) const{ return (hExo[nNeutral]); }
     double getfExo(int nNeutral) const{ return (fExo[nNeutral]); }
@@ -170,7 +171,6 @@ class Collective
     int getNewPclInit()const{ return (NewPclInit); }
     int getNonTrivialBCPlanet()const{ return (NonTrivialBCPlanet); }
     int getAddExosphere()const{ return (AddExosphere); }
-    int getWfact()const{ return (Wfact); }
 
     int getBcPfaceXright()const{ return (bcPfaceXright); }
     int getBcPfaceXleft()const{ return (bcPfaceXleft); }
@@ -385,6 +385,8 @@ class Collective
     /* Neutral Gas parameters */
     /*! Number of neutral species */
     int nNeutSpecies;
+    /*! Weight factor pcls SW and exosphere */
+    double *Wfact;
     /*! Neutral density at surface */
     double *nSurf;
     /*! Exospheric scale height */
@@ -411,8 +413,6 @@ class Collective
     int NonTrivialBCPlanet;
     /* bool value for applying exosphere pcls */
     int AddExosphere;
-    /* double value of ratio weigth pcls planet and sw */
-    double Wfact;
 
     /*! Case type */
     string Case;

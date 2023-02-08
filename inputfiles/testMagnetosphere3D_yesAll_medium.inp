@@ -99,7 +99,7 @@ ns_pl = 4			# number of plasma species around planet (default 0, max 6)
 
 AddExosphere = 1		# flag to add exosphere ionization, 1=true, 0=false, (default 0)
 
-Weight_factor = 1		# ratio weigth pcls planet and weight pcls SW (default 8e3)
+Weight_factor = 1. 1. 1. 1.	# ratio weigth pcls planet and weight pcls SW (default 8e3)
 
 nSurf = 1e7 1e7 1e7 1e7		# neutral density at the surface in units of sw density
 hExo = 0.25 0.25 0.25 0.25	# scale height of the exosphere in units of di

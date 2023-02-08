@@ -2354,7 +2354,7 @@ double Particles3D::AddIonizedExosphere(int i)
   const double Nexo  = col->getnSurf(i);   // density of exosphere neutrals at the surface (in nsw units)
   const double fexo  = col->getfExo(i);    // ioniz. frequency in units of wpi
   const double hexo  = col->gethExo(i);    // scale length of exosphere
-  const double w_fact  = col->getWfact();
+  const double w_fact  = col->getWfact(i);
 
   const double Rmax = 3.*R;          // max radius to inject pcls
   const double FourPI =16*atan(1.0);

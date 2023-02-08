@@ -225,48 +225,56 @@ void Collective::ReadInput(string inputfile) {
     PlanetOffset      = config.read <double>("PlanetOffset",0.0);
     ns_pl             = config.read < int >("ns_pl",0);
     AddExosphere      = config.read < int >("AddExosphere",0);
-    Wfact             = config.read < double >("Weight_factor",8e3);
+    Wfact = new double[ns_pl];
     nSurf = new double[ns_pl];
     hExo = new double[ns_pl];
     fExo = new double[ns_pl];
+    array_double Wfact0;
     array_double nSurf0;
     array_double hExo0;
     array_double fExo0;
     if (ns_pl > 0)
     {
+      Wfact0 = config.read < array_double > ("Weight_factor");
       nSurf0 = config.read < array_double > ("nSurf");
       hExo0 = config.read < array_double > ("hExo");
       fExo0 = config.read < array_double > ("fExo");
+      Wfact[0] = Wfact0.a;
       nSurf[0] = nSurf0.a;
       hExo[0] = hExo0.a;
       fExo[0] = fExo0.a;
     }
     if (ns_pl > 1)
     {
+      Wfact[1] = Wfact0.b;
       nSurf[1] = nSurf0.b;
       hExo[1]  = hExo0.b;
       fExo[1] = fExo0.b;
     }
     if (ns_pl > 2)
     {
+      Wfact[2] = Wfact0.c;
       nSurf[2] = nSurf0.c;
       hExo[2]  = hExo0.c;
       fExo[2] = fExo0.c;
     }
     if (ns_pl > 3)
     {
+      Wfact[3] = Wfact0.d;
       nSurf[3] = nSurf0.d;
       hExo[3]  = hExo0.d;
       fExo[3] = fExo0.d;
     }
     if (ns_pl > 4)
     {
+      Wfact[4] = Wfact0.e;
       nSurf[4] = nSurf0.e;
       hExo[4]  = hExo0.e;
       fExo[4] = fExo0.e;
     }
     if (ns_pl > 5)
     {
+      Wfact[5] = Wfact0.f;
       nSurf[5] = nSurf0.f;
       hExo[5]  = hExo0.f;
       fExo[5] = fExo0.f;
