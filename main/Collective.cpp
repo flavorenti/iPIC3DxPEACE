@@ -215,8 +215,6 @@ void Collective::ReadInput(string inputfile) {
     Vinj              = config.read < double >("Vinj",0.0);  //TBR
 
     /* fourth load PLANET PARAMETERS */	  
-    B1x               = config.read <double>("B1x",0.0);
-    B1y               = config.read <double>("B1y",0.0);
     B1z               = config.read <double>("B1z",0.0);
     x_center          = config.read < double >("x_center",5.0);
     y_center          = config.read < double >("y_center",5.0);
@@ -225,6 +223,7 @@ void Collective::ReadInput(string inputfile) {
     PlanetOffset      = config.read <double>("PlanetOffset",0.0);
     ns_pl             = config.read < int >("ns_pl",0);
     AddExosphere      = config.read < int >("AddExosphere",0);
+    Rmax              = config.read < double >("Rmax",3.);
     Wfact = new double[ns_pl];
     nSurf = new double[ns_pl];
     hExo = new double[ns_pl];
@@ -1684,8 +1683,8 @@ void Collective::save() {
       my_file << "\t\t\t<SimulatedRegion>Magnetosphere</SimulatedRegion>" << endl;
       my_file << "\t\t\t<FieldQuantity>Magnetic</FieldQuantity>" << endl;
       my_file << "\t\t\t<Units>1/wpi</Units>" << endl;
-      my_file << "\t\t\t<InputLabel>Bx By Bz</InputLabel>" << endl;
-      my_file << "\t\t\t<FieldValue>" << B1x << " " << B1y << " " << B1z << "</FieldValue>" << endl;
+      my_file << "\t\t\t<InputLabel>Bz</InputLabel>" << endl;
+      my_file << "\t\t\t<FieldValue>" << B1z << "</FieldValue>" << endl;
     my_file << "\t\t</InputField>" << endl;
 
     // Information on input Particles (both SW and planet)

@@ -2356,7 +2356,7 @@ double Particles3D::AddIonizedExosphere(int i)
   const double hexo  = col->gethExo(i);    // scale length of exosphere
   const double w_fact  = col->getWfact(i);
 
-  const double Rmax = 3.*R;          // max radius to inject pcls
+  const double Rmax = col->getRmax();          // max radius to inject pcls
   const double FourPI =16*atan(1.0);
   const double q = (qom/fabs(qom))*grid->getVOL()/npcel_sw/FourPI/w_fact; // charge of injected pcls
 

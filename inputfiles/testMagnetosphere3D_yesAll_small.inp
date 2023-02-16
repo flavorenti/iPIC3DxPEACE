@@ -85,8 +85,6 @@ w0_sw = 0.000 0.000		# drift velocity of each SW species - Z
 #  %%%%%%%%%%%%%%%%%%%%% PLANET PARAMETERS %%%%%%%%%%%%%%%%%%%%
 #  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-B1x = 0.1			# magnetic field planet - X (default 0)
-B1y = 0.1			# magnetic field planet - Y (default 0)
 B1z = 0.1			# magnetic field planet - Z (default 0)
 
 x_center = 3.0  		# center of the dipole - X (default is 5)

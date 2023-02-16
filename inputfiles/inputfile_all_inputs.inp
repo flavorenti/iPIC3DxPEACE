@@ -109,8 +109,6 @@ Vinj  = 0.0			# extra value used in inflow BC, deprecated routine (default 0.0)
 #  %%%%%%%%%%%%%%%%%%%%% PLANET PARAMETERS %%%%%%%%%%%%%%%%%%%%
 #  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-B1x = 0.0			# magnetic field planet - X (default 0)
-B1y = 0.0			# magnetic field planet - Y (default 0)
 B1z = 0.0			# magnetic field planet - Z (default 0)
 
 x_center = 3.0  		# center of the dipole - X (default 5)
@@ -124,6 +122,8 @@ L_square =   0.0001		# radius of the planet     (default 5)
 ns_pl = 2			# number of plasma species around planet (default 0, max 6)
 
 AddExosphere = 0		# flag to add exosphere ionization, 1=true, 0=false, (default 0)
+
+Rmax = 3.			# Maximum radius of shell to inject exosphere pcls
 
 Weight_factor = 8e3 8e3		# ratio weigth pcls planet and weight pcls SW (default 8e3)
 

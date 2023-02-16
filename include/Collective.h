@@ -171,6 +171,7 @@ class Collective
     int getNewPclInit()const{ return (NewPclInit); }
     int getNonTrivialBCPlanet()const{ return (NonTrivialBCPlanet); }
     int getAddExosphere()const{ return (AddExosphere); }
+    int getRmax()const{ return (Rmax); }
 
     int getBcPfaceXright()const{ return (bcPfaceXright); }
     int getBcPfaceXleft()const{ return (bcPfaceXleft); }
@@ -194,8 +195,6 @@ class Collective
     double getB0x()const{ return (B0x); }
     double getB0y()const{ return (B0y); }
     double getB0z()const{ return (B0z); }
-    double getB1x()const{ return (B1x); }
-    double getB1y()const{ return (B1y); }
     double getB1z()const{ return (B1z); }
     double getPlanetOffset()const{ return (PlanetOffset); }
     bool getVerbose()const{ return (verbose); }
@@ -413,6 +412,8 @@ class Collective
     int NonTrivialBCPlanet;
     /* bool value for applying exosphere pcls */
     int AddExosphere;
+    /* Maximum radius where to inject exosphere pcls */
+    double Rmax;
 
     /*! Case type */
     string Case;
@@ -484,8 +485,6 @@ class Collective
     double B0x;
     double B0y;
     double B0z;
-    double B1x;
-    double B1y;
     double B1z;
     double PlanetOffset;
     double E0x;

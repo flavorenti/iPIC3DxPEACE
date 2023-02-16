@@ -182,16 +182,10 @@ EMfields3D::EMfields3D(Collective * col, Grid * grid, VirtualTopology3D *vct) :
 {
   // External imposed fields
   //
-  B1x = col->getB1x();
-  B1y = col->getB1y();
   B1z = col->getB1z();
   // read Dipole Offset from input 
   //
   PlanetOffset = col->getPlanetOffset();
-  //if(B1x!=0. || B1y !=0. || B1z!=0.)
-  //{
-  //  eprintf("This functionality has not yet been implemented");
-  //}
   Bx_ext.setall(0.);
   By_ext.setall(0.);
   Bz_ext.setall(0.);
@@ -4343,9 +4337,7 @@ void EMfields3D::initDipole()
       cout << "B0x                              = " << B0x << endl;
       cout << "B0y                              = " << B0y << endl;
       cout << "B0z                              = " << B0z << endl;
-      cout << "B1x   (external dipole field) - X  = " << B1x << endl;
-      cout << "B1y                              = " << B1y << endl;
-      cout << "B1z                              = " << B1z << endl;
+      cout << "B1z (dipole planet)              = " << B1z << endl;
       cout << "PlanetOffset [di]                = " << PlanetOffset << endl;
       cout << "L_square - no magnetic field inside a sphere with radius L_square  = " << L_square << endl;
       cout << "Center dipole - X                = " << x_center << endl;
@@ -4446,9 +4438,7 @@ void EMfields3D::initDipole2D()
       cout << "B0x                              = " << B0x << endl;
       cout << "B0y                              = " << B0y << endl;
       cout << "B0z                              = " << B0z << endl;
-      cout << "B1x   (external dipole field)    = " << B1x << endl;
-      cout << "B1y                              = " << B1y << endl;
-      cout << "B1z                              = " << B1z << endl;
+      cout << "B1z (dipole planet)              = " << B1z << endl;
       cout << "L_square - no magnetic field inside a sphere with radius L_square  = " << L_square << endl;
       cout << "Center dipole - X                = " << x_center << endl;
       cout << "Center dipole - Y                = " << y_center << endl;
