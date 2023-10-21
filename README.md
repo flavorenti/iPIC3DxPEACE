@@ -65,3 +65,5 @@ mpirun -n 8 ./iPIC3D testMagnetosphere3D_small.inp > RUN.out
 ```
 You will see the text output of the simulation in `RUN.out` and the data in the directory `data`.
 If simulation ended successfully: BRAVO! you have run your first `iPIC3DxPEACE` simulation.
+
+This page is ongoing, please be patient if things are poorly commented/explained. Future works should address this problem.
